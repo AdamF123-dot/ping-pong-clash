@@ -11,3 +11,17 @@ Aplikacja do liczenia meczów tenisa stołowego dla domu i przyjaciół. Jeden p
 
 Sterowanie głosem działa w Chrome (Android i komputer) i wymaga internetu oraz zgody na mikrofon.
 Dane są zapisywane w przeglądarce. Na dole zakładki „Gracze” jest kopia zapasowa do pobrania i wczytania.
+
+## Synchronizacja między telefonami
+
+Opcjonalna, przez darmową bazę Firebase Realtime Database. W zakładce „Gracze” rozwiń „Jak ją przygotować”,
+wklej adres bazy i kliknij „Włącz synchronizację”. Potem użyj „Pokaż link do dołączenia” i otwórz go na pozostałych telefonach.
+
+Reguły bazy (zakładka Rules w Firebase):
+
+```json
+{"rules":{".read":false,".write":false,"pp":{"$room":{".read":true,".write":true}}}}
+```
+
+Dostęp do danych ma każdy, kto zna link z kodem, więc nie udostępniaj go poza rodziną.
+Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspólne są gracze, zapisane mecze i turnieje.

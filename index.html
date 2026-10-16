@@ -304,16 +304,99 @@ const avf=(cfg,w)=>`<span class="avf" style="--w:${w||160}px">${avatarSvg(cfg,'f
 
 /* ---------- stan i zapis ---------- */
 const COLL=['players','matches','tournaments'];
-const S={players:{},matches:{},tournaments:{},mode:'local',loading:false};
+const S={players:{},matches:{},tournaments:{},tomb:{players:{},matches:{},tournaments:{}},sync:{ok:true,last:0,err:''},mode:'local',loading:false};
 const ui={tab:lsGet('tt-tab','play'),setup:lsGet('tt-setup',{a:null,b:null,to:11,bo:3,first:'rnd'}),live:lsGet('tt-live',null),
-  edit:null,prof:null,voice:Object.assign({speak:false},lsGet('tt-voice',{}),{listen:false}),voiceMsg:'',confirm:null,tsetup:{sel:[],bo:3,finalBo:5,to:11,name:''},tview:null,h2h:{a:'',b:''},hf:'',period:'all'};
+  edit:null,prof:null,showLink:false,voice:Object.assign({speak:false},lsGet('tt-voice',{}),{listen:false}),voiceMsg:'',confirm:null,tsetup:{sel:[],bo:3,finalBo:5,to:11,name:''},tview:null,h2h:{a:'',b:''},hf:'',period:'all'};
 const saveUi=()=>{lsSet('tt-tab',ui.tab);lsSet('tt-setup',ui.setup);lsSet('tt-live',ui.live)};
 const saveVoice=()=>lsSet('tt-voice',{speak:!!ui.voice.speak});
-function loadLocal(){const d=lsGet('tt-data',{});COLL.forEach(c=>S[c]=d[c]||{})}
-function saveLocal(){lsSet('tt-data',{players:S.players,matches:S.matches,tournaments:S.tournaments})}
-async function put(c,id,obj){S[c][id]=obj;saveLocal();render()}
-async function del(c,id){delete S[c][id];saveLocal();render()}
-function initStore(){loadLocal();S.loading=false;render()}
+function loadLocal(){
+  const d=lsGet('tt-data',{});COLL.forEach(c=>S[c]=d[c]||{});
+  S.tomb=d.tomb||{};COLL.forEach(c=>{S.tomb[c]=S.tomb[c]||{}})}
+function saveLocal(){lsSet('tt-data',{players:S.players,matches:S.matches,tournaments:S.tournaments,tomb:S.tomb})}
+async function put(c,id,obj){obj.u=Date.now();S[c][id]=obj;delete S.tomb[c][id];saveLocal();render();syncSoon()}
+async function del(c,id){delete S[c][id];S.tomb[c][id]=Date.now();saveLocal();render();syncSoon()}
+
+/* ---------- synchronizacja między urządzeniami (Firebase Realtime Database, REST) ---------- */
+const SYNC_RE=/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)$/i;
+let syncInt=null;
+let sync=lsGet('tt-sync',null),syncBusy=false,syncAgain=false,syncT=null;
+const syncUrl=p=>`${sync.db}/pp/${sync.room}${p||''}.json`;
+function chip(){
+  const on=!!sync,ok=S.sync.ok;
+  const cls=on&&ok?'shared':'local',txt=!on?'Tylko to urządzenie':ok?'Synchronizacja włączona':'Brak połączenia z bazą';
+  const tt=!on?'Dane są tylko w tej przeglądarce':ok?'Dane są wspólne dla urządzeń z tym samym kodem':'Dane zapiszą się na telefonie i wyślą, gdy wróci połączenie';
+  return`<span id="chip" class="chip ${cls}" title="${tt}"><i></i>${txt}</span>`}
+function updateChip(){const e=$('#chip');if(e)e.outerHTML=chip()}
+function syncSoon(){if(!sync)return;clearTimeout(syncT);syncT=setTimeout(syncNow,700)}
+function syncRender(){
+  if(ui.edit||(ui.live&&ui.tab==='play'))return;
+  const a=document.activeElement;if(a&&/INPUT|SELECT|TEXTAREA/.test(a.tagName))return;
+  render()}
+async function syncNow(){
+  if(!sync)return;if(syncBusy){syncAgain=true;return}
+  syncBusy=true;
+  try{
+    let touched=false;
+    COLL.forEach(c=>Object.values(S[c]).forEach(r=>{if(!r.u){r.u=Date.now();touched=true}}));
+    const r=await fetch(syncUrl(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);
+    const remote=(await r.json())||{};
+    let changed=false;const push=[];
+    COLL.forEach(c=>{
+      const rc=remote[c]||{};
+      new Set([...Object.keys(rc),...Object.keys(S[c]),...Object.keys(S.tomb[c])]).forEach(id=>{
+        const rr=rc[id],ru=rr?(rr.u||0):0,rdel=!!(rr&&rr.del);
+        const l=S[c][id],lu=l?(l.u||0):0,t=S.tomb[c][id]||0,ldel=t>0&&t>=lu,lv=ldel?t:lu;
+        if(ru>lv){
+          if(rdel){if(l){delete S[c][id]}S.tomb[c][id]=ru}else{S[c][id]=rr;delete S.tomb[c][id]}
+          changed=true}
+        else if(lv>ru)push.push([c,id,ldel?{del:1,u:t}:l])})});
+    for(let i=0;i<push.length;i+=10){
+      await Promise.all(push.slice(i,i+10).map(([c,id,v])=>fetch(syncUrl('/'+c+'/'+id),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)}).then(x=>{if(!x.ok)throw new Error('HTTP '+x.status)})))}
+    if(changed||touched)saveLocal();
+    S.sync={ok:true,last:Date.now(),err:''};
+    if(changed)syncRender()}
+  catch(e){S.sync.ok=false;S.sync.err=String(e&&e.message||e)}
+  finally{syncBusy=false;updateChip();if(syncAgain){syncAgain=false;syncSoon()}}}
+function startPoll(){if(!syncInt)syncInt=setInterval(()=>{if(sync&&!document.hidden)syncNow()},8000)}
+function initStore(){
+  loadLocal();S.loading=false;
+  try{const q=new URLSearchParams(location.search),db=q.get('db'),room=q.get('room');
+    if(db&&room&&SYNC_RE.test(db)&&/^[a-z0-9]{8,40}$/i.test(room)){
+      sync={db,room};lsSet('tt-sync',sync);history.replaceState(null,'',location.pathname);toast('Dołączono do synchronizacji.')}}catch(e){}
+  render();
+  if(sync){syncNow();startPoll()}
+  document.addEventListener('visibilitychange',()=>{if(sync&&!document.hidden)syncNow()})}
+async function enableSync(){
+  const inp=$('#sync-url');let db=(inp&&inp.value||'').trim().replace(/\/+$/,'');
+  if(!SYNC_RE.test(db)){toast('Adres bazy powinien zaczynać się od https:// i kończyć na firebasedatabase.app lub firebaseio.com.');return}
+  const room=Array.from({length:20},()=>'abcdefghijkmnpqrstuvwxyz23456789'[rint(32)]).join('');
+  sync={db,room};
+  try{const r=await fetch(syncUrl(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status)}
+  catch(e){sync=null;toast('Nie mogę połączyć się z bazą. Sprawdź adres i reguły (zakładka Rules).');return}
+  lsSet('tt-sync',sync);S.sync={ok:true,last:0,err:''};
+  await syncNow();startPoll();
+  toast('Synchronizacja włączona.');render()}
+const joinLink=()=>`${location.origin}${location.pathname}?db=${encodeURIComponent(sync.db)}&room=${sync.room}`;
+function syncCard(){
+  if(sync){
+    return`<section class="card stack"><h3>Synchronizacja między telefonami</h3>
+     <p>${S.sync.ok?'Włączona. Gracze, mecze i turnieje są wspólne dla wszystkich urządzeń z tym samym linkiem.':'Brak połączenia z bazą ('+esc(S.sync.err)+'). Zapisy zostają na telefonie i wyślą się, gdy połączenie wróci.'}</p>
+     ${S.sync.last?`<p class="muted">Ostatnia synchronizacja: ${fmtTime(S.sync.last)}</p>`:''}
+     <div class="row"><button class="btn" data-act="synccopy">Pokaż link do dołączenia</button><button class="btn" data-act="syncnow">Synchronizuj teraz</button>
+     <button class="btn danger ${ui.confirm==='syncoff'?'ask':''}" data-act="syncoff">${ui.confirm==='syncoff'?'Na pewno wyłączyć?':'Wyłącz synchronizację'}</button></div>
+     ${ui.showLink?`<input readonly id="sync-link" value="${esc(joinLink())}" style="width:100%;border:2px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 12px" onfocus="this.select()">`:''}
+     <p class="muted" style="font-size:.85rem">Wyślij ten link domownikom i otwórzcie go na ich telefonach. Nie podawaj go nikomu spoza rodziny, bo daje dostęp do waszych danych.</p></section>`}
+  return`<section class="card stack"><h3>Synchronizacja między telefonami</h3>
+   <p class="muted">Wspólne profile, mecze i ranking na wszystkich telefonach. Potrzebna jest darmowa baza Firebase.</p>
+   <details><summary style="cursor:pointer;font-weight:800">Jak ją przygotować (około 5 minut)</summary>
+    <ol style="padding-left:1.2em;display:flex;flex-direction:column;gap:6px;margin:10px 0 0">
+     <li>Wejdź na <b>console.firebase.google.com</b>, zaloguj się kontem Google i kliknij „Create a project”. Nazwa dowolna, Google Analytics możesz wyłączyć.</li>
+     <li>W menu po lewej wybierz <b>Build, potem Realtime Database</b> i kliknij „Create Database”. Wybierz lokalizację w Europie i tryb <b>locked mode</b>.</li>
+     <li>Otwórz zakładkę <b>Rules</b>, zastąp całą treść poniższym tekstem i kliknij „Publish”:
+      <pre style="white-space:pre-wrap;word-break:break-all;background:var(--surface2);border:1.5px solid var(--line);border-radius:10px;padding:8px;font-size:.8rem;margin:6px 0 0">{"rules":{".read":false,".write":false,"pp":{"$room":{".read":true,".write":true}}}}</pre></li>
+     <li>W zakładce <b>Data</b> skopiuj adres bazy z góry strony (zaczyna się od https://) i wklej go poniżej.</li></ol></details>
+   <div><label class="lbl" for="sync-url">Adres bazy Firebase</label><input id="sync-url" placeholder="https://nazwa-default-rtdb.europe-west1.firebasedatabase.app" style="width:100%;border:2px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 12px"></div>
+   <div><button class="btn pri" data-act="syncon">Włącz synchronizację</button></div></section>`}
 function exportData(){
   const blob=new Blob([JSON.stringify({v:1,exported:new Date().toISOString(),players:S.players,matches:S.matches,tournaments:S.tournaments},null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ping-pong-kopia-'+new Date().toISOString().slice(0,10)+'.json';
@@ -321,7 +404,7 @@ function exportData(){
 function importData(f){
   if(!f)return;const r=new FileReader();
   r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||typeof d.players!=='object')throw 0;
-    S.players=d.players||{};S.matches=d.matches||{};S.tournaments=d.tournaments||{};saveLocal();toast('Wczytano kopię danych.');render()}
+    S.players=d.players||{};S.matches=d.matches||{};S.tournaments=d.tournaments||{};COLL.forEach(c=>Object.values(S[c]).forEach(r=>{r.u=Date.now()}));saveLocal();syncSoon();toast('Wczytano kopię danych.');render()}
     catch(e){toast('To nie jest poprawny plik kopii.')}};
   r.readAsText(f)}
 
@@ -500,7 +583,7 @@ const ICON={
 const BALL='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ff7a1a"/><ellipse cx="8.5" cy="8" rx="3" ry="1.8" fill="#fff" opacity=".45" transform="rotate(-35 8.5 8)"/></svg>';
 const TABS=[['play','Mecz'],['tour','Turniej'],['rank','Ranking'],['hist','Historia'],['pl','Gracze']];
 function header(){return`<header class="top"><div class="brand"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" fill="#ff7a1a"/><ellipse cx="15" cy="14" rx="6" ry="3.4" fill="#fff" opacity=".45" transform="rotate(-35 15 14)"/></svg><div><h1>Ping-Pong Clash</h1><p>Mecze, punkty i drabinki przy naszym stole</p></div></div>
- <span class="chip ${S.mode}" title="${S.mode==='shared'?'Dane widzą wszyscy, którzy mają ten link i uprawnienia':'Dane są tylko w tej przeglądarce'}"><i></i>${S.mode==='shared'?'Wspólna baza':'Tylko to urządzenie'}</span></header>`}
+ ${chip()}</header>`}
 function nav(){return`<nav class="nav" aria-label="Sekcje">${TABS.map(([k,l])=>`<button data-act="tab" data-v="${k}" ${ui.tab===k?'aria-current="page"':''}><span class="${k==='play'&&ui.live?'dot':''}">${ICON[k]}</span>${l}</button>`).join('')}</nav>`}
 
 function noPlayers(){return`<section class="card empty"><div class="avf" style="--w:120px">${avatarSvg({skin:'#ffd23f',shirt:'#118ab2',eyes:1,mouth:1,hat:1,hatC:'#e63946',face:1,faceC:'#1d3557',paddle:'#d62828'},'full')}</div><h2>Zacznijmy od awatarów</h2><p>Każdy gracz tworzy własną postać: kolor, fryzurę, minę, czapkę i okulary. Potrzebujesz co najmniej dwóch osób, żeby zagrać mecz.</p><button class="btn pri" data-act="pnew">Stwórz pierwszego awatara</button></section>`}
@@ -638,7 +721,7 @@ function viewPlayers(){
   const ms=Object.values(S.matches);
   return`<div class="stack"><section class="card"><h2>Gracze</h2><p class="muted">Dotknij gracza, żeby zmienić jego awatara.</p></section>
    <div class="pgrid">${plist().map(p=>{const g=ms.filter(m=>m.a===p.id||m.b===p.id).length;return`<button class="pcard" data-act="pprofile" data-id="${p.id}">${avf(p.av,110)}${esc(p.name)}<small>${g} ${g===1?'mecz':'meczów'}</small></button>`}).join('')}
-   <button class="pcard add" data-act="pnew"><b>+</b>Dodaj gracza</button></div>${backupCard()}</div>`}
+   <button class="pcard add" data-act="pnew"><b>+</b>Dodaj gracza</button></div>${syncCard()}${backupCard()}</div>`}
 
 function backupCard(){return`<section class="card"><h3>Kopia zapasowa</h3><p class="muted">Dane są zapisane w pamięci tej przeglądarki. Pobierz kopię, żeby je zabezpieczyć lub przenieść na inne urządzenie.</p>
  <div class="row" style="margin-top:10px"><button class="btn" data-act="pexport">Pobierz kopię</button><label class="btn" for="imp" style="cursor:pointer">Wczytaj kopię (zastąpi dane)</label><input id="imp" type="file" accept="application/json,.json" hidden></div></section>`}
@@ -718,6 +801,10 @@ const H={
  pprofile:d=>{ui.tab='pl';ui.prof=d.id;ui.edit=null;saveUi();render();window.scrollTo(0,0)},
  pback:()=>{ui.prof=null;render();window.scrollTo(0,0)},
  pexport:exportData,
+ syncon:enableSync,
+ syncnow:async()=>{await syncNow();toast(S.sync.ok?'Zsynchronizowano.':'Brak połączenia z bazą.');render()},
+ synccopy:()=>{ui.showLink=true;render();const e=$('#sync-link');if(e){e.focus();e.select();try{navigator.clipboard&&navigator.clipboard.writeText(e.value).then(()=>toast('Link skopiowany.'),()=>{})}catch(x){}}},
+ syncoff:()=>ask('syncoff',()=>{sync=null;lsSet('tt-sync',null);ui.showLink=false;render()}),
  vlisten:()=>{ui.voice.listen?(stopListen(),render()):startListen()},
  vspeak:()=>{ui.voice.speak=!ui.voice.speak;saveVoice();render();if(ui.voice.speak)speak('Czytanie wyniku włączone')},
  pdel:()=>ask('pdel',()=>{const id=ui.edit.id;ui.edit=null;ui.prof=null;if(ui.setup.a===id)ui.setup.a=null;if(ui.setup.b===id)ui.setup.b=null;saveUi();del('players',id)})
