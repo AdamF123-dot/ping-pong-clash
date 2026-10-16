@@ -378,12 +378,15 @@ function speak(text){
   try{TTS.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='pl-PL';
     const v=(TTS.getVoices()||[]).find(v=>/^pl/i.test(v.lang));if(v)u.voice=v;
     speaking=true;const fin=()=>{speaking=false;mutedUntil=Date.now()+1000};u.onend=fin;u.onerror=fin;TTS.speak(u)}catch(e){speaking=false}}
+const U=['zero','jeden','dwa','trzy','cztery','pięć','sześć','siedem','osiem','dziewięć','dziesięć','jedenaście','dwanaście','trzynaście','czternaście','piętnaście','szesnaście','siedemnaście','osiemnaście','dziewiętnaście'];
+const TENS=['','','dwadzieścia','trzydzieści','czterdzieści','pięćdziesiąt','sześćdziesiąt','siedemdziesiąt','osiemdziesiąt','dziewięćdziesiąt'];
+const pl=n=>n<20?U[n]:n<100?TENS[Math.floor(n/10)]+(n%10?' '+U[n%10]:''):String(n);
 function announce(ended){
   if(!ui.voice.speak||!ui.live)return;
   const L=ui.live,d=derive(L),n=s=>nm(s==='A'?L.a:L.b);let t;
-  if(d.done)t=`Mecz wygrywa ${n(d.winner)}. W setach ${Math.max(d.wa,d.wb)} do ${Math.min(d.wa,d.wb)}.`;
-  else if(ended){const x=score(ended),ws=x.a>x.b?'A':'B';t=`Set wygrywa ${n(ws)}, ${Math.max(x.a,x.b)} do ${Math.min(x.a,x.b)}. W setach ${n('A')} ${d.wa}, ${n('B')} ${d.wb}.`}
-  else{const s=d.server,o=other(s),p=x=>x==='A'?d.a:d.b;t=`${n(s)} ${p(s)}, ${n(o)} ${p(o)}`}
+  if(d.done)t=`Mecz wygrywa ${n(d.winner)}, ${pl(Math.max(d.wa,d.wb))}, ${pl(Math.min(d.wa,d.wb))}.`;
+  else if(ended){const x=score(ended),ws=x.a>x.b?'A':'B';t=`Set wygrywa ${n(ws)}, ${pl(Math.max(x.a,x.b))}, ${pl(Math.min(x.a,x.b))}.`}
+  else{const s=d.server,o=other(s),p=x=>x==='A'?d.a:d.b;t=`${pl(p(s))}, ${pl(p(o))}`}
   speak(t)}
 const norm=s=>String(s).toLowerCase().replace(/ł/g,'l').normalize('NFD').replace(/[̀-ͯ]/g,'');
 function lev(a,b){const m=[];for(let i=0;i<=a.length;i++){m[i]=[i]}for(let j=1;j<=b.length;j++)m[0][j]=j;
