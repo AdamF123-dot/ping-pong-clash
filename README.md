@@ -43,3 +43,9 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 - Odblokowania za punkty sięgają 30000 (nowe postacie: Smok, Żaba, Pingwin, Wampir, Yeti, Złoty Mistrz oraz style, efekty i kolory). Każdy poziom daje też 50 monet.
 - 9 skrzynek w sklepie (od Drobnej za 40 do Skarbca mistrza za 6000), w tym tylko kolory i tylko gadżety.
 - 54 medale.
+
+## Tryby: 2 na 2, Złota piłka, Przewaga serwisu
+- „Drużyny: 2 na 2” (dowolny tryb): wynik liczy się wszystkim czterem graczom w statystykach, medalach i monetach. Głos rozpoznaje imiona obu graczy drużyny.
+- Złota piłka: po losowej wymianie aplikacja ogłasza złotą piłkę, a następny punkt jest wart 3.
+- Przewaga serwisu: serwujący dostaje 2 punkty za wymianę, przyjmujący 1; zmiana serwisu liczy wymiany, nie punkty.
+- „Cofnij” cofa całą ostatnią wymianę (także świnkę, złotą piłkę i podwójny punkt).
