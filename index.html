@@ -587,11 +587,13 @@ function derive(L){
   const idx=L.sets.length,fs=idx%2===0?L.first:other(L.first),n=sc.a+sc.b,every=L.to>=21?5:2,m=2*(L.to-1);
   const turns=n<m?Math.floor(n/every):Math.floor(m/every)+(n-m);
   return{need,wa,wb,a:sc.a,b:sc.b,done,winner,idx,server:turns%2===0?fs:other(fs),decider:need>1&&wa===need-1&&wb===need-1}}
-function addPoint(side){
+function addPoint(side,n){
   const L=ui.live;if(!L||derive(L).done)return;
-  L.cur+=side;let ended=null;
-  if(setWinner(L.cur,L.to)){ended=L.cur;L.sets.push(L.cur);L.cur='';L.flip=!L.flip}
-  saveUi();render();announce(ended);try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
+  let ended=null;
+  for(let i=0;i<(n||1)&&!ended&&!derive(L).done;i++){
+    L.cur+=side;
+    if(setWinner(L.cur,L.to)){ended=L.cur;L.sets.push(L.cur);L.cur='';L.flip=!L.flip}}
+  ui.pigArm=false;saveUi();render();announce(ended);try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
 function undo(){
   const L=ui.live;if(!L)return;
   if(L.cur.length)L.cur=L.cur.slice(0,-1);
@@ -605,12 +607,14 @@ function startMatch(){
   const s=ui.setup;if(!S.players[s.a]||!S.players[s.b]||s.a===s.b){toast('Wybierz dwóch różnych graczy.');return}
   const first=s.first==='rnd'?(Math.random()<.5?'A':'B'):s.first;
   ui.live={a:s.a,b:s.b,to:s.to,bo:s.bo,first,sets:[],cur:'',flip:false,st:new Date().toISOString()};
+  if(s.mode==='pig')ui.live.mode='pig';ui.pigArm=false;
   saveUi();render();keepAwake();window.scrollTo(0,0)}
 async function saveMatch(){
   const L=ui.live,d=L&&derive(L);if(!d||!d.done)return;
   const id=uid(),w=d.winner==='A'?L.a:L.b;
   const m={id,t:new Date().toISOString(),st:L.st||null,a:L.a,b:L.b,an:nm(L.a),bn:nm(L.b),to:L.to,bo:L.bo,first:L.first,sets:L.sets.slice(),w};
   if(L.tid){m.tid=L.tid;m.tr=L.tr;m.ti=L.ti}
+  if(L.mode==='pig')m.mode='pig';
   const wasT=L.tid,before=computeProgress();
   stopListen();ui.live=null;saveUi();
   await put('matches',id,m);
@@ -654,6 +658,7 @@ function interpret(text,L){
     const stem=n.endsWith('a')?n.slice(0,-1):n.length>=5?n.slice(0,-2):n;
     if(words.some(w=>w.length>=2&&((w.startsWith(stem)&&w.length<=n.length+3)||(n.length>=5&&lev(w,n)<=1))))hit.add(s)});
   return hit.size===1?[...hit][0]:hit.size===2?'amb':null}
+const isPig=text=>norm(text).split(/[^a-z0-9]+/).some(w=>w.length>=4&&w.length<=8&&(w.startsWith('swin')||lev(w,'swinka')<=1));
 function handleSpeech(alts){
   if(speaking||Date.now()<mutedUntil)return;
   const L=ui.live;if(!L||ui.tab!=='play')return;
@@ -663,7 +668,8 @@ function handleSpeech(alts){
   let res=null,amb=false;
   for(const a of alts){const r=interpret(a,L);if(r==='amb')amb=true;else if(r){res=r;break}}
   if(res==='undo'){setMsg('Usłyszałem: „'+top+'”. Cofam punkt.');undo()}
-  else if(res){setMsg('Usłyszałem: „'+top+'”. Punkt dla '+nm(res==='A'?L.a:L.b)+'.');addPoint(res)}
+  else if(res){const two=L.mode==='pig'&&alts.some(isPig);
+    setMsg('Usłyszałem: „'+top+'”. '+(two?'Świnka! Dwa punkty dla ':'Punkt dla ')+nm(res==='A'?L.a:L.b)+'.');addPoint(res,two?2:1)}
   else setMsg(amb?'Usłyszałem: „'+top+'”. Padły imiona obu graczy, powiedz tylko jedno.':'Usłyszałem: „'+top+'”. Nie rozpoznałem imienia gracza.')}
 function startListen(){
   if(!SR){toast('Rozpoznawanie mowy działa w Chrome.');return}
@@ -679,10 +685,11 @@ function makeRec(){
 function stopListen(){recWant=false;if(ui.voice)ui.voice.listen=false;try{rec&&rec.stop()}catch(e){}}
 function voiceCard(){
   const on=!!ui.voice.listen,sp=!!ui.voice.speak;
-  return`<section class="card voice"><div class="row">
+  const pig=ui.live&&ui.live.mode==='pig';
+  return`<section class="card voice">${pig?`<div class="row" style="margin-bottom:10px"><button class="btn tog ${ui.pigArm?'on':''}" data-act="pig" aria-pressed="${!!ui.pigArm}">🐷 Świnka: ${ui.pigArm?'następny punkt liczy się za 2':'dotknij, a punkt będzie za 2'}</button></div>`:''}<div class="row">
    ${SR?`<button class="btn tog ${on?'on':''}" data-act="vlisten" aria-pressed="${on}">${on?'<span class="live-dot"></span>Słucham. Dotknij, żeby wyłączyć':MIC+'Włącz sterowanie głosem'}</button>`:'<span class="muted">Sterowanie głosem działa w Chrome na telefonie z Androidem i na komputerze.</span>'}
    ${TTS?`<button class="btn tog ${sp?'on':''}" data-act="vspeak" aria-pressed="${sp}">Czytaj wynik po każdym punkcie: ${sp?'tak':'nie'}</button>`:''}</div>
-   <p class="muted msg" id="voice-msg" aria-live="polite">${esc(ui.voiceMsg||'Powiedz imię gracza, żeby dodać mu punkt. Powiedz „cofnij”, żeby cofnąć punkt.')}</p></section>`}
+   <p class="muted msg" id="voice-msg" aria-live="polite">${esc(ui.voiceMsg||(pig?'Powiedz imię gracza, żeby dodać mu punkt, a „świnka” i imię, żeby dać mu 2 punkty. „Cofnij” cofa jeden punkt.':'Powiedz imię gracza, żeby dodać mu punkt. Powiedz „cofnij”, żeby cofnąć punkt.'))}</p></section>`}
 
 /* ---------- turniej ---------- */
 function seedOrder(n){let o=[1,2];while(o.length<n){const m=o.length*2;o=o.flatMap(x=>[x,m+1-x])}return o}
@@ -832,6 +839,7 @@ function viewPlay(){
   <div><span class="lbl" style="color:var(--pa)">Gracz 1 (niebieski)</span>${pickerRow('a',s.a,s.b)}</div>
   <div><span class="lbl" style="color:var(--pb)">Gracz 2 (pomarańczowy)</span>${pickerRow('b',s.b,s.a)}</div>
   <div class="row" style="align-items:flex-start;gap:22px">
+   <div><span class="lbl">Tryb meczu</span>${seg('mode',[['std','Klasyczny'],['pig','Świnka (2 pkt)']])}</div>
    <div><span class="lbl">Do ilu punktów</span>${seg('to',[[11,'11'],[21,'21']])}</div>
    <div><span class="lbl">Ile setów</span>${seg('bo',[[1,'1 set'],[3,'BO3'],[5,'BO5'],[7,'BO7']])}</div>
    <div><span class="lbl">Pierwszy serwis</span>${seg('first',[['rnd','Losowo'],['A',s.a?esc(nm(s.a)):'Gracz 1'],['B',s.b?esc(nm(s.b)):'Gracz 2']])}</div></div>
@@ -849,7 +857,7 @@ function viewLive(){
   const sw5=d.decider&&Math.max(d.a,d.b)===5&&Math.min(d.a,d.b)<5;
   const justSet=!d.done&&d.a===0&&d.b===0&&L.sets.length>0;
   const lastSets=L.sets.map(s=>{const x=score(s);return`<span class="sc-chip ${x.a>x.b?'a':'b'} num">${x.a}:${x.b}</span>`}).join('');
-  const chips=`<span class="chip t">${T?esc(roundName(L.tr,T.rounds.length))+' · ':''}${L.bo===1?'1 set':'BO'+L.bo} do ${L.to}</span>`;
+  const chips=`<span class="chip t">${T?esc(roundName(L.tr,T.rounds.length))+' · ':''}${L.bo===1?'1 set':'BO'+L.bo} do ${L.to}</span>${L.mode==='pig'?'<span class="chip t">🐷 Świnka</span>':''}`;
   let res='';
   if(d.done){const wid=d.winner==='A'?L.a:L.b;
     res=`<section class="card result">${avf(av_(wid),110)}<div><p class="muted">Wygrywa</p><h2>${esc(nm(wid))}</h2><p class="num" style="font-size:1.2rem;font-weight:800">${Math.max(d.wa,d.wb)}:${Math.min(d.wa,d.wb)} w setach</p></div>
@@ -869,7 +877,7 @@ function matchRow(m){
   const side=(id,snap,win)=>`<div class="mp ${win?'win':''}">${avb(av_(id),36)}<span>${esc(nm(id,snap))}</span></div>`;
   return`<div class="mrow"><div style="min-width:0"><div style="display:flex;flex-direction:column;gap:6px">${side(m.a,m.an,aw)}${side(m.b,m.bn,!aw)}</div>
    <div class="msc">${mSets(m).map(x=>`<span class="num">${x.a}:${x.b}</span>`).join('')}</div>
-   <div class="mmeta"><span>${fmtTime(m.t)}</span><span>${m.bo===1?'1 set':'BO'+m.bo} do ${m.to}</span>${T?`<span class="chip t">${esc(T.name)}</span>`:''}</div></div>
+   <div class="mmeta"><span>${fmtTime(m.t)}</span><span>${m.bo===1?'1 set':'BO'+m.bo} do ${m.to}</span>${T?`<span class="chip t">${esc(T.name)}</span>`:''}${m.mode==='pig'?'<span class="chip t">🐷 Świnka</span>':''}</div></div>
    <div style="text-align:right"><div class="mbig num">${sw.a}:${sw.b}</div>
    ${m.tid?'':`<button class="btn sm danger ${ui.confirm==='dm'+m.id?'ask':''}" data-act="dmatch" data-id="${m.id}">${ui.confirm==='dm'+m.id?'Na pewno?':'Usuń'}</button>`}</div></div>`}
 
@@ -1059,9 +1067,10 @@ function ask(key,fn){
 const H={
  tab:d=>{ui.tab=d.v;ui.confirm=null;ui.tview=null;ui.prof=null;if(d.v!=='pl')ui.edit=null;saveUi();render();window.scrollTo(0,0)},
  pick:d=>{ui.setup[d.s]=d.id;saveUi();render()},
- fmt:d=>{ui.setup[d.k]=d.k==='first'?d.v:+d.v;saveUi();render()},
+ fmt:d=>{ui.setup[d.k]=(d.k==='first'||d.k==='mode')?d.v:+d.v;saveUi();render()},
  start:startMatch,
- pt:d=>addPoint(d.s),
+ pt:d=>addPoint(d.s,ui.live&&ui.live.mode==='pig'&&ui.pigArm?2:1),
+ pig:()=>{ui.pigArm=!ui.pigArm;render()},
  undo,
  flip:()=>{ui.live.flip=!ui.live.flip;saveUi();render()},
  abort:()=>ask('abort',()=>{const t=!!ui.live.tid;stopListen();ui.live=null;saveUi();if(t)ui.tab='tour';render()}),
