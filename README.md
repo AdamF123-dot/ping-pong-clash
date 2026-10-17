@@ -50,4 +50,9 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 - Przewaga serwisu: serwujący dostaje 2 punkty za wymianę, przyjmujący 1; zmiana serwisu liczy wymiany, nie punkty.
 - „Cofnij” cofa całą ostatnią wymianę (także świnkę, złotą piłkę i podwójny punkt).
 
-- BO10: wygrywa ten, kto pierwszy zdobędzie 6 setów (przy 5:5 gra się set decydujący).
+
+## Tryby: BO9, Sprint, Podwójna stawka, Król stołu
+- BO9: wygrywa ten, kto pierwszy zdobędzie 5 setów.
+- Sprint 3 lub 5 minut: wygrywa lepszy wynik po czasie, przy remisie złoty punkt; jest pauza i odliczanie (głos ostrzega o minucie i 10 sekundach).
+- Podwójna stawka: raz w meczu każda drużyna może podbić stawkę, a najbliższy punkt jest wart 2 dla zwycięzcy wymiany (głosem: „podwójna stawka” i imię).
+- Król stołu: mecze o koronę z obecnym królem; ranking panowań w zakładce Ranking, bonus monet za koronę (30) i obronę (15) oraz dwa medale.

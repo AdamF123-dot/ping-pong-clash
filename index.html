@@ -219,6 +219,7 @@ select{background:var(--surface2);border:1.5px solid var(--line);border-radius:1
 .banner.gold{background:linear-gradient(90deg,#ffd23f,#ffb703);color:#3b2600;border-color:#e0a000;font-weight:900;animation:gl 1s ease-in-out infinite alternate}
 @keyframes gl{to{box-shadow:0 0 22px #ffd23f}}
 @media (prefers-reduced-motion:reduce){.banner.gold{animation:none}}
+.king{border:2px solid #e0b21e;background:linear-gradient(120deg,color-mix(in srgb,#ffd23f 22%,var(--surface)),var(--surface))}
 .trash{position:absolute;top:8px;right:8px;min-width:34px;height:34px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 8px;color:var(--muted)}
 .trash svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .trash:hover{color:var(--bad);border-color:var(--bad)}
@@ -652,12 +653,13 @@ const mem=(m,side)=>(side==='A'?[m.a,m.a2]:[m.b,m.b2]).filter(Boolean);
 const inM=(m,id)=>m.a===id||m.b===id||m.a2===id||m.b2===id;
 const ids4=L=>[L.a,L.a2,L.b,L.b2].filter(Boolean);
 const tnames=(o,side)=>mem(o,side).map(i=>nm(i)).join(' i ');
-const MODEN={pig:'🐷 Świnka',gold:'🏆 Złota piłka',srv:'🎾 Przewaga serwisu'};
-const MODEHINT={std:'Zwykłe zasady: każdy punkt liczy się za 1.',pig:'Powiedz „świnka” i imię gracza, a dostanie 2 punkty zamiast 1.',gold:'Co jakiś czas aplikacja ogłasza złotą piłkę. Najbliższy punkt jest wtedy wart 3.',srv:'Serwujący zdobywa 2 punkty za wygraną wymianę, przyjmujący 1.'};
+const MODEN={pig:'🐷 Świnka',gold:'🏆 Złota piłka',srv:'🎾 Przewaga serwisu',x2:'✖️2 Podwójna stawka',sprint:'⏱️ Sprint',king:'👑 Król stołu'};
+const KING={crown:30,def:15};
+const MODEHINT={std:'Zwykłe zasady: każdy punkt liczy się za 1.',pig:'Powiedz „świnka” i imię gracza, a dostanie 2 punkty zamiast 1.',gold:'Co jakiś czas aplikacja ogłasza złotą piłkę. Najbliższy punkt jest wtedy wart 3.',srv:'Serwujący zdobywa 2 punkty za wygraną wymianę, przyjmujący 1.',x2:'Każda drużyna ma raz w meczu „x2”. Po podbiciu najbliższy punkt jest wart 2 dla zwycięzcy wymiany, więc ryzyko jest po obu stronach. Głosem: „podwójna stawka” i imię.',sprint:'Gra na czas: gdy czas minie, wygrywa ten, kto ma więcej punktów. Przy remisie rozstrzyga złoty punkt.',king:'Jeden mecz z aktualnym królem stołu. Kto wygra, zostaje królem (lub nim pozostaje). Pierwszy mecz wyłania pierwszego króla.'};
 function score(s){let a=0,b=0;for(const ch of s){ch==='A'?a++:b++}return{a,b}}
 function setWinner(s,T){const{a,b}=score(s);return(a>=T||b>=T)&&Math.abs(a-b)>=2?(a>b?'A':'B'):null}
 function derive(L){
-  const need=Math.floor(L.bo/2)+1;let wa=0,wb=0;L.sets.forEach(s=>{setWinner(s,L.to)==='A'?wa++:wb++});
+  const need=Math.floor(L.bo/2)+1;let wa=0,wb=0;L.sets.forEach(s=>{const q=score(s);q.a>q.b?wa++:wb++});
   const sc=score(L.cur),done=wa>=need||wb>=need,winner=wa>=need?'A':wb>=need?'B':null;
   const idx=L.sets.length,fs=idx%2===0?L.first:other(L.first),n=sc.a+sc.b,every=L.to>=21?5:2,m=2*(L.to-1);
   const turns=n<m?Math.floor(n/every):Math.floor(m/every)+(n-m);
@@ -666,17 +668,20 @@ function worth(L,side){
   if(L.mode==='pig')return ui.pigArm?2:1;
   if(L.mode==='srv')return derive(L).server===side?2:1;
   if(L.mode==='gold')return L.gold?3:1;
+  if(L.mode==='x2')return L.arm?2:1;
   return 1}
 function addPoint(side,n){
-  const L=ui.live;if(!L||derive(L).done)return;
-  const k=n||(L.mode==='pig'?1:worth(L,side)),op={n:0,sv:L.sv,sn:L.sn,g:!!L.gold};let ended=null;
+  const L=ui.live;if(!L||derive(L).done||L.pausedAt)return;
+  const k=n||(L.mode==='pig'?1:worth(L,side)),op={n:0,sv:L.sv,sn:L.sn,g:!!L.gold,arm:L.arm||null,tk:L.tk?Object.assign({},L.tk):null};let ended=null;
   for(let i=0;i<k&&!ended&&!derive(L).done;i++){
     L.cur+=side;op.n++;
-    if(setWinner(L.cur,L.to)){ended=L.cur;L.sets.push(L.cur);L.cur='';L.flip=!L.flip}}
+    if(!L.sprint&&setWinner(L.cur,L.to)){ended=L.cur;L.sets.push(L.cur);L.cur='';L.flip=!L.flip}}
+  if(L.sprint&&L.sudden&&!ended){ended=L.cur;L.sets.push(L.cur);L.cur='';L.flip=!L.flip}
   if(L.sv!=null){
     if(ended){const idx=L.sets.length;L.sv=idx%2===0?L.first:other(L.first);L.sn=0}
-    else{L.sn=(L.sn||0)+1;const sc=score(L.cur);if((sc.a>=L.to-1&&sc.b>=L.to-1)||L.sn>=(L.to>=21?5:2)){L.sv=other(L.sv);L.sn=0}}}
+    else{L.sn=(L.sn||0)+1;const sc=score(L.cur);if((!L.sprint&&sc.a>=L.to-1&&sc.b>=L.to-1)||L.sn>=(L.to>=21?5:2)){L.sv=other(L.sv);L.sn=0}}}
   if(L.ops)L.ops.push(op);
+  if(L.arm){if(L.tk)L.tk[L.arm]=false;L.arm=null}
   L.gold=false;
   if(L.mode==='gold'&&!ended&&!derive(L).done&&!op.g&&Math.random()<.14)L.gold=true;
   ui.pigArm=false;saveUi();render();announce(ended);try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
@@ -686,8 +691,24 @@ function undo(){
   for(let i=0;i<k;i++){
     if(L.cur.length)L.cur=L.cur.slice(0,-1);
     else if(L.sets.length){L.cur=L.sets.pop().slice(0,-1);L.flip=!L.flip}}
-  if(op){L.sv=op.sv;L.sn=op.sn;L.gold=op.g}
+  if(op){L.sv=op.sv;L.sn=op.sn;L.gold=op.g;L.arm=op.arm;if(op.tk)L.tk=op.tk}
+  if(L.sprint&&L.timeUp){L.sudden=false;L.timeUp=false;L.end=Date.now()+15000;L.pausedAt=0}
   saveUi();render();announce(null)}
+function armX2(side){
+  const L=ui.live;if(!L||L.mode!=='x2'||derive(L).done)return;
+  if(!L.tk[side]){setMsg('Podwójna stawka dla '+tnames(L,side)+' jest już wykorzystana.');toast('Podwójna stawka jest już wykorzystana.');return}
+  if(L.arm&&L.arm!==side){toast('Stawka została już podbita w tej wymianie.');return}
+  L.arm=L.arm===side?null:side;saveUi();render();if(L.arm&&ui.voice.speak)speak('Podwójna stawka.')}
+const fmtClock=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
+const sprintRem=L=>L.end-(L.pausedAt||Date.now());
+function finishSprint(L){L.sets.push(L.cur);L.cur='';L.flip=!L.flip;if(L.sv!=null){L.sv=L.first;L.sn=0}saveUi();render();announce(L.sets[L.sets.length-1])}
+setInterval(()=>{
+  const L=ui.live;if(!L||!L.sprint||L.pausedAt||L.timeUp||derive(L).done)return;
+  const rem=sprintRem(L),el=$('#sprint-t');if(el)el.textContent=fmtClock(rem);
+  if(ui.voice.speak){if(rem<=60000&&rem>0&&!L.w60&&L.dur>90){L.w60=1;speak('Została minuta.')}if(rem<=10000&&rem>0&&!L.w10){L.w10=1;speak('Dziesięć sekund.')}}
+  if(rem<=0){L.timeUp=true;
+    if(score(L.cur).a!==score(L.cur).b)finishSprint(L);
+    else{L.sudden=true;saveUi();render();if(ui.voice.speak)speak('Remis. Złoty punkt rozstrzyga.')}}},500);
 const nm=(id,snap)=>(S.players[id]&&S.players[id].name)||snap||'Usunięty gracz';
 const av_=id=>S.players[id]?S.players[id].av:DEF;
 const mSets=m=>(m.sets||[]).map(score);
@@ -698,6 +719,13 @@ function startMatch(){
   const first=s.first==='rnd'?(Math.random()<.5?'A':'B'):s.first;
   ui.live={a:s.a,b:s.b,to:s.to,bo:s.bo,first,sets:[],cur:'',flip:false,st:new Date().toISOString()};
   Object.assign(ui.live,{sv:first,sn:0,ops:[],gold:false});
+  if(s.mode==='x2'){ui.live.tk={A:true,B:true};ui.live.arm=null}
+  if(s.mode==='sprint'){const mins=s.sprintMin===5?5:3;Object.assign(ui.live,{bo:1,to:11,sprint:true,dur:mins*60,end:Date.now()+mins*60000})}
+  if(s.mode==='king'){
+    const kg=kingBoard().king;
+    if(two){toast('Król stołu gra się 1 na 1.');ui.live=null;return}
+    if(kg&&S.players[kg]&&kg!==s.a&&kg!==s.b){toast('W meczu o koronę gra obecny król: '+nm(kg)+'.');ui.live=null;return}
+    ui.live.bo=1}
   if(two){ui.live.a2=s.a2;ui.live.b2=s.b2}
   if(MODEN[s.mode])ui.live.mode=s.mode;ui.pigArm=false;
   saveUi();render();keepAwake();window.scrollTo(0,0)}
@@ -707,6 +735,7 @@ async function saveMatch(){
   const m={id,t:new Date().toISOString(),st:L.st||null,a:L.a,b:L.b,an:nm(L.a),bn:nm(L.b),to:L.to,bo:L.bo,first:L.first,sets:L.sets.slice(),w};
   if(L.tid){m.tid=L.tid;m.tr=L.tr;m.ti=L.ti}
   if(L.mode)m.mode=L.mode;
+  if(L.sprint){m.sprint=true;m.dur=L.dur/60}
   if(L.a2){m.a2=L.a2;m.b2=L.b2;m.an2=nm(L.a2);m.bn2=nm(L.b2);m.team=2}
   const wasT=L.tid,before=computeProgress();
   stopListen();ui.live=null;saveUi();
@@ -735,7 +764,8 @@ const pl=n=>n<20?U[n]:n<100?TENS[Math.floor(n/10)]+(n%10?' '+U[n%10]:''):String(
 function announce(ended){
   if(!ui.voice.speak||!ui.live)return;
   const L=ui.live,d=derive(L),n=s=>tnames(L,s);let t;
-  if(d.done)t=`Mecz wygrywa ${n(d.winner)}, ${pl(Math.max(d.wa,d.wb))}, ${pl(Math.min(d.wa,d.wb))}.`;
+  if(d.done&&L.sprint){const x=score(L.sets[L.sets.length-1]);t=`Koniec czasu. Wygrywa ${n(d.winner)}, ${pl(Math.max(x.a,x.b))}, ${pl(Math.min(x.a,x.b))}.`}
+  else if(d.done)t=`Mecz wygrywa ${n(d.winner)}, ${pl(Math.max(d.wa,d.wb))}, ${pl(Math.min(d.wa,d.wb))}.`;
   else if(ended){const x=score(ended),ws=x.a>x.b?'A':'B';t=`Set wygrywa ${n(ws)}, ${pl(Math.max(x.a,x.b))}, ${pl(Math.min(x.a,x.b))}.`}
   else{const s=d.server,o=other(s),p=x=>x==='A'?d.a:d.b;t=`${pl(p(s))}, ${pl(p(o))}`}
   speak(t+(L.gold&&!d.done?' Złota piłka! Trzy punkty.':''))}
@@ -751,6 +781,7 @@ function interpret(text,L){
     const stem=n.endsWith('a')?n.slice(0,-1):n.length>=5?n.slice(0,-2):n;
     if(words.some(w=>w.length>=2&&((w.startsWith(stem)&&w.length<=n.length+3)||(n.length>=5&&lev(w,n)<=1))))hit.add(s)});
   return hit.size===1?[...hit][0]:hit.size===2?'amb':null}
+const isX2=text=>norm(text).split(/[^a-z0-9]+/).some(w=>w==='x2'||w.startsWith('podwojn')||w.startsWith('stawk'));
 const isPig=text=>norm(text).split(/[^a-z0-9]+/).some(w=>w.length>=4&&w.length<=8&&(w.startsWith('swin')||lev(w,'swinka')<=1));
 function handleSpeech(alts){
   if(speaking||Date.now()<mutedUntil)return;
@@ -761,6 +792,7 @@ function handleSpeech(alts){
   let res=null,amb=false;
   for(const a of alts){const r=interpret(a,L);if(r==='amb')amb=true;else if(r){res=r;break}}
   if(res==='undo'){setMsg('Usłyszałem: „'+top+'”. Cofam punkt.');undo()}
+  else if(res&&L.mode==='x2'&&alts.some(isX2)){setMsg('Usłyszałem: „'+top+'”. Podwójna stawka.');armX2(res)}
   else if(res){const two=L.mode==='pig'&&alts.some(isPig);
     setMsg('Usłyszałem: „'+top+'”. '+(two?'Świnka! Dwa punkty dla ':'Punkt dla ')+tnames(L,res)+'.');addPoint(res,two?2:0)}
   else setMsg(amb?'Usłyszałem: „'+top+'”. Padły imiona obu graczy, powiedz tylko jedno.':'Usłyszałem: „'+top+'”. Nie rozpoznałem imienia gracza.')}
@@ -872,6 +904,8 @@ const MEDALS=[
  {id:'shop1',n:'Pierwsze zakupy',d:'Wylosuj pierwszy przedmiot ze skrzynki',c:'#cd7f32',g:'bag',t:x=>x.inv>=1},
  {id:'shop10',n:'Kolekcjoner',d:'Zbierz 10 przedmiotów ze sklepu',c:'#c0c7d1',g:'bag',t:x=>x.inv>=10},
  {id:'shop30',n:'Wielki kolekcjoner',d:'Zbierz 30 przedmiotów ze sklepu',c:'#e0b21e',g:'bag',t:x=>x.inv>=30},
+ {id:'king1',n:'Koronacja',d:'Zostań królem stołu',c:'#d4a017',g:'crown',t:x=>x.crowns>=1},
+ {id:'kdef5',n:'Niezłomny król',d:'Obroń koronę 5 razy w jednym panowaniu',c:'#7b2cbf',g:'crown',t:x=>x.bestDef>=5},
  {id:'luck',n:'Szczęściarz',d:'Wylosuj legendarny przedmiot',c:'#f2b705',g:'gem',t:x=>x.hasL}];
 const GLYPH={
  star:'<path d="M24 19l2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L24 33.4l-5.7 3.1 1.1-6.3-4.6-4.5 6.4-.9z" fill="#fff"/>',
@@ -899,11 +933,12 @@ function computeProgress(){
     const dk=new Date(m.t).toLocaleDateString('sv'),hr=new Date(m.t).getHours();x.days.add(dk);if(won)opps.forEach(o=>x.beat.add(o));
     x.perDay[dk]=(x.perDay[dk]||0)+1;if(hr>=22||hr<4)x.night++;if(hr>=5&&hr<8)x.early++;if(m.tid)x.tm++;
     if(won&&(m.sets||[]).length>=2&&(m.sets||[]).every(st=>{const q=score(st);return side==='A'?q.a>q.b:q.b>q.a}))x.flawless++;
-    (m.sets||[]).forEach(st=>{const sc=score(st),me=side==='A'?sc.a:sc.b,th=side==='A'?sc.b:sc.a;
+    (m.sprint?[]:m.sets||[]).forEach(st=>{const sc=score(st),me=side==='A'?sc.a:sc.b,th=side==='A'?sc.b:sc.a;
       if(me>th){if(th===0)x.bagel++;if(me>m.to)x.deuce++}});
     if(won&&(m.sets||[]).length>1){const f=score(m.sets[0]);if(side==='A'?f.a<f.b:f.b<f.a)x.comeback++}})));
-  const n=rows.length;
-  Object.values(X).forEach(x=>{x.bonus=Math.floor(x.pf/1000)*LVLBONUS;x.earned=x.sw*COIN.set+x.w*COIN.match+x.titles*COIN.title+x.bonus;x.coins=x.earned-((S.players[x.id]||{}).spent||0);const pr_=S.players[x.id]||{},invk=pr_.inv||[];x.inv=invk.length;x.hasL=invk.some(k=>ITEMBY[k]&&ITEMBY[k].r==='l');x.maxDay=Math.max(0,...Object.values(x.perDay));x.medals=MEDALS.filter(md=>md.t(x,n)).map(md=>md.id);x.level=1+Math.floor(x.pf/1000)});
+  const n=rows.length,KB=kingBoard();
+  KB.events.forEach(e=>{const x=X[e.id];if(x)x.kb=(x.kb||0)+(e.type==='crown'?KING.crown:KING.def)});
+  Object.values(X).forEach(x=>{x.bonus=Math.floor(x.pf/1000)*LVLBONUS;const ks=KB.stats[x.id]||{crowns:0,bestDef:0};x.crowns=ks.crowns;x.bestDef=ks.bestDef;x.earned=x.sw*COIN.set+x.w*COIN.match+x.titles*COIN.title+x.bonus+(x.kb||0);x.coins=x.earned-((S.players[x.id]||{}).spent||0);const pr_=S.players[x.id]||{},invk=pr_.inv||[];x.inv=invk.length;x.hasL=invk.some(k=>ITEMBY[k]&&ITEMBY[k].r==='l');x.maxDay=Math.max(0,...Object.values(x.perDay));x.medals=MEDALS.filter(md=>md.t(x,n)).map(md=>md.id);x.level=1+Math.floor(x.pf/1000)});
   return X}
 const plural=(n,a,b,c)=>n===1?a:(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?b:c;
 function progressNote(before,after,ids){
@@ -915,13 +950,36 @@ function progressNote(before,after,ids){
     const newM=a.medals.filter(m=>!b||!b.medals.includes(m));
     newM.forEach(mid=>{const md=MEDALS.find(q=>q.id===mid);out.push(`${name} zdobywa medal: ${md.n}`)})});
   return out}
+function kingBoard(){
+  const ms=Object.values(S.matches).filter(m=>m.mode==='king'&&!m.a2).sort((x,y)=>x.t.localeCompare(y.t));
+  let king=null,since=null,def=0;const events=[],reigns=[],stats={};
+  const st=id=>stats[id]||(stats[id]={id,crowns:0,defs:0,bestDef:0,longest:0});
+  const crown=(id,t)=>{king=id;since=t;def=0;st(id).crowns++;events.push({id,type:'crown'})};
+  const close=t=>{if(king!==null){reigns.push({id:king,def,from:since,to:t});const x=st(king);x.bestDef=Math.max(x.bestDef,def);x.longest=Math.max(x.longest,new Date(t)-new Date(since))}};
+  ms.forEach(m=>{
+    const w=m.w;
+    if(king!==null&&(m.a===king||m.b===king)){
+      if(w===king){def++;st(w).defs++;events.push({id:w,type:'def'})}
+      else{close(m.t);crown(w,m.t)}}
+    else{close(m.t);crown(w,m.t)}});
+  if(king!==null){close(new Date().toISOString())}
+  return{king,def,since,events,reigns,stats}}
+const fmtDur=ms=>{const m=Math.round(ms/60000);if(m<60)return Math.max(1,m)+' min';const h=Math.round(m/60);if(h<48)return h+' godz.';return Math.round(h/24)+' dni'};
+function kingCard(){
+  const K=kingBoard();if(!K.king||!S.players[K.king])return'';
+  return`<section class="card king"><div class="row" style="gap:16px;align-items:center">${avf(av_(K.king),90)}<div style="flex:1;min-width:150px"><p class="muted">👑 Król stołu</p><h2>${esc(nm(K.king))}</h2><p class="muted">Panuje od ${fmtShort(K.since)}, obronił koronę ${K.def} ${plural(K.def,'raz','razy','razy')}.</p></div>
+   <button class="btn pri" data-act="kingch">Rzuć wyzwanie</button></div></section>`}
+function kingTable(){
+  const K=kingBoard(),rows=Object.values(K.stats).filter(x=>S.players[x.id]).sort((a,b)=>b.bestDef-a.bestDef||b.crowns-a.crowns);
+  if(!rows.length)return'';
+  return`<section class="card stack"><h3>👑 Król stołu</h3><div class="tw"><table><thead><tr><th>Gracz</th><th title="Ile razy został królem">Korony</th><th title="Obrony korony razem">Obrony</th><th title="Najwięcej obron w jednym panowaniu">Rekord</th><th>Najdłuższe panowanie</th></tr></thead><tbody>${rows.map(x=>`<tr><td class="who"><button class="lnk" data-act="pprofile" data-id="${x.id}">${avb(av_(x.id),32)}<span>${esc(nm(x.id))}${K.king===x.id?' 👑':''}</span></button></td><td>${x.crowns}</td><td>${x.defs}</td><td>${x.bestDef}</td><td>${fmtDur(x.longest)}</td></tr>`).join('')}</tbody></table></div></section>`}
 function computeStats(list){
   const P={};Object.keys(S.players).forEach(id=>P[id]={id,g:0,w:0,l:0,sw:0,sl:0,pf:0,pa:0,streak:0,best:0,run:0,form:[],titles:0});
   const rec={streak:null,run:null,setDiff:null,long:null};
   list.slice().sort((x,y)=>x.t.localeCompare(y.t)).forEach(m=>{
-    const sw=setsWon(m),tot=(m.sets||[]).reduce((n,s)=>n+s.length,0);
+    const sw=setsWon(m),tot=m.sprint?0:(m.sets||[]).reduce((n,s)=>n+s.length,0);
     if(tot&&(!rec.long||tot>rec.long.v))rec.long={v:tot,m};
-    (m.sets||[]).forEach(s=>{const x=score(s),d=Math.abs(x.a-x.b);
+    (m.sprint?[]:m.sets||[]).forEach(s=>{const x=score(s),d=Math.abs(x.a-x.b);
       if(!rec.setDiff||d>rec.setDiff.v||(d===rec.setDiff.v&&Math.max(x.a,x.b)>rec.setDiff.mx))rec.setDiff={v:d,mx:Math.max(x.a,x.b),id:x.a>x.b?m.a:m.b,s:Math.max(x.a,x.b)+':'+Math.min(x.a,x.b)}});
     ['A','B'].forEach(side=>{
       const won=(m.w===m.a?'A':'B')===side;
@@ -967,24 +1025,25 @@ function viewPlay(){
   if(ui.live)return viewLive();
   const ps=plist();if(ps.length<2)return ps.length===0?noPlayers():`<section class="card empty"><h2>Potrzebny drugi gracz</h2><p>Dodaj jeszcze jednego awatara, żeby rozpocząć mecz.</p><button class="btn pri" data-act="pnew">Dodaj gracza</button></section>`;
   const s=ui.setup;['a','b','a2','b2'].forEach(k=>{if(s[k]&&!S.players[s[k]])s[k]=null});
-  const two=s.team===2,enough=ps.length>=(two?4:2);
+  const mode0=['pig','gold','srv','x2','sprint','king'].includes(s.mode)?s.mode:'std';
+  const two=s.team===2&&mode0!=='king',enough=ps.length>=(two?4:2);
   const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-act="fmt" data-k="${k}" data-v="${v}" class="${String(s[k])===String(v)?'on':''}">${l}</button>`).join('')}</div>`;
   const rec=mlist().slice(0,4),sel=[s.a,s.a2,s.b,s.b2];
   const blk=k=>sel.filter((x,i)=>['a','a2','b','b2'][i]!==k);
-  const mode=MODEHINT[s.mode]?s.mode:'std',ready=two?(s.a&&s.a2&&s.b&&s.b2):(s.a&&s.b);
-  return`<div class="stack"><section class="card stack"><h2>Nowy mecz</h2>
-  <div><span class="lbl">Drużyny</span>${seg('team',[[1,'1 na 1'],[2,'2 na 2']])}</div>
+  const mode=mode0,kg=mode==='king'?kingBoard().king:null,ready=two?(s.a&&s.a2&&s.b&&s.b2):(s.a&&s.b);
+  return`<div class="stack">${mode==='king'?kingCard():''}<section class="card stack"><h2>Nowy mecz</h2>
+  ${mode==='king'?'':`<div><span class="lbl">Drużyny</span>${seg('team',[[1,'1 na 1'],[2,'2 na 2']])}</div>`}
   ${two?`<div><span class="lbl" style="color:var(--pa)">Drużyna niebieska, gracz 1</span>${pickerRow('a',s.a,blk('a'),'a')}</div>
   <div><span class="lbl" style="color:var(--pa)">Drużyna niebieska, gracz 2</span>${pickerRow('a2',s.a2,blk('a2'),'a')}</div>
   <div><span class="lbl" style="color:var(--pb)">Drużyna pomarańczowa, gracz 1</span>${pickerRow('b',s.b,blk('b'),'b')}</div>
   <div><span class="lbl" style="color:var(--pb)">Drużyna pomarańczowa, gracz 2</span>${pickerRow('b2',s.b2,blk('b2'),'b')}</div>
   ${enough?'':'<p class="muted">Do gry 2 na 2 potrzeba czterech graczy. Dodaj kolejnych w zakładce Gracze.</p>'}`
-  :`<div><span class="lbl" style="color:var(--pa)">Gracz 1 (niebieski)</span>${pickerRow('a',s.a,blk('a'),'a')}</div>
-  <div><span class="lbl" style="color:var(--pb)">Gracz 2 (pomarańczowy)</span>${pickerRow('b',s.b,blk('b'),'b')}</div>`}
-  <div><span class="lbl">Tryb meczu</span>${seg('mode',[['std','Klasyczny'],['pig','Świnka'],['gold','Złota piłka'],['srv','Przewaga serwisu']])}<p class="muted" style="margin-top:6px">${MODEHINT[mode]}</p></div>
+  :`<div><span class="lbl" style="color:var(--pa)">${kg?'Król (niebieski)':'Gracz 1 (niebieski)'}</span>${pickerRow('a',s.a,kg?ps.filter(q=>q.id!==kg).map(q=>q.id):blk('a'),'a')}</div>
+  <div><span class="lbl" style="color:var(--pb)">${kg?'Wyzywający (pomarańczowy)':'Gracz 2 (pomarańczowy)'}</span>${pickerRow('b',s.b,kg?[kg]:blk('b'),'b')}</div>`}
+  <div><span class="lbl">Tryb meczu</span>${seg('mode',[['std','Klasyczny'],['pig','Świnka'],['gold','Złota piłka'],['srv','Przewaga serwisu'],['x2','Podwójna stawka'],['sprint','Sprint'],['king','Król stołu']])}<p class="muted" style="margin-top:6px">${MODEHINT[mode]}</p></div>
   <div class="row" style="align-items:flex-start;gap:22px">
-   <div><span class="lbl">Do ilu punktów</span>${seg('to',[[11,'11'],[21,'21']])}</div>
-   <div><span class="lbl">Ile setów</span>${seg('bo',[[1,'1 set'],[3,'BO3'],[5,'BO5'],[7,'BO7'],[10,'BO10']])}${s.bo===10?'<p class="muted" style="margin-top:6px;max-width:260px">BO10: wygrywa ten, kto pierwszy zdobędzie 6 setów. Przy 5:5 gra się set decydujący.</p>':''}</div>
+   ${mode==='sprint'?`<div><span class="lbl">Czas gry</span>${seg('sprintMin',[[3,'3 minuty'],[5,'5 minut']])}</div>`:`<div><span class="lbl">Do ilu punktów</span>${seg('to',[[11,'11'],[21,'21']])}</div>`}
+   ${mode==='sprint'||mode==='king'?'':`<div><span class="lbl">Ile setów</span>${seg('bo',[[1,'1 set'],[3,'BO3'],[5,'BO5'],[7,'BO7'],[9,'BO9']])}</div>`}
    <div><span class="lbl">Pierwszy serwis</span>${seg('first',[['rnd','Losowo'],['A',two?'Drużyna niebieska':s.a?esc(nm(s.a)):'Gracz 1'],['B',two?'Drużyna pomarańczowa':s.b?esc(nm(s.b)):'Gracz 2']])}</div></div>
   <div><button class="btn pri" data-act="start" ${ready&&enough?'':'disabled'}>Rozpocznij mecz</button></div></section>
   ${rec.length?`<section class="card"><h3 style="margin-bottom:10px">Ostatnie mecze</h3>${rec.map(matchRow).join('')}</section>`:''}</div>`}
@@ -994,13 +1053,13 @@ function viewLive(){
   const T=L.tid&&S.tournaments[L.tid];
   const panel=side=>{
     const ids=mem(L,side),won=side==='A'?d.wa:d.wb,pts=side==='A'?d.a:d.b,cls=side==='A'?'a':'b',wv=!d.done?worth(L,side):1;
-    return`<button class="pnl ${cls}" data-act="pt" data-s="${side}" ${d.done?'disabled':''} aria-label="Punkt dla ${esc(tnames(L,side))}">
+    return`<button class="pnl ${cls}" data-act="pt" data-s="${side}" ${d.done||L.pausedAt?'disabled':''} aria-label="Punkt dla ${esc(tnames(L,side))}">
      <span class="srv ${d.server===side&&!d.done?'':'off'}">${BALL}Serwuje</span>${wv>1?`<span class="wv">+${wv}</span>`:''}<span class="pav">${ids.map(i=>avb(av_(i),ids.length>1?74:100)).join('')}</span><span class="nm">${esc(tnames(L,side))}</span>
      <span class="sc">${pts}</span><span class="sets" aria-label="Wygrane sety: ${won}">${Array.from({length:d.need},(_,i)=>`<i class="${i<won?'f':''}"></i>`).join('')}</span></button>`};
   const sw5=d.decider&&Math.max(d.a,d.b)===5&&Math.min(d.a,d.b)<5;
   const justSet=!d.done&&d.a===0&&d.b===0&&L.sets.length>0;
   const lastSets=L.sets.map(s=>{const x=score(s);return`<span class="sc-chip ${x.a>x.b?'a':'b'} num">${x.a}:${x.b}</span>`}).join('');
-  const chips=`<span class="chip t">${T?esc(roundName(L.tr,T.rounds.length))+' · ':''}${L.bo===1?'1 set':'BO'+L.bo} do ${L.to}</span>${MODEN[L.mode]?`<span class="chip t">${MODEN[L.mode]}</span>`:''}${L.a2?'<span class="chip t">2 na 2</span>':''}`;
+  const chips=`<span class="chip t">${T?esc(roundName(L.tr,T.rounds.length))+' · ':''}${L.sprint?'Sprint '+L.dur/60+' min':(L.bo===1?'1 set':'BO'+L.bo)+' do '+L.to}</span>${L.sprint?`<span class="chip t num" id="sprint-t">${L.timeUp?(L.sudden?'złoty punkt':'koniec'):fmtClock(sprintRem(L))}</span>`:''}${MODEN[L.mode]?`<span class="chip t">${MODEN[L.mode]}</span>`:''}${L.a2?'<span class="chip t">2 na 2</span>':''}`;
   let res='';
   if(d.done){const wids=mem(L,d.winner);
     res=`<section class="card result">${wids.map(i=>avf(av_(i),wids.length>1?90:110)).join('')}<div><p class="muted">${wids.length>1?'Wygrywają':'Wygrywa'}</p><h2>${esc(tnames(L,d.winner))}</h2><p class="num" style="font-size:1.2rem;font-weight:800">${Math.max(d.wa,d.wb)}:${Math.min(d.wa,d.wb)} w setach</p></div>
@@ -1008,10 +1067,14 @@ function viewLive(){
   return`<div>
    <div class="stripe">${chips}<span class="chip">Set ${Math.min(d.idx+1,L.bo)}</span>${lastSets}</div>
    ${res}<div class="live" style="margin-top:12px">${panel(left)}${panel(right)}</div>
+   ${L.arm&&!d.done?`<div class="banner gold">✖️2 PODWÓJNA STAWKA (${esc(tnames(L,L.arm))})! Najbliższy punkt jest wart 2 dla zwycięzcy wymiany.</div>`:''}
+   ${L.sprint&&L.sudden&&!d.done?'<div class="banner gold">Remis! Następny punkt rozstrzyga mecz.</div>':''}
+   ${L.sprint&&L.pausedAt&&!d.done?'<div class="banner">Pauza. Wznów, żeby grać dalej.</div>':''}
    ${L.gold&&!d.done?'<div class="banner gold">🏆 ZŁOTA PIŁKA! Najbliższy punkt jest wart 3 punkty.</div>':''}
    ${sw5?'<div class="banner">Decydujący set i 5 punktów: zamieńcie strony stołu.</div>':''}
    ${justSet?'<div class="banner">Nowy set. Strony na ekranie zamienione, zamieńcie się też przy stole.</div>':''}
-   <div class="ctl"><button class="btn" data-act="undo" ${L.cur||L.sets.length?'':'disabled'}>Cofnij punkt</button>
+   ${L.mode==='x2'&&!d.done?`<div class="ctl">${['A','B'].map(sd=>`<button class="btn ${L.arm===sd?'pri':''}" data-act="x2" data-s="${sd}" ${L.tk&&L.tk[sd]?'':'disabled'}>✖️2 ${esc(tnames(L,sd))}${L.tk&&L.tk[sd]?'':' (użyte)'}</button>`).join('')}</div>`:''}
+   <div class="ctl">${L.sprint&&!d.done?`<button class="btn" data-act="spause">${L.pausedAt?'Wznów':'Pauza'}</button>`:''}<button class="btn" data-act="undo" ${L.cur||L.sets.length?'':'disabled'}>Cofnij punkt</button>
    <button class="btn" data-act="flip">Zamień strony</button>
    <button class="btn danger ${ui.confirm==='abort'?'ask':''}" data-act="abort">${ui.confirm==='abort'?'Na pewno przerwać?':'Przerwij mecz'}</button></div>
    <p class="muted" style="text-align:center;margin-top:10px;font-size:.85rem">Dotknij połowy ekranu, żeby dodać punkt. Na komputerze działają strzałki ← i →.${L.mode?' '+MODEHINT[L.mode]:''}</p>${voiceCard()}</div>`}
@@ -1021,7 +1084,7 @@ function matchRow(m){
   const side=(id,snap,win,id2,snap2)=>`<div class="mp ${win?'win':''}">${avb(av_(id),36)}${id2?avb(av_(id2),36):''}<span>${esc(nm(id,snap))}${id2?' i '+esc(nm(id2,snap2)):''}</span></div>`;
   return`<div class="mrow"><div style="min-width:0"><div style="display:flex;flex-direction:column;gap:6px">${side(m.a,m.an,aw,m.a2,m.an2)}${side(m.b,m.bn,!aw,m.b2,m.bn2)}</div>
    <div class="msc">${mSets(m).map(x=>`<span class="num">${x.a}:${x.b}</span>`).join('')}</div>
-   <div class="mmeta"><span>${fmtTime(m.t)}</span><span>${m.bo===1?'1 set':'BO'+m.bo} do ${m.to}</span>${T?`<span class="chip t">${esc(T.name)}</span>`:''}${MODEN[m.mode]?`<span class="chip t">${MODEN[m.mode]}</span>`:''}${m.team===2?'<span class="chip t">2 na 2</span>':''}</div></div>
+   <div class="mmeta"><span>${fmtTime(m.t)}</span><span>${m.sprint?'Sprint '+m.dur+' min':(m.bo===1?'1 set':'BO'+m.bo)+' do '+m.to}</span>${T?`<span class="chip t">${esc(T.name)}</span>`:''}${MODEN[m.mode]?`<span class="chip t">${MODEN[m.mode]}</span>`:''}${m.team===2?'<span class="chip t">2 na 2</span>':''}</div></div>
    <div style="text-align:right"><div class="mbig num">${sw.a}:${sw.b}</div>
    ${m.tid?'':`<button class="btn sm danger ${ui.confirm==='dm'+m.id?'ask':''}" data-act="dmatch" data-id="${m.id}">${ui.confirm==='dm'+m.id?'Na pewno?':'Usuń'}</button>`}</div></div>`}
 
@@ -1087,7 +1150,7 @@ function viewRank(){
       body=ms.length?`<div class="h2h"><div class="side">${avb(av_(a),64)}${esc(nm(a))}<span class="big num">${wa}</span></div><span class="muted" style="font-weight:800">wygrane</span><div class="side">${avb(av_(b),64)}${esc(nm(b))}<span class="big num">${wb}</span></div></div>
        <p class="muted" style="text-align:center;margin-top:10px">Punkty w sumie ${pa}:${pb} · ostatnie spotkanie ${fmtShort(ms[0].t)}</p>`:'<p class="muted" style="margin-top:12px">Ci dwaj gracze jeszcze ze sobą nie grali.</p>'}
     h2h=`<section class="card"><h3 style="margin-bottom:10px">Pojedynek</h3><div class="row"><select data-chg="h2ha" aria-label="Pierwszy gracz">${opts(a)}</select><span class="muted">kontra</span><select data-chg="h2hb" aria-label="Drugi gracz">${opts(b)}</select></div>${body}</section>`}
-  return`<div class="stack"><section class="card stack"><div class="row" style="justify-content:space-between"><div><h2>Ranking</h2><p class="muted">${list.length} meczów · ${totalPts} rozegranych punktów</p></div>${periodSel}</div>${table}</section>${recs}${h2h}</div>`}
+  return`<div class="stack"><section class="card stack"><div class="row" style="justify-content:space-between"><div><h2>Ranking</h2><p class="muted">${list.length} meczów · ${totalPts} rozegranych punktów</p></div>${periodSel}</div>${table}</section>${recs}${kingTable()}${h2h}</div>`}
 
 function viewHist(){
   const all=mlist();
@@ -1211,7 +1274,8 @@ function ask(key,fn){
 const H={
  tab:d=>{ui.tab=d.v;ui.confirm=null;ui.tview=null;ui.prof=null;if(d.v!=='pl')ui.edit=null;saveUi();render();window.scrollTo(0,0)},
  pick:d=>{ui.setup[d.s]=d.id;saveUi();render()},
- fmt:d=>{ui.setup[d.k]=(d.k==='first'||d.k==='mode')?d.v:+d.v;if(d.k==='mode'&&d.v==='std')delete ui.setup.mode;saveUi();render()},
+ fmt:d=>{ui.setup[d.k]=(d.k==='first'||d.k==='mode')?d.v:+d.v;if(d.k==='mode'&&d.v==='std')delete ui.setup.mode;
+   if(d.k==='mode'&&d.v==='king'){const kg=kingBoard().king;if(kg&&S.players[kg]){ui.setup.a=kg;if(ui.setup.b===kg)ui.setup.b=null}}saveUi();render()},
  start:startMatch,
  pt:d=>addPoint(d.s,ui.live&&ui.live.mode==='pig'&&ui.pigArm?2:0),
  pig:()=>{ui.pigArm=!ui.pigArm;render()},
@@ -1230,6 +1294,9 @@ const H={
  tabort:d=>ask('tabort',()=>del('tournaments',d.t)),
  topen:d=>{ui.tview=d.t;render();window.scrollTo(0,0)},
  tback:()=>{ui.tview=null;render()},
+ kingch:()=>{const kg=kingBoard().king;ui.setup.mode='king';ui.setup.team=1;if(kg){ui.setup.a=kg;if(ui.setup.b===kg)ui.setup.b=null}ui.tab='play';saveUi();render();window.scrollTo(0,0)},
+ x2:d=>armX2(d.s),
+ spause:()=>{const L=ui.live;if(!L||!L.sprint)return;if(L.pausedAt){L.end+=Date.now()-L.pausedAt;L.pausedAt=0}else L.pausedAt=Date.now();saveUi();render()},
  shoppick:d=>{ui.shop.pid=d.id;render()},
  buybox:d=>{
    const box=BOXES.find(b=>b.id===d.id),p=S.players[ui.shop.pid];if(!box||!p)return;
