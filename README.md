@@ -30,3 +30,8 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 - Co 1000 zdobytych punktów (suma punktów gracza) = nowy poziom i nowe elementy: postacie (Kot, Lis, Sowa, Robot, Dino, Kosmita, Panda, Duszek, Jednorożec), czapki, okulary, fryzury, oczy, buzie i efekty.
 - Medale liczone z historii meczów (synchronizują się między telefonami).
 - Kosz na karcie gracza usuwa gracza (mecze zostają w historii).
+
+## Monety i sklep
+- Monety: 10 za wygrany set, 50 za mecz, 200 za puchar turnieju (liczone z historii meczów, więc wspólne na wszystkich urządzeniach).
+- Zakładka Sklep: 4 skrzynki (zwykła 100, rzadka 250, epicka 600, legendarna 1500) z losowymi gadżetami, efektami i kolorami; powtórka zwraca część monet.
+- Posiadane przedmioty są w kolekcji gracza i w edytorze awatara.
