@@ -124,7 +124,7 @@ p{margin:0}
 
 /* tabele */
 .tw{overflow-x:auto;border-radius:14px}
-table{border-collapse:collapse;width:100%;min-width:620px}
+table{border-collapse:collapse;width:100%;min-width:700px}
 th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:center;padding:8px 6px;font-weight:800;white-space:nowrap}
 td{padding:9px 6px;text-align:center;border-top:1.5px solid var(--line);font-variant-numeric:tabular-nums}
 th:nth-child(2),td:nth-child(2){text-align:left}
@@ -184,6 +184,27 @@ select{background:var(--surface2);border:1.5px solid var(--line);border-radius:1
 .pcard:hover{border-color:var(--ball)}
 .pcard .avf{--w:110px}
 .pcard small{color:var(--muted);font-weight:700}
+.pcard{position:relative;cursor:default}
+.pmain{background:none;border:0;padding:0;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font-weight:800;width:100%;text-align:center}
+.trash{position:absolute;top:8px;right:8px;min-width:34px;height:34px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 8px;color:var(--muted)}
+.trash svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.trash:hover{color:var(--bad);border-color:var(--bad)}
+.trash.ask{background:var(--bad);border-color:var(--bad);color:#fff;font-weight:800;font-size:.8rem}
+.lvl{display:flex;flex-direction:column;gap:8px}
+.pbar{height:12px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--ball),#ffc247)}
+.medals{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.medal{background:var(--surface2);border:1.5px solid var(--line);border-radius:14px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.medal b{font-size:.88rem;line-height:1.15}
+.medal span{font-size:.75rem;color:var(--muted);line-height:1.2}
+.medal.off b{color:var(--muted)}
+.tile{position:relative}
+.tile.lock{cursor:not-allowed}
+.tile:disabled{color:inherit}
+.tile.lock .avb{filter:grayscale(1) brightness(.85);opacity:.55}
+.tile .lk{position:absolute;left:2px;right:2px;bottom:2px;border-radius:8px;background:rgba(16,36,58,.82);color:#fff;font-size:.68rem;font-weight:800;text-align:center;padding:1px 0}
+.sw button.lock{position:relative;opacity:.5;cursor:not-allowed}
+.sw button.lock::after{content:'\1F512';font-size:0}
 .pcard.add{justify-content:center;border-style:dashed;min-height:180px;color:var(--muted)}
 .pcard.add b{font-family:var(--font-d);font-size:2.6rem;line-height:1;color:var(--ball)}
 .editor{display:grid;grid-template-columns:1fr;gap:16px}
@@ -239,39 +260,70 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 const rint=n=>Math.floor(Math.random()*n);
 const pick=a=>a[rint(a.length)];
 let toastT;
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3400)}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),Math.min(9000,2800+m.length*45))}
 
 /* ---------- awatary ---------- */
-const SKIN=['#ffd23f','#ff9f6e','#ff8fab','#8bd3ff','#9be564','#c3a6ff','#f2c9a0','#b5774a','#6b4a35','#ef476f','#2ec4b6','#e9ecef'];
+const SKIN=['#ffd23f','#ff9f6e','#ff8fab','#8bd3ff','#9be564','#c3a6ff','#f2c9a0','#b5774a','#6b4a35','#ef476f','#2ec4b6','#e9ecef','#d4af37','#c0c7d1'];
 const SHIRT=['#ef476f','#ff9f1c','#ffd23f','#2ec4b6','#118ab2','#7b2cbf','#06d6a0','#f8f9fa','#343a40','#ff6b35'];
 const HAIRC=['#2b1b12','#6b3f1d','#c98a3b','#f2d16b','#d1495b','#3a86ff','#8338ec','#f1f1f1','#2ec4b6'];
 const GADC=['#e63946','#1d3557','#ffd23f','#2a9d8f','#f77f00','#7b2cbf','#222222','#f8f9fa','#ff5d8f'];
 const PADC=['#d62828','#111111','#2a9d8f','#3a86ff','#ff9f1c','#7b2cbf'];
-const HAIRS=['Łysy','Kitka','Kolce','Grzywka','Loki','Irokez'];
-const EYES=['Kropki','Duże oczy','Wesołe','Mrugnięcie'];
-const MOUTHS=['Uśmiech','Szeroki uśmiech','Chytry','Zdziwiony'];
-const HATS=['Bez czapki','Czapka z daszkiem','Czapka zimowa','Opaska','Korona','Cylinder','Słuchawki','Czapka imprezowa'];
-const FACES=['Bez gadżetu','Okulary okrągłe','Okulary przeciwsłoneczne','Monokl','Wąsy','Opaska na oko','Czerwony nos'];
-const DEF={skin:'#ced4da',shirt:'#868e96',hair:0,hairC:'#555555',eyes:0,mouth:0,hat:0,hatC:'#888888',face:0,faceC:'#222222',paddle:'#999999'};
+const HAIRS=['Łysy','Kitka','Kolce','Grzywka','Loki','Irokez','Kok','Afro','Długie włosy'];
+const EYES=['Kropki','Duże oczy','Wesołe','Mrugnięcie','Gwiazdki','Serduszka','Zmrużone'];
+const MOUTHS=['Uśmiech','Szeroki uśmiech','Chytry','Zdziwiony','Język','Zęby','Kropka'];
+const HATS=['Bez czapki','Czapka z daszkiem','Czapka zimowa','Opaska','Korona','Cylinder','Słuchawki','Czapka imprezowa','Kapelusz czarodzieja','Opaska ninja','Kowbojski kapelusz','Czapka kucharza','Aureola','Hełm wikinga','Beret'];
+const FACES=['Bez gadżetu','Okulary okrągłe','Okulary przeciwsłoneczne','Monokl','Wąsy','Opaska na oko','Czerwony nos','Gogle','Okulary serca','Maska','Broda','Plaster','Okulary gwiazdki'];
+const KINDS=['Klasyk','Kot','Lis','Sowa','Robot','Dino','Kosmita','Panda','Duszek','Jednorożec'];
+const FX=['Bez efektu','Iskry','Blask','Konfetti','Serduszka'];
+const DEF={skin:'#ced4da',shirt:'#868e96',hair:0,hairC:'#555555',eyes:0,mouth:0,hat:0,hatC:'#888888',face:0,faceC:'#222222',paddle:'#999999',kind:0,fx:0};
 const INK='#1b1b2f',EDGE='rgba(0,0,0,.28)';
-function randomAv(){return{skin:pick(SKIN),shirt:pick(SHIRT),hair:rint(HAIRS.length),hairC:pick(HAIRC),eyes:rint(EYES.length),mouth:rint(MOUTHS.length),
-  hat:Math.random()<.4?0:1+rint(HATS.length-1),hatC:pick(GADC),face:Math.random()<.4?0:1+rint(FACES.length-1),faceC:pick(GADC),paddle:pick(PADC)}}
+/* odblokowania: [kategoria, wartość, wymagane punkty]; co 1000 zdobytych punktów otwiera się kolejna paczka */
+const UNLOCKS=[['kind',1,1000],['hat',8,1000],['eyes',4,1000],['fx',1,1000],
+ ['kind',2,2000],['hat',9,2000],['face',7,2000],['mouth',4,2000],['hair',6,2000],
+ ['kind',3,3000],['hat',10,3000],['face',8,3000],['eyes',5,3000],
+ ['kind',4,4000],['hat',11,4000],['face',9,4000],['hair',7,4000],['skin','#d4af37',4000],
+ ['kind',5,5000],['hat',12,5000],['face',10,5000],['mouth',5,5000],['fx',2,5000],
+ ['kind',6,6000],['hat',13,6000],['face',11,6000],['eyes',6,6000],['hair',8,6000],['skin','#c0c7d1',6000],
+ ['kind',7,7000],['hat',14,7000],['face',12,7000],['mouth',6,7000],['fx',3,7000],
+ ['kind',8,8000],['kind',9,8000],['fx',4,8000]];
+const need=(k,v)=>{const u=UNLOCKS.find(x=>x[0]===k&&x[1]===v);return u?u[2]:0};
+const LISTS={kind:KINDS,hat:HATS,face:FACES,hair:HAIRS,eyes:EYES,mouth:MOUTHS,fx:FX};
+const KLAB={kind:'Postać',hat:'Gadżet',face:'Dodatek',hair:'Fryzura',eyes:'Oczy',mouth:'Buzia',fx:'Efekt',skin:'Kolor'};
+const unlockLabel=u=>KLAB[u[0]]+': '+(u[0]==='skin'?(u[1]==='#d4af37'?'złoty':'srebrny'):LISTS[u[0]][u[1]]);
+const isOpen=(k,v,pts,cur)=>need(k,v)<=pts||cur===v;
+function randomAv(pts){
+  pts=pts||0;const o=(k,n)=>{const a=[];for(let i=0;i<n;i++)if(need(k,i)<=pts)a.push(i);return pick(a)};
+  return{skin:pick(SKIN.filter(c=>need('skin',c)<=pts)),shirt:pick(SHIRT),hair:o('hair',HAIRS.length),hairC:pick(HAIRC),eyes:o('eyes',EYES.length),mouth:o('mouth',MOUTHS.length),
+  hat:Math.random()<.4?0:o('hat',HATS.length),hatC:pick(GADC),face:Math.random()<.4?0:o('face',FACES.length),faceC:pick(GADC),paddle:pick(PADC),
+  kind:o('kind',KINDS.length),fx:Math.random()<.75?0:o('fx',FX.length)}}
 function hairSvg(i,c){const st=`fill="${c}" stroke="${EDGE}" stroke-width="1.5"`;switch(i){
  case 1:return`<path d="M50 21Q42 6 47 0M50 21Q52 6 60 4M50 21Q62 12 68 16" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round"/>`;
  case 2:return`<path d="M19 44L22 17L35 29L41 8L51 27L62 6L67 29L79 16L81 44Q50 24 19 44Z" ${st}/>`;
  case 3:return`<path d="M15 58C10 8 90 8 85 58L78 58C78 40 70 34 50 34C30 34 22 40 22 58Z" ${st}/>`;
  case 4:return[[24,38,10],[33,26,11],[50,20,12],[67,26,11],[76,38,10]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="${p[2]}" ${st}/>`).join('');
  case 5:return`<path d="M41 28L38 4L50 -8L62 4L59 28Q50 21 41 28Z" ${st}/>`;
+ case 6:return`<circle cx="50" cy="12" r="11" ${st}/><path d="M18 50C16 18 84 18 82 50Q50 30 18 50Z" ${st}/>`;
+ case 8:return`<path d="M20 46C30 28 70 28 80 46Q50 34 20 46Z" ${st}/>`;
  default:return''}}
+function hairBack(i,c){const st=`fill="${c}" stroke="${EDGE}" stroke-width="1.5"`;
+ if(i===7)return`<circle cx="50" cy="44" r="42" ${st}/>`;
+ if(i===8)return`<path d="M12 56C4 104 96 104 88 56C88 12 12 12 12 56Z" ${st}/>`;
+ return''}
 function eyesSvg(i){switch(i){
  case 1:return`<circle cx="38" cy="58" r="7.5" fill="#fff" stroke="${INK}" stroke-width="1.6"/><circle cx="62" cy="58" r="7.5" fill="#fff" stroke="${INK}" stroke-width="1.6"/><circle cx="39.5" cy="59" r="3.7" fill="${INK}"/><circle cx="60.5" cy="59" r="3.7" fill="${INK}"/>`;
  case 2:return`<path d="M31 61Q38 50 45 61M55 61Q62 50 69 61" fill="none" stroke="${INK}" stroke-width="3.2" stroke-linecap="round"/>`;
  case 3:return`<circle cx="38" cy="58" r="3.7" fill="${INK}"/><path d="M55 60Q62 52 69 60" fill="none" stroke="${INK}" stroke-width="3.2" stroke-linecap="round"/>`;
+ case 4:{const t='<path d="M0 -8L2.6 -2.6 8.4 -1.8 4.2 2.2 5.2 8 0 5.2 -5.2 8 -4.2 2.2 -8.4 -1.8 -2.6 -2.6Z" fill="#ffd23f" stroke="'+INK+'" stroke-width="1.3" stroke-linejoin="round"/>';return`<g transform="translate(38 58)">${t}</g><g transform="translate(62 58)">${t}</g>`}
+ case 5:{const t='<path d="M0 8C-11 0 -8 -8 -4 -8 -1.5 -8 0 -6.5 0 -5 0 -6.5 1.5 -8 4 -8 8 -8 11 0 0 8Z" fill="#ef476f" stroke="'+INK+'" stroke-width="1.2"/>';return`<g transform="translate(38 58)">${t}</g><g transform="translate(62 58)">${t}</g>`}
+ case 6:return`<path d="M31 57h14M55 57h14" stroke="${INK}" stroke-width="3.6" stroke-linecap="round"/><circle cx="38" cy="60.5" r="2.4" fill="${INK}"/><circle cx="62" cy="60.5" r="2.4" fill="${INK}"/>`;
  default:return`<circle cx="38" cy="58" r="3.7" fill="${INK}"/><circle cx="62" cy="58" r="3.7" fill="${INK}"/>`}}
 function mouthSvg(i){switch(i){
  case 1:return`<path d="M38 71Q50 89 62 71Z" fill="#5a1020" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><ellipse cx="50" cy="77" rx="5" ry="2.6" fill="#ff6b81"/>`;
  case 2:return`<path d="M42 75Q52 81 62 71" fill="none" stroke="${INK}" stroke-width="3.2" stroke-linecap="round"/>`;
  case 3:return`<ellipse cx="50" cy="77" rx="4.6" ry="5.6" fill="#5a1020" stroke="${INK}" stroke-width="2"/>`;
+ case 4:return`<path d="M45 78v6a5 5 0 0 0 10 0v-6z" fill="#ff6b81" stroke="${INK}" stroke-width="1.6"/><path d="M40 74Q50 84 60 74" fill="none" stroke="${INK}" stroke-width="3.2" stroke-linecap="round"/>`;
+ case 5:return`<path d="M40 73Q50 83 60 73" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/><rect x="46.5" y="76" width="7" height="7" rx="1.5" fill="#fff" stroke="${INK}" stroke-width="1.5"/>`;
+ case 6:return`<circle cx="50" cy="77" r="2.8" fill="${INK}"/>`;
  default:return`<path d="M40 74Q50 84 60 74" fill="none" stroke="${INK}" stroke-width="3.2" stroke-linecap="round"/>`}}
 function faceSvg(i,c){switch(i){
  case 1:return`<g fill="rgba(255,255,255,.35)" stroke="${c}" stroke-width="3"><circle cx="38" cy="58" r="10"/><circle cx="62" cy="58" r="10"/></g><path d="M48 58h4M28 56L18 52M72 56L82 52" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
@@ -280,7 +332,15 @@ function faceSvg(i,c){switch(i){
  case 4:return`<path d="M50 66C44 61 34 63 31 71C38 70 44 73 50 69C56 73 62 70 69 71C66 63 56 61 50 66Z" fill="${c}" stroke="${EDGE}" stroke-width="1.4"/>`;
  case 5:return`<path d="M18 47Q50 35 82 47" fill="none" stroke="#15151f" stroke-width="2.6"/><path d="M38 49V45" stroke="#15151f" stroke-width="2.4"/><ellipse cx="38" cy="58" rx="10.5" ry="9" fill="#15151f"/>`;
  case 6:return`<circle cx="50" cy="66" r="6.8" fill="${c}" stroke="${EDGE}" stroke-width="1.5"/><circle cx="48" cy="63.8" r="2" fill="#fff" opacity=".55"/>`;
+ case 7:return`<rect x="23" y="48" width="54" height="22" rx="11" fill="rgba(120,200,255,.5)" stroke="${c}" stroke-width="4"/><path d="M23 59H13M77 59H87" stroke="${c}" stroke-width="4.5" stroke-linecap="round"/>`;
+ case 8:{const h='<path d="M0 9C-13 0 -9 -10 -4 -10 -1 -10 0 -8 0 -6 0 -8 1 -10 4 -10 9 -10 13 0 0 9Z" fill="rgba(255,255,255,.3)" stroke="'+c+'" stroke-width="2.6" stroke-linejoin="round"/>';return`<g transform="translate(37 58)">${h}</g><g transform="translate(63 58)">${h}</g><path d="M47 54h6" stroke="${c}" stroke-width="2.6"/>`}
+ case 9:return`<path fill-rule="evenodd" d="M16 52Q50 40 84 52Q84 68 68 68Q57 68 50 62Q43 68 32 68Q16 68 16 52ZM31 58a7 5 0 1 0 14 0a7 5 0 1 0-14 0ZM55 58a7 5 0 1 0 14 0a7 5 0 1 0-14 0Z" fill="${c}" stroke="${EDGE}" stroke-width="1.5"/>`;
+ case 11:return`<g transform="rotate(-18 60 66)"><rect x="49" y="62" width="22" height="9" rx="3.5" fill="#f6d2b0" stroke="${EDGE}" stroke-width="1.4"/><path d="M57 62v9M63 62v9" stroke="rgba(0,0,0,.18)"/></g>`;
+ case 12:{const st='<path d="M0 -10L3 -3.4 10 -3 5 2.4 6.6 9.6 0 6 -6.6 9.6 -5 2.4 -10 -3 -3 -3.4Z" fill="'+c+'" stroke="'+EDGE+'" stroke-width="1.4" stroke-linejoin="round"/>';return`<g transform="translate(37 58) scale(1.35)">${st}</g><g transform="translate(63 58) scale(1.35)">${st}</g><path d="M47 56h6" stroke="${c}" stroke-width="2.6"/>`}
  default:return''}}
+function faceBack(i,c){
+ if(i===10)return`<path d="M18 62C14 100 86 100 82 62C76 72 66 69 50 69C34 69 24 72 18 62Z" fill="${c}" stroke="${EDGE}" stroke-width="1.6"/>`;
+ return''}
 function hatSvg(i,c){const st=`fill="${c}" stroke="${EDGE}" stroke-width="1.6"`,sh='fill="rgba(0,0,0,.2)"';switch(i){
  case 1:return`<path d="M17 45C17 10 83 10 83 45Z" ${st}/><circle cx="50" cy="17" r="3" ${sh}/><path d="M12 45Q50 57 88 45Q50 50 12 45Z" ${st}/>`;
  case 2:return`<path d="M16 48C16 4 84 4 84 48Z" ${st}/><rect x="13" y="39" width="74" height="13" rx="6.5" ${st}/><rect x="13" y="39" width="74" height="13" rx="6.5" ${sh}/><path d="M28 41v9M39 41v9M50 41v9M61 41v9M72 41v9" stroke="rgba(0,0,0,.25)" stroke-width="2"/><circle cx="50" cy="12" r="8" fill="#fff" stroke="${EDGE}" stroke-width="1.6"/>`;
@@ -289,15 +349,58 @@ function hatSvg(i,c){const st=`fill="${c}" stroke="${EDGE}" stroke-width="1.6"`,
  case 5:return`<rect x="33" y="-8" width="34" height="40" rx="3" ${st}/><rect x="33" y="19" width="34" height="8" ${sh}/><ellipse cx="50" cy="32" rx="33" ry="6" ${st}/>`;
  case 6:return`<path d="M17 58C13 4 87 4 83 58" fill="none" stroke="${c}" stroke-width="5.5" stroke-linecap="round"/><rect x="8" y="48" width="13" height="26" rx="6.5" ${st}/><rect x="79" y="48" width="13" height="26" rx="6.5" ${st}/>`;
  case 7:return`<path d="M50 -4L69 33L31 33Z" ${st}/><path d="M44 8L56 8M39.5 17L60.5 17M35 26L65 26" stroke="rgba(255,255,255,.75)" stroke-width="3.2"/><circle cx="50" cy="-5" r="4.6" fill="#ffd23f" stroke="${EDGE}" stroke-width="1.2"/>`;
+ case 8:return`<path d="M52 -12L72 36L28 36Z" ${st}/><ellipse cx="50" cy="36" rx="37" ry="7" ${st}/><path d="M50 10l2 4.2 4.6.6-3.3 3.2.8 4.6L50 20.2l-4.1 2.2.8-4.6-3.3-3.2 4.6-.6z" fill="#ffd23f"/>`;
+ case 9:return`<path d="M16 42Q50 29 84 42L84 52Q50 39 16 52Z" ${st}/><path d="M84 44l13-5-3 10 9 4-15 1z" ${st}/><rect x="40" y="37" width="20" height="9" rx="2" fill="#cfd8dc" stroke="${EDGE}" stroke-width="1.4"/>`;
+ case 10:return`<path d="M30 37C27 12 73 12 70 37Z" ${st}/><path d="M5 40Q18 52 50 42Q82 52 95 40Q82 31 50 35Q18 31 5 40Z" ${st}/><path d="M30 33Q50 39 70 33" fill="none" stroke="rgba(0,0,0,.3)" stroke-width="2.5"/>`;
+ case 11:return`<circle cx="35" cy="20" r="13" ${st}/><circle cx="50" cy="12" r="14" ${st}/><circle cx="65" cy="20" r="13" ${st}/><rect x="30" y="26" width="40" height="15" rx="3" ${st}/><path d="M40 28v11M50 28v11M60 28v11" stroke="rgba(0,0,0,.15)" stroke-width="2"/>`;
+ case 12:return`<ellipse cx="50" cy="8" rx="23" ry="6.5" fill="none" stroke="${c}" stroke-width="5.5"/><ellipse cx="50" cy="8" rx="23" ry="6.5" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.6"/>`;
+ case 13:return`<path d="M18 46C18 12 82 12 82 46Z" fill="#b0bec5" stroke="${EDGE}" stroke-width="1.6"/><rect x="16" y="38" width="68" height="9" rx="2" ${st}/><path d="M18 42C3 42 0 22 7 8C9 22 17 29 22 33Z" fill="#f5f1e6" stroke="${EDGE}" stroke-width="1.6"/><path d="M82 42C97 42 100 22 93 8C91 22 83 29 78 33Z" fill="#f5f1e6" stroke="${EDGE}" stroke-width="1.6"/>`;
+ case 14:return`<path d="M15 42C8 16 72 4 88 28C95 38 80 46 15 42Z" ${st}/><rect x="52" y="5" width="6" height="9" rx="2.5" ${st}/>`;
  default:return''}}
+function fxSvg(i){
+ const spark=(x,y,sc)=>`<path transform="translate(${x} ${y}) scale(${sc})" d="M0-7Q0 0 7 0Q0 0 0 7Q0 0-7 0Q0 0 0-7Z" fill="#ffd23f" stroke="${EDGE}" stroke-width=".8"/>`;
+ const heart=(x,y,sc,col)=>`<path transform="translate(${x} ${y}) scale(${sc})" d="M0 4C-6 0 -5-4 -2.5-4 -1-4 0-3 0-2 0-3 1-4 2.5-4 5-4 6 0 0 4Z" fill="${col}"/>`;
+ if(i===1)return[[8,16,1.2],[93,24,1],[6,72,.9],[95,62,1.3],[16,-4,.8],[84,86,.9]].map(a=>spark(a[0],a[1],a[2])).join('');
+ if(i===2)return`<circle cx="50" cy="52" r="52" fill="#ffd23f" opacity=".28"/><circle cx="50" cy="52" r="44" fill="#fff" opacity=".28"/>`;
+ if(i===3)return[[8,10,'#ef476f',20],[92,16,'#06d6a0',-30],[4,60,'#118ab2',50],[96,54,'#ffd23f',15],[14,88,'#ff9f1c',-10],[88,86,'#7b2cbf',35],[50,-8,'#ef476f',60],[30,-2,'#06d6a0',-20]].map(a=>`<rect x="${a[0]-3}" y="${a[1]-5}" width="6" height="10" rx="1" fill="${a[2]}" transform="rotate(${a[3]} ${a[0]} ${a[1]})"/>`).join('');
+ if(i===4)return[[10,18,1.4,'#ff5d8f'],[92,26,1.1,'#ff8fab'],[6,70,1,'#ef476f'],[94,64,1.5,'#ff5d8f'],[18,-4,.9,'#ff8fab'],[86,88,1,'#ef476f']].map(a=>heart(a[0],a[1],a[2],a[3])).join('');
+ return''}
+function kindSvg(c){
+  const sk=c.skin,st=`stroke="${EDGE}" stroke-width="1.8"`,dk='fill="rgba(0,0,0,.2)"';
+  const r={back:'',mid:'',front:'',head:`<circle cx="50" cy="54" r="34" fill="${sk}" ${st}/>`,noMouth:false,ghost:false};
+  switch(c.kind){
+   case 1:r.back=`<path d="M21 42L23 6L48 27Z" fill="${sk}" ${st}/><path d="M79 42L77 6L52 27Z" fill="${sk}" ${st}/><path d="M27 33L28 15L40 27Z" fill="#ff9aa8"/><path d="M73 33L72 15L60 27Z" fill="#ff9aa8"/>`;
+     r.front=`<path d="M46 64h8l-4 5z" fill="#ff7b94"/><path d="M14 68L32 70M14 77L32 74M86 68L68 70M86 77L68 74" stroke="${INK}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;break;
+   case 2:r.back=`<path d="M19 46L14 -4L50 26Z" fill="${sk}" ${st}/><path d="M81 46L86 -4L50 26Z" fill="${sk}" ${st}/><path d="M24 34L21 8L40 26Z" fill="#7a3b1e"/><path d="M76 34L79 8L60 26Z" fill="#7a3b1e"/>`;
+     r.mid=`<path d="M15 66Q31 60 41 72Q29 82 17 76Z" fill="#fff" ${st}/><path d="M85 66Q69 60 59 72Q71 82 83 76Z" fill="#fff" ${st}/>`;
+     r.front=`<ellipse cx="50" cy="65" rx="4.4" ry="3.2" fill="${INK}"/>`;break;
+   case 3:r.back=`<path d="M25 38L15 6L43 26Z" fill="${sk}" ${st}/><path d="M75 38L85 6L57 26Z" fill="${sk}" ${st}/>`;
+     r.mid=`<circle cx="38" cy="58" r="14.5" fill="#fff" opacity=".92" ${st}/><circle cx="62" cy="58" r="14.5" fill="#fff" opacity=".92" ${st}/>`;
+     r.front=`<path d="M43 66L57 66L50 81Z" fill="#ff9f1c" ${st} stroke-linejoin="round"/>`;r.noMouth=true;break;
+   case 4:r.back=`<path d="M50 24V7" stroke="#868e96" stroke-width="3.2"/><circle cx="50" cy="5" r="4.6" fill="#ef476f" stroke="${EDGE}" stroke-width="1.4"/><rect x="8" y="46" width="11" height="22" rx="4" fill="#868e96" ${st}/><rect x="81" y="46" width="11" height="22" rx="4" fill="#868e96" ${st}/>`;
+     r.head=`<rect x="16" y="22" width="68" height="66" rx="20" fill="${sk}" ${st}/>`;
+     r.mid=`<rect x="23" y="41" width="54" height="36" rx="12" ${dk}/><circle cx="24" cy="30" r="2.4" fill="rgba(0,0,0,.35)"/><circle cx="76" cy="30" r="2.4" fill="rgba(0,0,0,.35)"/>`;break;
+   case 5:r.back=`<path d="M32 28L36 8L46 22Z" fill="${c.shirt}" ${st}/><path d="M44 22L50 0L58 22Z" fill="${c.shirt}" ${st}/><path d="M54 22L64 8L68 28Z" fill="${c.shirt}" ${st}/>`;
+     r.front=`<circle cx="44" cy="66" r="1.8" fill="${INK}"/><circle cx="56" cy="66" r="1.8" fill="${INK}"/>`;break;
+   case 6:r.back=`<path d="M38 18Q30 6 22 3M62 18Q70 6 78 3" stroke="${sk}" stroke-width="3.4" fill="none" stroke-linecap="round"/><circle cx="22" cy="3" r="5" fill="${c.shirt}" ${st}/><circle cx="78" cy="3" r="5" fill="${c.shirt}" ${st}/>`;
+     r.head=`<ellipse cx="50" cy="52" rx="33" ry="38" fill="${sk}" ${st}/>`;break;
+   case 7:r.back=`<circle cx="25" cy="27" r="12.5" fill="#2b2b35" ${st}/><circle cx="75" cy="27" r="12.5" fill="#2b2b35" ${st}/>`;
+     r.mid=`<ellipse cx="37" cy="58" rx="10" ry="12.5" transform="rotate(22 37 58)" fill="#2b2b35"/><ellipse cx="63" cy="58" rx="10" ry="12.5" transform="rotate(-22 63 58)" fill="#2b2b35"/>`;
+     r.front=`<ellipse cx="50" cy="66" rx="4.4" ry="3.2" fill="${INK}"/>`;break;
+   case 8:r.ghost=true;break;
+   case 9:r.back=`<path d="M17 38C0 46 0 74 16 82C13 66 18 52 27 44Z" fill="#ff8fab" ${st}/><path d="M22 34C8 30 2 50 10 62C10 52 16 44 26 40Z" fill="#b388ff" ${st}/><path d="M26 36L30 12L45 28Z" fill="${sk}" ${st}/><path d="M50 -10L43 30L57 30Z" fill="#ffd23f" ${st} stroke-linejoin="round"/><path d="M46 20L54 16M45 26L55 22M47 13L53 10" stroke="rgba(0,0,0,.25)" stroke-width="1.6"/>`;break;
+  }
+  return r}
 function avatarSvg(c,mode){
-  c=Object.assign({},DEF,c||{});const full=mode==='full';
+  c=Object.assign({},DEF,c||{});const full=mode==='full',k=kindSvg(c);
   let s=`<svg class="av" viewBox="${full?'-6 -14 112 139':'-4 -14 108 108'}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">`;
-  s+=`<path d="M16 132C16 72 84 72 84 132Z" fill="${c.shirt}" stroke="${EDGE}" stroke-width="2"/>`;
+  s+=fxSvg(c.fx)+k.back+hairBack(c.hair,c.hairC);
+  s+=k.ghost?`<path d="M16 132V82C16 62 84 62 84 82V132L72 123L61 132L50 123L39 132L28 123Z" fill="${c.skin}" stroke="${EDGE}" stroke-width="2"/>`
+    :`<path d="M16 132C16 72 84 72 84 132Z" fill="${c.shirt}" stroke="${EDGE}" stroke-width="2"/>`;
   if(full)s+=`<g transform="rotate(20 86 104)"><rect x="83" y="100" width="6" height="17" rx="3" fill="#b9854f" stroke="${EDGE}" stroke-width="1.2"/><circle cx="86" cy="92" r="12.5" fill="${c.paddle}" stroke="${EDGE}" stroke-width="1.8"/><circle cx="86" cy="92" r="8" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/></g><circle cx="84" cy="107" r="5.2" fill="${c.skin}" stroke="${EDGE}" stroke-width="1.5"/>`;
-  s+=`<circle cx="50" cy="54" r="34" fill="${c.skin}" stroke="${EDGE}" stroke-width="2"/><ellipse cx="36" cy="36" rx="9" ry="5.5" fill="#fff" opacity=".22" transform="rotate(-30 36 36)"/>`;
+  s+=k.head+`<ellipse cx="36" cy="36" rx="9" ry="5.5" fill="#fff" opacity=".22" transform="rotate(-30 36 36)"/>`+k.mid;
   s+=hairSvg(c.hair,c.hairC)+`<ellipse cx="29" cy="68" rx="5.5" ry="4" fill="#ff4d6d" opacity=".25"/><ellipse cx="71" cy="68" rx="5.5" ry="4" fill="#ff4d6d" opacity=".25"/>`;
-  s+=eyesSvg(c.eyes)+mouthSvg(c.mouth)+faceSvg(c.face,c.faceC)+hatSvg(c.hat,c.hatC);
+  s+=faceBack(c.face,c.faceC)+eyesSvg(c.eyes)+(k.noMouth?'':mouthSvg(c.mouth))+faceSvg(c.face,c.faceC)+k.front+hatSvg(c.hat,c.hatC);
   return s+'</svg>'}
 const avb=(cfg,size)=>`<span class="avb" style="--s:${size||48}px">${avatarSvg(cfg,'head')}</span>`;
 const avf=(cfg,w)=>`<span class="avf" style="--w:${w||160}px">${avatarSvg(cfg,'full')}</span>`;
@@ -446,12 +549,13 @@ async function saveMatch(){
   const id=uid(),w=d.winner==='A'?L.a:L.b;
   const m={id,t:new Date().toISOString(),st:L.st||null,a:L.a,b:L.b,an:nm(L.a),bn:nm(L.b),to:L.to,bo:L.bo,first:L.first,sets:L.sets.slice(),w};
   if(L.tid){m.tid=L.tid;m.tr=L.tr;m.ti=L.ti}
-  const wasT=L.tid;
+  const wasT=L.tid,before=computeProgress();
   stopListen();ui.live=null;saveUi();
   await put('matches',id,m);
   if(wasT)advance(m);
   if(wasT)ui.tab='tour';
-  toast('Mecz zapisany: '+nm(w)+' wygrywa.');render();window.scrollTo(0,0)}
+  const note=progressNote(before,computeProgress(),[L.a,L.b]);
+  toast('Mecz zapisany: '+nm(w)+' wygrywa.'+(note.length?' '+note.join('. ')+'.':''));render();window.scrollTo(0,0)}
 
 /* ---------- głos: czytanie wyniku i sterowanie imieniem ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=window.speechSynthesis;
@@ -549,6 +653,65 @@ function inPeriod(m){
   if(ui.period==='all')return true;const d=new Date(m.t),now=new Date();
   if(ui.period==='30')return now-d<=30*864e5;
   if(ui.period==='year')return d.getFullYear()===now.getFullYear();return true}
+/* ---------- poziomy i medale ---------- */
+const MEDALS=[
+ {id:'g1',n:'Debiutant',d:'Rozegraj pierwszy mecz',c:'#cd7f32',g:'1',t:x=>x.g>=1},
+ {id:'w1',n:'Pierwsza wygrana',d:'Wygraj pierwszy mecz',c:'#cd7f32',g:'star',t:x=>x.w>=1},
+ {id:'g10',n:'Stały bywalec',d:'Rozegraj 10 meczów',c:'#c0c7d1',g:'10',t:x=>x.g>=10},
+ {id:'w10',n:'Dziesięć zwycięstw',d:'Wygraj 10 meczów',c:'#c0c7d1',g:'star',t:x=>x.w>=10},
+ {id:'g50',n:'Weteran stołu',d:'Rozegraj 50 meczów',c:'#e0b21e',g:'50',t:x=>x.g>=50},
+ {id:'w25',n:'Ćwierć setki wygranych',d:'Wygraj 25 meczów',c:'#e0b21e',g:'25',t:x=>x.w>=25},
+ {id:'s3',n:'Seria 3',d:'Wygraj 3 mecze z rzędu',c:'#ff7a1a',g:'flame',t:x=>x.best>=3},
+ {id:'s5',n:'Seria 5',d:'Wygraj 5 meczów z rzędu',c:'#e5532d',g:'flame',t:x=>x.best>=5},
+ {id:'s10',n:'Seria 10',d:'Wygraj 10 meczów z rzędu',c:'#c2185b',g:'flame',t:x=>x.best>=10},
+ {id:'bagel',n:'Do zera',d:'Wygraj set, w którym rywal nie zdobył punktu',c:'#2a9d8f',g:'0',t:x=>x.bagel>=1},
+ {id:'run8',n:'Zryw',d:'Zdobądź 8 punktów z rzędu',c:'#3a86ff',g:'bolt',t:x=>x.run>=8},
+ {id:'run12',n:'Burza punktów',d:'Zdobądź 12 punktów z rzędu',c:'#7b2cbf',g:'bolt',t:x=>x.run>=12},
+ {id:'deuce',n:'Nerwy ze stali',d:'Wygraj set na przewagi',c:'#118ab2',g:'target',t:x=>x.deuce>=1},
+ {id:'comeback',n:'Powrót',d:'Wygraj mecz po przegranym pierwszym secie',c:'#06a77d',g:'up',t:x=>x.comeback>=1},
+ {id:'beat',n:'Pogromca',d:'Pokonaj każdego innego gracza',c:'#d62828',g:'target',t:(x,n)=>n>=3&&x.beat.size>=n-1},
+ {id:'d5',n:'Stały gość',d:'Graj w 5 różnych dni',c:'#6c757d',g:'cal',t:x=>x.days.size>=5},
+ {id:'t1',n:'Mistrz turnieju',d:'Wygraj turniej',c:'#e0b21e',g:'cup',t:x=>x.titles>=1},
+ {id:'t3',n:'Król turniejów',d:'Wygraj 3 turnieje',c:'#b8860b',g:'crown',t:x=>x.titles>=3},
+ {id:'p1',n:'Tysiąc punktów',d:'Zdobądź 1000 punktów',c:'#c0c7d1',g:'1k',t:x=>x.pf>=1000},
+ {id:'p5',n:'Pięć tysięcy',d:'Zdobądź 5000 punktów',c:'#e0b21e',g:'5k',t:x=>x.pf>=5000},
+ {id:'p10',n:'Dziesięć tysięcy',d:'Zdobądź 10000 punktów',c:'#b8860b',g:'10k',t:x=>x.pf>=10000}];
+const GLYPH={
+ star:'<path d="M24 19l2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L24 33.4l-5.7 3.1 1.1-6.3-4.6-4.5 6.4-.9z" fill="#fff"/>',
+ flame:'<path d="M24 17c1 5 7 7 7 14a7 7 0 0 1-14 0c0-3 2-5 3-8 1 2 2 2.500 3 1 1-2 1-4 1-7z" fill="#fff"/>',
+ bolt:'<path d="M27.500 17L19 29h5.500l-2 10 9.500-13h-5.500z" fill="#fff"/>',
+ target:'<circle cx="24" cy="28" r="9" fill="none" stroke="#fff" stroke-width="2.600"/><circle cx="24" cy="28" r="4" fill="#fff"/>',
+ cup:'<path d="M18 19h12v7a6 6 0 0 1-12 0zM22 32h4v4h-4zM18.500 37h11v2.500h-11z" fill="#fff"/><path d="M18 21h-3.500v3a4 4 0 0 0 4 4M30 21h3.500v3a4 4 0 0 1-4 4" fill="none" stroke="#fff" stroke-width="2"/>',
+ crown:'<path d="M15.500 36l-1.500-13 6.500 5 3.500-8 3.500 8 6.500-5-1.500 13z" fill="#fff"/>',
+ cal:'<rect x="16.500" y="20" width="15" height="15" rx="2.500" fill="none" stroke="#fff" stroke-width="2.600"/><path d="M16.500 26h15" stroke="#fff" stroke-width="2.200"/>',
+ up:'<path d="M24 36V20M17 27l7-8 7 8" fill="none" stroke="#fff" stroke-width="3.200" stroke-linecap="round" stroke-linejoin="round"/>'};
+function medalSvg(md,earned,size){
+  const col=earned?md.c:'#9aa7b4',gl=GLYPH[md.g]||`<text x="24" y="34" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="600" font-size="${md.g.length>2?13:16}" fill="#fff">${md.g}</text>`;
+  return`<svg viewBox="0 0 48 48" width="${size||56}" height="${size||56}" aria-hidden="true" style="opacity:${earned?1:.55}"><path d="M15 1l9 15 9-15z" fill="${earned?'#d62828':'#b7c0c9'}"/><circle cx="24" cy="29" r="17" fill="${col}" stroke="rgba(0,0,0,.28)" stroke-width="2"/><circle cx="24" cy="29" r="13.500" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.500"/><g transform="translate(0 1)">${gl}</g></svg>`}
+function computeProgress(){
+  const list=Object.values(S.matches).sort((a,b)=>a.t.localeCompare(b.t));
+  const rows=computeStats(list).rows,X={};
+  rows.forEach(r=>{X[r.id]=Object.assign({},r,{bagel:0,deuce:0,comeback:0,days:new Set(),beat:new Set()})});
+  list.forEach(m=>['A','B'].forEach(side=>{
+    const id=side==='A'?m.a:m.b,x=X[id];if(!x)return;
+    const opp=side==='A'?m.b:m.a,won=m.w===id;
+    x.days.add(new Date(m.t).toLocaleDateString('sv'));if(won)x.beat.add(opp);
+    (m.sets||[]).forEach(st=>{const sc=score(st),me=side==='A'?sc.a:sc.b,th=side==='A'?sc.b:sc.a;
+      if(me>th){if(th===0)x.bagel++;if(me>m.to)x.deuce++}});
+    if(won&&(m.sets||[]).length>1){const f=score(m.sets[0]);if(side==='A'?f.a<f.b:f.b<f.a)x.comeback++}}));
+  const n=rows.length;
+  Object.values(X).forEach(x=>{x.medals=MEDALS.filter(md=>md.t(x,n)).map(md=>md.id);x.level=1+Math.floor(x.pf/1000)});
+  return X}
+const plural=(n,a,b,c)=>n===1?a:(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?b:c;
+function progressNote(before,after,ids){
+  const out=[];
+  ids.forEach(id=>{
+    const b=before[id],a=after[id];if(!a)return;const name=nm(id);
+    if(b&&a.level>b.level){const open=UNLOCKS.filter(u=>u[2]>b.pf&&u[2]<=a.pf).length;
+      out.push(`${name} awansuje na poziom ${a.level}${open?` i odblokowuje ${open} ${plural(open,'nowy element','nowe elementy','nowych elementów')}`:''}`)}
+    const newM=a.medals.filter(m=>!b||!b.medals.includes(m));
+    newM.forEach(mid=>{const md=MEDALS.find(q=>q.id===mid);out.push(`${name} zdobywa medal: ${md.n}`)})});
+  return out}
 function computeStats(list){
   const P={};Object.keys(S.players).forEach(id=>P[id]={id,g:0,w:0,l:0,sw:0,sl:0,pf:0,pa:0,streak:0,best:0,run:0,form:[],titles:0});
   const rec={streak:null,run:null,setDiff:null,long:null};
@@ -683,14 +846,14 @@ function viewTour(){
 
 function viewRank(){
   if(!Object.keys(S.players).length)return noPlayers();
-  const list=mlist().filter(inPeriod),{rows,rec}=computeStats(list),pl=plist();
+  const list=mlist().filter(inPeriod),{rows,rec}=computeStats(list),pl=plist(),PR=computeProgress();
   const periodSel=`<select data-chg="period" aria-label="Okres"><option value="all" ${ui.period==='all'?'selected':''}>Cały czas</option><option value="year" ${ui.period==='year'?'selected':''}>Ten rok</option><option value="30" ${ui.period==='30'?'selected':''}>Ostatnie 30 dni</option></select>`;
   const totalPts=list.reduce((n,m)=>n+(m.sets||[]).reduce((k,s)=>k+s.length,0),0);
-  const table=list.length?`<div class="tw"><table><thead><tr><th>#</th><th>Gracz</th><th title="Mecze">M</th><th title="Wygrane">Z</th><th title="Porażki">P</th><th>% wygr.</th><th title="Sety wygrane:przegrane">Sety</th><th title="Punkty zdobyte:stracone">Punkty</th><th title="Najdłuższa seria wygranych">Seria</th><th>Forma</th><th>Tytuły</th></tr></thead><tbody>
-   ${rows.map((p,i)=>{const pct=p.g?Math.round(100*p.w/p.g):0;const pl_=S.players[p.id];
-    return`<tr><td class="rank1">${p.g?i+1:'–'}</td><td class="who"><button class="lnk" data-act="pprofile" data-id="${p.id}">${avb(pl_.av,36)}<span>${esc(pl_.name)}</span></button></td><td>${p.g}</td><td>${p.w}</td><td>${p.l}</td>
+  const table=list.length?`<div class="tw"><table><thead><tr><th>#</th><th>Gracz</th><th title="Poziom (co 1000 zdobytych punktów)">Poz.</th><th title="Mecze">M</th><th title="Wygrane">Z</th><th title="Porażki">P</th><th>% wygr.</th><th title="Sety wygrane:przegrane">Sety</th><th title="Punkty zdobyte:stracone">Punkty</th><th title="Najdłuższa seria wygranych">Seria</th><th>Forma</th><th>Medale</th><th>Tytuły</th></tr></thead><tbody>
+   ${rows.map((p,i)=>{const pct=p.g?Math.round(100*p.w/p.g):0;const pl_=S.players[p.id],pr=PR[p.id]||{level:1,medals:[]};
+    return`<tr><td class="rank1">${p.g?i+1:'–'}</td><td class="who"><button class="lnk" data-act="pprofile" data-id="${p.id}">${avb(pl_.av,36)}<span>${esc(pl_.name)}</span></button></td><td>${pr.level}</td><td>${p.g}</td><td>${p.w}</td><td>${p.l}</td>
     <td style="min-width:70px">${p.g?pct+'%':'–'}<div class="bar"><i style="width:${pct}%"></i></div></td><td>${p.sw}:${p.sl}</td><td>${p.pf}:${p.pa}</td><td>${p.best||'–'}</td>
-    <td><span class="form">${p.form.slice(-5).map(w=>`<b class="${w?'w':'l'}" title="${w?'Zwycięstwo':'Porażka'}">${w?'Z':'P'}</b>`).join('')||'–'}</span></td><td>${p.titles||'–'}</td></tr>`}).join('')}</tbody></table></div>`
+    <td><span class="form">${p.form.slice(-5).map(w=>`<b class="${w?'w':'l'}" title="${w?'Zwycięstwo':'Porażka'}">${w?'Z':'P'}</b>`).join('')||'–'}</span></td><td>${pr.medals.length||'–'}</td><td>${p.titles||'–'}</td></tr>`}).join('')}</tbody></table></div>`
    :`<div class="empty"><p>Brak meczów w tym okresie. Zagraj mecz, a ranking pojawi się tutaj.</p><button class="btn pri" data-act="tab" data-v="play">Zagraj mecz</button></div>`;
   const R=[];
   if(rec.streak)R.push(['Najdłuższa seria wygranych',rec.streak.v+' meczów',rec.streak.id]);
@@ -722,9 +885,11 @@ function viewHist(){
 function viewPlayers(){
   if(ui.edit)return viewEditor();
   if(ui.prof)return viewProfile();
-  const ms=Object.values(S.matches);
-  return`<div class="stack"><section class="card"><h2>Gracze</h2><p class="muted">Dotknij gracza, żeby zmienić jego awatara.</p></section>
-   <div class="pgrid">${plist().map(p=>{const g=ms.filter(m=>m.a===p.id||m.b===p.id).length;return`<button class="pcard" data-act="pprofile" data-id="${p.id}">${avf(p.av,110)}${esc(p.name)}<small>${g} ${g===1?'mecz':'meczów'}</small></button>`}).join('')}
+  const ms=Object.values(S.matches),PR=computeProgress();
+  return`<div class="stack"><section class="card"><h2>Gracze</h2><p class="muted">Dotknij gracza, żeby zobaczyć profil, statystyki i medale. Kosz usuwa gracza.</p></section>
+   <div class="pgrid">${plist().map(p=>{const g=ms.filter(m=>m.a===p.id||m.b===p.id).length,pr=PR[p.id]||{level:1,medals:[]},ask=ui.confirm==='pdc'+p.id;
+    return`<div class="pcard"><button class="pmain" data-act="pprofile" data-id="${p.id}">${avf(p.av,110)}${esc(p.name)}<small>${g} ${g===1?'mecz':'meczów'} · poz. ${pr.level}</small><small>${pr.medals.length} ${plural(pr.medals.length,'medal','medale','medali')}</small></button>
+     <button class="trash ${ask?'ask':''}" data-act="pcdel" data-id="${p.id}" aria-label="Usuń gracza ${esc(p.name)}" title="Usuń gracza"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4.500h6V7M6.500 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>${ask?'<span>Usunąć?</span>':''}</button></div>`}).join('')}
    <button class="pcard add" data-act="pnew"><b>+</b>Dodaj gracza</button></div>${syncCard()}${backupCard()}</div>`}
 
 function backupCard(){return`<section class="card"><h3>Kopia zapasowa</h3><p class="muted">Dane są zapisane w pamięci tej przeglądarki. Pobierz kopię, żeby je zabezpieczyć lub przenieść na inne urządzenie.</p>
@@ -737,27 +902,38 @@ function viewProfile(){
   const tile=(l,v,sub,cls)=>`<div class="stat ${cls||''}"><span class="sl">${l}</span><span class="sv num">${v}</span>${sub?`<span class="ss">${sub}</span>`:''}</div>`;
   const sec=(t,tiles)=>`<section class="card stack"><h3>${t}</h3><div class="stats">${tiles.join('')}</div></section>`;
   const recent=mlist().filter(m=>m.a===id||m.b===id).slice(0,5);
+  const pr=computeProgress()[id]||{level:1,medals:[],pf:0},into=pr.pf%1000,nextAt=(Math.floor(pr.pf/1000)+1)*1000;
+  const nextU=UNLOCKS.filter(u=>u[2]===nextAt).map(unlockLabel);
+  const lvlCard=`<section class="card lvl"><div class="row" style="justify-content:space-between"><h3>Poziom ${pr.level}</h3><span class="muted num">${pr.pf} pkt zdobytych</span></div>
+   <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="${into}"><i style="width:${Math.round(into/10)}%"></i></div>
+   <p class="muted">${nextU.length?`Do poziomu ${pr.level+1} brakuje ${nextAt-pr.pf} pkt. Odblokujesz: ${esc(nextU.join(', '))}.`:`Do poziomu ${pr.level+1} brakuje ${nextAt-pr.pf} pkt. Wszystkie style i postacie są już odblokowane.`}</p>
+   ${pr.medals.length||1?'':''}</section>`;
+  const medalCard=`<section class="card stack"><div class="row" style="justify-content:space-between"><h3>Medale</h3><span class="muted">${pr.medals.length} z ${MEDALS.length}</span></div><div class="medals">${MEDALS.map(md=>{const on=pr.medals.includes(md.id);return`<div class="medal ${on?'':'off'}" title="${esc(md.d)}">${medalSvg(md,on,56)}<b>${esc(md.n)}</b><span>${esc(md.d)}</span></div>`}).join('')}</div></section>`;
   return`<div class="stack"><section class="card phead">${avf(p.av,120)}<div style="flex:1;min-width:180px"><h2>${esc(p.name)}</h2>
    <p class="muted">${st.g?`${st.g} ${st.g===1?'mecz':'meczów'} · ${pct}% wygranych`:'Jeszcze nie grał(a). Statystyki pojawią się po pierwszym meczu.'}</p>
    <div class="row" style="margin-top:10px"><button class="btn sm" data-act="pback">Wróć do graczy</button><button class="btn sm" data-act="pedit" data-id="${id}">Edytuj awatara</button></div></div></section>
+   ${lvlCard}
    ${sec('Mecze',[tile('Rozegrane',st.g),tile('Wygrane',st.w,'',st.w?'good':''),tile('Przegrane',st.l,'',st.l?'bad':''),tile('Procent wygranych',st.g?pct+'%':'–')])}
    ${sec('Sety',[tile('Rozegrane',sets),tile('Wygrane',st.sw,'',st.sw?'good':''),tile('Przegrane',st.sl,'',st.sl?'bad':'')])}
    ${sec('Punkty',[tile('Zdobyte',st.pf,'w sumie',st.pf?'good':''),tile('Stracone',st.pa,'w sumie',st.pa?'bad':''),tile('Średnio zdobyte na set',sets?f1(st.pf/sets):'–','punktów'),tile('Średnio stracone na set',sets?f1(st.pa/sets):'–','punktów')])}
    ${sec('Rekordy i forma',[tile('Najdłuższa seria wygranych',st.best||'–','meczów pod rząd'),tile('Najdłuższa seria punktów',st.run||'–','punktów pod rząd'),tile('Tytuły mistrza',st.titles||'–','w turniejach'),
      tile('Ostatnie mecze',`<span class="form">${st.form.slice(-5).map(w=>`<b class="${w?'w':'l'}">${w?'Z':'P'}</b>`).join('')||'–'}</span>`,'Z wygrana, P porażka')])}
+   ${medalCard}
    ${recent.length?`<section class="card"><h3 style="margin-bottom:10px">Ostatnie mecze gracza</h3>${recent.map(matchRow).join('')}</section>`:''}</div>`}
 
-const GROUPS=[['skin','Kolor ciała','c',SKIN],['shirt','Koszulka','c',SHIRT],['hair','Fryzura','t',HAIRS],['hairC','Kolor włosów','c',HAIRC],['eyes','Oczy','t',EYES],['mouth','Buzia','t',MOUTHS],
+const GROUPS=[['kind','Postać','t',KINDS],['fx','Efekt','t',FX],['skin','Kolor ciała','c',SKIN],['shirt','Koszulka','c',SHIRT],['hair','Fryzura','t',HAIRS],['hairC','Kolor włosów','c',HAIRC],['eyes','Oczy','t',EYES],['mouth','Buzia','t',MOUTHS],
   ['hat','Gadżet na głowę','t',HATS],['hatC','Kolor czapki','c',GADC],['face','Okulary i dodatki','t',FACES],['faceC','Kolor okularów i dodatków','c',GADC],['paddle','Rakietka','c',PADC]];
-const PREV={hair:{hat:0},eyes:{hat:0,face:0},mouth:{hat:0,face:0},hat:{face:0},face:{hat:0}};
+const PREV={kind:{hat:0,face:0,fx:0},fx:{hat:0,face:0},hair:{hat:0},eyes:{hat:0,face:0},mouth:{hat:0,face:0},hat:{face:0},face:{hat:0}};
 function viewEditor(){
-  const e=ui.edit,a=e.av;
+  const e=ui.edit,a=e.av,pts=e.id?((computeProgress()[e.id]||{}).pf||0):0,orig=(e.id&&S.players[e.id]&&S.players[e.id].av)||{};
+  const total=UNLOCKS.length,open=UNLOCKS.filter(u=>u[2]<=pts).length;
   return`<section class="card"><div class="editor"><div class="ed-prev">${avf(a,200)}
+   <p class="muted" style="text-align:center;font-size:.85rem">Poziom ${1+Math.floor(pts/1000)} · odblokowano ${open} z ${total} nowych elementów. Co 1000 zdobytych punktów otwiera kolejne.</p>
    <label class="lbl" for="p-name" style="margin:0">Imię lub ksywka</label><input id="p-name" maxlength="20" value="${esc(e.name)}" placeholder="np. Tata">
    <button class="btn" data-act="prand">Losuj wygląd</button></div>
    <div>${GROUPS.map(([k,t,type,list])=>`<div class="grp"><span class="lbl">${t}</span>${type==='c'
-     ?`<div class="sw">${list.map(c=>`<button data-act="opt" data-k="${k}" data-v="${c}" class="${a[k]===c?'on':''}" style="background:${c}" aria-label="${t} ${c}"></button>`).join('')}</div>`
-     :`<div class="tiles">${list.map((l,i)=>`<button class="tile ${a[k]===i?'on':''}" data-act="opt" data-k="${k}" data-v="${i}" data-n="1" title="${l}" aria-label="${l}">${avb(Object.assign({},a,{[k]:i},PREV[k]||{}),58)}</button>`).join('')}</div>`}</div>`).join('')}
+     ?`<div class="sw">${list.map(c=>{const ok=isOpen(k,c,pts,orig[k]),nd=need(k,c);return`<button data-act="opt" data-k="${k}" data-v="${c}" class="${a[k]===c?'on':''} ${ok?'':'lock'}" style="background:${c}" aria-label="${t} ${c}${ok?'':', odblokujesz przy '+nd+' punktach'}" title="${ok?'':'Odblokujesz przy '+nd+' pkt'}" ${ok?'':'disabled'}></button>`}).join('')}</div>`
+     :`<div class="tiles">${list.map((l,i)=>{const ok=isOpen(k,i,pts,orig[k]),nd=need(k,i);return`<button class="tile ${a[k]===i?'on':''} ${ok?'':'lock'}" data-act="opt" data-k="${k}" data-v="${i}" data-n="1" title="${ok?l:l+': odblokujesz przy '+nd+' pkt'}" aria-label="${ok?l:l+', odblokujesz przy '+nd+' punktach'}" ${ok?'':'disabled'}>${avb(Object.assign({},a,{[k]:i},PREV[k]||{}),58)}${ok?'':`<span class="lk">${nd}</span>`}</button>`}).join('')}</div>`}</div>`).join('')}
    <div class="row" style="margin-top:20px"><button class="btn pri" data-act="psave">Zapisz gracza</button><button class="btn" data-act="pcancel">Anuluj</button>
    ${e.id?`<button class="btn danger ${ui.confirm==='pdel'?'ask':''}" data-act="pdel">${ui.confirm==='pdel'?'Na pewno usunąć?':'Usuń gracza'}</button>`:''}</div></div></div></section>`}
 
@@ -793,10 +969,10 @@ const H={
  tabort:d=>ask('tabort',()=>del('tournaments',d.t)),
  topen:d=>{ui.tview=d.t;render();window.scrollTo(0,0)},
  tback:()=>{ui.tview=null;render()},
- pnew:()=>{ui.tab='pl';ui.prof=null;ui.edit={id:null,name:'',av:randomAv()};render();window.scrollTo(0,0)},
+ pnew:()=>{ui.tab='pl';ui.prof=null;ui.edit={id:null,name:'',av:randomAv(0)};render();window.scrollTo(0,0)},
  pedit:d=>{const p=S.players[d.id];ui.edit={id:p.id,name:p.name,av:Object.assign({},DEF,p.av)};render();window.scrollTo(0,0)},
  opt:d=>{ui.edit.av[d.k]=d.n?+d.v:d.v;render()},
- prand:()=>{ui.edit.av=randomAv();render()},
+ prand:()=>{const id=ui.edit.id,pts=id?((computeProgress()[id]||{}).pf||0):0;ui.edit.av=randomAv(pts);render()},
  pcancel:()=>{ui.edit=null;ui.confirm=null;render()},
  psave:()=>{
    const e=ui.edit,name=e.name.trim();if(!name){toast('Wpisz imię lub ksywkę.');return}
@@ -811,6 +987,7 @@ const H={
  syncoff:()=>ask('syncoff',()=>{sync=null;lsSet('tt-sync',null);ui.showLink=false;render()}),
  vlisten:()=>{ui.voice.listen?(stopListen(),render()):startListen()},
  vspeak:()=>{ui.voice.speak=!ui.voice.speak;saveVoice();render();if(ui.voice.speak)speak('Czytanie wyniku włączone')},
+ pcdel:d=>ask('pdc'+d.id,()=>{if(ui.setup.a===d.id)ui.setup.a=null;if(ui.setup.b===d.id)ui.setup.b=null;saveUi();del('players',d.id);toast('Gracz usunięty. Jego mecze zostają w historii.')}),
  pdel:()=>ask('pdel',()=>{const id=ui.edit.id;ui.edit=null;ui.prof=null;if(ui.setup.a===id)ui.setup.a=null;if(ui.setup.b===id)ui.setup.b=null;saveUi();del('players',id)})
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.disabled)return;const f=H[el.dataset.act];if(f)f(el.dataset)});

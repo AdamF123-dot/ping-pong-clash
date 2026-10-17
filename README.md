@@ -25,3 +25,8 @@ Reguły bazy (zakładka Rules w Firebase):
 
 Dostęp do danych ma każdy, kto zna link z kodem, więc nie udostępniaj go poza rodziną.
 Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspólne są gracze, zapisane mecze i turnieje.
+
+## Poziomy, postacie i medale
+- Co 1000 zdobytych punktów (suma punktów gracza) = nowy poziom i nowe elementy: postacie (Kot, Lis, Sowa, Robot, Dino, Kosmita, Panda, Duszek, Jednorożec), czapki, okulary, fryzury, oczy, buzie i efekty.
+- Medale liczone z historii meczów (synchronizują się między telefonami).
+- Kosz na karcie gracza usuwa gracza (mecze zostają w historii).
