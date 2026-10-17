@@ -369,7 +369,9 @@ function initStore(){
 async function enableSync(){
   const inp=$('#sync-url');let db=(inp&&inp.value||'').trim().replace(/\/+$/,'');
   if(!SYNC_RE.test(db)){toast('Adres bazy powinien zaczynać się od https:// i kończyć na firebasedatabase.app lub firebaseio.com.');return}
-  const room=Array.from({length:20},()=>'abcdefghijkmnpqrstuvwxyz23456789'[rint(32)]).join('');
+  const typed=(($('#sync-code')||{}).value||'').trim().toLowerCase();
+  if(typed&&!/^[a-z0-9]{8,40}$/.test(typed)){toast('Kod rodziny to 8-40 liter i cyfr, bez spacji.');return}
+  const room=typed||Array.from({length:20},()=>'abcdefghijkmnpqrstuvwxyz23456789'[rint(32)]).join('');
   sync={db,room};
   try{const r=await fetch(syncUrl(),{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status)}
   catch(e){sync=null;toast('Nie mogę połączyć się z bazą. Sprawdź adres i reguły (zakładka Rules).');return}
@@ -382,6 +384,7 @@ function syncCard(){
     return`<section class="card stack"><h3>Synchronizacja między telefonami</h3>
      <p>${S.sync.ok?'Włączona. Gracze, mecze i turnieje są wspólne dla wszystkich urządzeń z tym samym linkiem.':'Brak połączenia z bazą ('+esc(S.sync.err)+'). Zapisy zostają na telefonie i wyślą się, gdy połączenie wróci.'}</p>
      ${S.sync.last?`<p class="muted">Ostatnia synchronizacja: ${fmtTime(S.sync.last)}</p>`:''}
+     <div class="rec"><span class="muted" style="font-weight:800;font-size:.85rem">Kod rodziny (musi być taki sam na wszystkich telefonach)</span><span class="num" style="font-family:var(--font-d);font-size:1.25rem;letter-spacing:.04em;overflow-wrap:anywhere">${esc(sync.room)}</span></div>
      <div class="row"><button class="btn" data-act="synccopy">Pokaż link do dołączenia</button><button class="btn" data-act="syncnow">Synchronizuj teraz</button>
      <button class="btn danger ${ui.confirm==='syncoff'?'ask':''}" data-act="syncoff">${ui.confirm==='syncoff'?'Na pewno wyłączyć?':'Wyłącz synchronizację'}</button></div>
      ${ui.showLink?`<input readonly id="sync-link" value="${esc(joinLink())}" style="width:100%;border:2px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 12px" onfocus="this.select()">`:''}
@@ -396,6 +399,7 @@ function syncCard(){
       <pre style="white-space:pre-wrap;word-break:break-all;background:var(--surface2);border:1.5px solid var(--line);border-radius:10px;padding:8px;font-size:.8rem;margin:6px 0 0">{"rules":{".read":false,".write":false,"pp":{"$room":{".read":true,".write":true}}}}</pre></li>
      <li>W zakładce <b>Data</b> skopiuj adres bazy z góry strony (zaczyna się od https://) i wklej go poniżej.</li></ol></details>
    <div><label class="lbl" for="sync-url">Adres bazy Firebase</label><input id="sync-url" placeholder="https://nazwa-default-rtdb.europe-west1.firebasedatabase.app" style="width:100%;border:2px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 12px"></div>
+   <div><label class="lbl" for="sync-code">Kod rodziny (tylko jeśli dołączasz do istniejących danych)</label><input id="sync-code" placeholder="zostaw puste na pierwszym telefonie" style="width:100%;border:2px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 12px"><p class="muted" style="font-size:.85rem;margin-top:6px">Na pozostałych telefonach łatwiej otworzyć link do dołączenia z pierwszego telefonu. Nie wklejaj tam adresu bazy bez kodu, bo powstaną osobne dane.</p></div>
    <div><button class="btn pri" data-act="syncon">Włącz synchronizację</button></div></section>`}
 function exportData(){
   const blob=new Blob([JSON.stringify({v:1,exported:new Date().toISOString(),players:S.players,matches:S.matches,tournaments:S.tournaments},null,1)],{type:'application/json'});
