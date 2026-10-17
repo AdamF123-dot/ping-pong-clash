@@ -655,7 +655,7 @@ const ids4=L=>[L.a,L.a2,L.b,L.b2].filter(Boolean);
 const tnames=(o,side)=>mem(o,side).map(i=>nm(i)).join(' i ');
 const MODEN={pig:'🐷 Świnka',gold:'🏆 Złota piłka',srv:'🎾 Przewaga serwisu',x2:'✖️2 Podwójna stawka',sprint:'⏱️ Sprint',king:'👑 Król stołu'};
 const KING={crown:30,def:15};
-const MODEHINT={std:'Zwykłe zasady: każdy punkt liczy się za 1.',pig:'Powiedz „świnka” i imię gracza, a dostanie 2 punkty zamiast 1.',gold:'Co jakiś czas aplikacja ogłasza złotą piłkę. Najbliższy punkt jest wtedy wart 3.',srv:'Serwujący zdobywa 2 punkty za wygraną wymianę, przyjmujący 1.',x2:'Każda drużyna ma raz w meczu „x2”. Po podbiciu najbliższy punkt jest wart 2 dla zwycięzcy wymiany, więc ryzyko jest po obu stronach. Głosem: „podwójna stawka” i imię.',sprint:'Gra na czas: gdy czas minie, wygrywa ten, kto ma więcej punktów. Przy remisie rozstrzyga złoty punkt.',king:'Jeden mecz z aktualnym królem stołu. Kto wygra, zostaje królem (lub nim pozostaje). Pierwszy mecz wyłania pierwszego króla.'};
+const MODEHINT={std:'Zwykłe zasady: każdy punkt liczy się za 1.',pig:'Powiedz „świnka” i imię gracza, a dostanie 2 punkty zamiast 1.',gold:'Co jakiś czas aplikacja ogłasza złotą piłkę. Najbliższy punkt jest wtedy wart 3.',srv:'Serwujący zdobywa 2 punkty za wygraną wymianę, przyjmujący 1.',x2:'Każda drużyna ma „x2” raz w każdym secie. Po podbiciu najbliższy punkt jest wart 2 dla zwycięzcy wymiany, więc ryzyko jest po obu stronach. Głosem: „podwójna stawka” i imię.',sprint:'Gra na czas: gdy czas minie, wygrywa ten, kto ma więcej punktów. Przy remisie rozstrzyga złoty punkt.',king:'Jeden mecz z aktualnym królem stołu. Kto wygra, zostaje królem (lub nim pozostaje). Pierwszy mecz wyłania pierwszego króla.'};
 function score(s){let a=0,b=0;for(const ch of s){ch==='A'?a++:b++}return{a,b}}
 function setWinner(s,T){const{a,b}=score(s);return(a>=T||b>=T)&&Math.abs(a-b)>=2?(a>b?'A':'B'):null}
 function derive(L){
@@ -682,6 +682,7 @@ function addPoint(side,n){
     else{L.sn=(L.sn||0)+1;const sc=score(L.cur);if((!L.sprint&&sc.a>=L.to-1&&sc.b>=L.to-1)||L.sn>=(L.to>=21?5:2)){L.sv=other(L.sv);L.sn=0}}}
   if(L.ops)L.ops.push(op);
   if(L.arm){if(L.tk)L.tk[L.arm]=false;L.arm=null}
+  if(ended&&L.tk)L.tk={A:true,B:true};
   L.gold=false;
   if(L.mode==='gold'&&!ended&&!derive(L).done&&!op.g&&Math.random()<.14)L.gold=true;
   ui.pigArm=false;saveUi();render();announce(ended);try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
@@ -696,7 +697,7 @@ function undo(){
   saveUi();render();announce(null)}
 function armX2(side){
   const L=ui.live;if(!L||L.mode!=='x2'||derive(L).done)return;
-  if(!L.tk[side]){setMsg('Podwójna stawka dla '+tnames(L,side)+' jest już wykorzystana.');toast('Podwójna stawka jest już wykorzystana.');return}
+  if(!L.tk[side]){setMsg('Podwójna stawka dla '+tnames(L,side)+' jest już wykorzystana w tym secie.');toast('Podwójna stawka jest już wykorzystana w tym secie.');return}
   if(L.arm&&L.arm!==side){toast('Stawka została już podbita w tej wymianie.');return}
   L.arm=L.arm===side?null:side;saveUi();render();if(L.arm&&ui.voice.speak)speak('Podwójna stawka.')}
 const fmtClock=ms=>{const t=Math.max(0,Math.ceil(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
