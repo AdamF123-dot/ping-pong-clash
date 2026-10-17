@@ -38,3 +38,8 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 
 ## Tryb Świnka
 - Przy starcie meczu wybierz tryb „Świnka (2 pkt)”. Powiedz „świnka” i imię gracza, a dostanie 2 punkty zamiast 1 (albo dotknij przycisku Świnka i potem pole gracza). Punkty nie wychodzą poza koniec seta.
+
+## Rozszerzenie: 30000 punktów, więcej skrzynek i medali
+- Odblokowania za punkty sięgają 30000 (nowe postacie: Smok, Żaba, Pingwin, Wampir, Yeti, Złoty Mistrz oraz style, efekty i kolory). Każdy poziom daje też 50 monet.
+- 9 skrzynek w sklepie (od Drobnej za 40 do Skarbca mistrza za 6000), w tym tylko kolory i tylko gadżety.
+- 54 medale.
