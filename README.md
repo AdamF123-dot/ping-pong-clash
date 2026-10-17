@@ -49,3 +49,5 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 - Złota piłka: po losowej wymianie aplikacja ogłasza złotą piłkę, a następny punkt jest wart 3.
 - Przewaga serwisu: serwujący dostaje 2 punkty za wymianę, przyjmujący 1; zmiana serwisu liczy wymiany, nie punkty.
 - „Cofnij” cofa całą ostatnią wymianę (także świnkę, złotą piłkę i podwójny punkt).
+
+- BO10: wygrywa ten, kto pierwszy zdobędzie 6 setów (przy 5:5 gra się set decydujący).

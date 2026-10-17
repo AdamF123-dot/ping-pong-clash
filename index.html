@@ -657,7 +657,7 @@ const MODEHINT={std:'Zwykłe zasady: każdy punkt liczy się za 1.',pig:'Powiedz
 function score(s){let a=0,b=0;for(const ch of s){ch==='A'?a++:b++}return{a,b}}
 function setWinner(s,T){const{a,b}=score(s);return(a>=T||b>=T)&&Math.abs(a-b)>=2?(a>b?'A':'B'):null}
 function derive(L){
-  const need=(L.bo+1)/2;let wa=0,wb=0;L.sets.forEach(s=>{setWinner(s,L.to)==='A'?wa++:wb++});
+  const need=Math.floor(L.bo/2)+1;let wa=0,wb=0;L.sets.forEach(s=>{setWinner(s,L.to)==='A'?wa++:wb++});
   const sc=score(L.cur),done=wa>=need||wb>=need,winner=wa>=need?'A':wb>=need?'B':null;
   const idx=L.sets.length,fs=idx%2===0?L.first:other(L.first),n=sc.a+sc.b,every=L.to>=21?5:2,m=2*(L.to-1);
   const turns=n<m?Math.floor(n/every):Math.floor(m/every)+(n-m);
@@ -984,7 +984,7 @@ function viewPlay(){
   <div><span class="lbl">Tryb meczu</span>${seg('mode',[['std','Klasyczny'],['pig','Świnka'],['gold','Złota piłka'],['srv','Przewaga serwisu']])}<p class="muted" style="margin-top:6px">${MODEHINT[mode]}</p></div>
   <div class="row" style="align-items:flex-start;gap:22px">
    <div><span class="lbl">Do ilu punktów</span>${seg('to',[[11,'11'],[21,'21']])}</div>
-   <div><span class="lbl">Ile setów</span>${seg('bo',[[1,'1 set'],[3,'BO3'],[5,'BO5'],[7,'BO7']])}</div>
+   <div><span class="lbl">Ile setów</span>${seg('bo',[[1,'1 set'],[3,'BO3'],[5,'BO5'],[7,'BO7'],[10,'BO10']])}${s.bo===10?'<p class="muted" style="margin-top:6px;max-width:260px">BO10: wygrywa ten, kto pierwszy zdobędzie 6 setów. Przy 5:5 gra się set decydujący.</p>':''}</div>
    <div><span class="lbl">Pierwszy serwis</span>${seg('first',[['rnd','Losowo'],['A',two?'Drużyna niebieska':s.a?esc(nm(s.a)):'Gracz 1'],['B',two?'Drużyna pomarańczowa':s.b?esc(nm(s.b)):'Gracz 2']])}</div></div>
   <div><button class="btn pri" data-act="start" ${ready&&enough?'':'disabled'}>Rozpocznij mecz</button></div></section>
   ${rec.length?`<section class="card"><h3 style="margin-bottom:10px">Ostatnie mecze</h3>${rec.map(matchRow).join('')}</section>`:''}</div>`}
