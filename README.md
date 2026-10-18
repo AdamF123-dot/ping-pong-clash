@@ -60,3 +60,5 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 ## Trening solo (liczenie odbić po dźwięku)
 - Zakładka Trening: aplikacja słucha mikrofonu i liczy uderzenia piłeczki o rakietkę (kalibracja, suwak czułości, ręczne +1/−1). Tryby: swobodnie oraz runda 1, 3 lub 5 minut. Serię kończy przerwa 1,5–4 s.
 - Rekord serii i najlepsze rundy są w profilu gracza i w tabeli w zakładce Trening; monety za trening (do 30 + 20 za rekord) oraz 10 medali.
+
+- **Filtr odbić o podłogę** (Trening): jeśli kolejne uderzenia przyspieszają i cichną (piłeczka spadła), aplikacja ich nie liczy i kończy serię. Można wyłączyć w ustawieniach treningu.

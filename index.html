@@ -1288,8 +1288,8 @@ function equipItem(it){
   put('players',p.id,Object.assign({},p,{av}));toast(it.n+' założone.')}
 /* ---------- trening solo: liczenie odbić po dźwięku ---------- */
 const TR={mode:'idle',stream:null,ctx:null,an:null,buf:null,timer:null,th:.12,armed:true,last:0,t0:0,cur:0,total:0,bestDone:0,series:0,lastLevelUi:0,calib:null,msg:''};
-ui.train=Object.assign({pid:null,ex:0,sens:45,gap:2.5,res:null},lsGet('tt-train',{}),{res:null});
-const saveTrain=()=>lsSet('tt-train',{pid:ui.train.pid,ex:ui.train.ex,sens:ui.train.sens,gap:ui.train.gap});
+ui.train=Object.assign({pid:null,ex:0,sens:45,gap:2.5,floor:1,res:null},lsGet('tt-train',{}),{res:null});
+const saveTrain=()=>lsSet('tt-train',{pid:ui.train.pid,ex:ui.train.ex,sens:ui.train.sens,gap:ui.train.gap,floor:ui.train.floor});
 const sensToTh=v=>.5*Math.pow(.04,(v-1)/99);
 async function openMic(){
   if(TR.stream)return true;
@@ -1315,21 +1315,34 @@ function poll(){
     else{if(pk>Math.max(c.amb*3,.03)&&pk>(TR.env||0)*1.6&&now-TR.last>70){c.peaks.push(pk);TR.last=now;const e=$('#tr-cal');if(e)e.textContent='Usłyszałem uderzeń: '+c.peaks.length}}
     TR.env=Math.max(pk,(TR.env||0)*.8)}
   else if(TR.mode==='run'){
-    if(pk>TR.th&&pk>(TR.env||0)*1.6&&now-TR.last>60){hit(now)}
+    if(pk>TR.th&&pk>(TR.env||0)*1.6&&now-TR.last>60){hit(now,pk)}
     TR.env=Math.max(pk,(TR.env||0)*.8)}
   if(now-TR.lastLevelUi>45){TR.lastLevelUi=now;const l=$('#tr-lvl');if(l)l.style.width=Math.min(100,pk/.6*100)+'%'}}
 function trUi(){
   const set=(id,v)=>{const e=$('#'+id);if(e)e.textContent=v};
   set('tr-hits',TR.total);set('tr-cur',TR.cur);set('tr-best',Math.max(TR.bestDone,TR.cur));set('tr-n',TR.series+(TR.cur?1:0))}
 function endSeries(){if(TR.cur>0){(TR.done=TR.done||[]).push(TR.cur);TR.bestDone=Math.max(TR.bestDone,TR.cur);TR.series++;TR.cur=0}}
-function hit(now){
+function hit(now,pk){
   if(TR.cur>0&&now-TR.last>ui.train.gap*1000)endSeries();
+  if(pk===undefined){TR.fl=null;TR.hl=[]}
+  else if(+ui.train.floor){
+    /* filtr podłogi: piłeczka, która spadła, odbija się coraz szybciej i coraz ciszej */
+    const f=TR.fl;
+    if(f){const d=now-f.t;if(d<=f.d*1.08&&d<700){f.t=now;f.d=d;TR.last=now;return}TR.fl=null}
+    const h=TR.hl=TR.hl||[];h.push({t:now,p:pk});if(h.length>10)h.shift();
+    let m=0;for(let j=h.length-1;j>=2;j--){const d1=h[j].t-h[j-1].t,d0=h[j-1].t-h[j-2].t;if(d1<d0*.95&&d1<700)m++;else break}
+    if(m>=2){
+      const n=h.length,first=h[n-m-2],ds=h[n-m-1].t-first.t,dl=now-h[n-2].t;
+      if(dl<ds*.8&&pk<=first.p*1.25){
+        const k=Math.min(m+1,TR.cur);TR.cur-=k;TR.total-=k;TR.floorCut=(TR.floorCut||0)+k;
+        endSeries();TR.fl={t:now,d:dl};TR.hl=[];TR.last=now;trUi();
+        toast('Wykryto piłeczkę na podłodze – nie liczę jej odbić.');return}}}
   TR.cur++;TR.total++;TR.last=now;trUi();
   const e=$('#tr-hits');if(e){e.classList.remove('pulse');void e.offsetWidth;e.classList.add('pulse')}}
 async function trStart(){
   const t=ui.train;if(!S.players[t.pid]){toast('Wybierz gracza.');return}
   if(!await openMic()){render();return}
-  Object.assign(TR,{mode:'run',th:sensToTh(t.sens),env:0,armed:true,last:0,cur:0,total:0,bestDone:0,done:[],series:0,t0:performance.now(),msg:''});
+  Object.assign(TR,{mode:'run',th:sensToTh(t.sens),env:0,armed:true,last:0,cur:0,total:0,bestDone:0,done:[],fl:null,hl:[],floorCut:0,series:0,t0:performance.now(),msg:''});
   t.res=null;keepAwake();render();
   clearInterval(TR.timer);
   TR.timer=setInterval(()=>{
@@ -1389,6 +1402,7 @@ function viewTrain(){
      <div><span class="lbl">Rodzaj treningu</span>${seg('trex','ex',[[0,'Swobodnie'],[60,'1 minuta'],[180,'3 minuty'],[300,'5 minut']])}</div>
      <div><span class="lbl">Czułość mikrofonu</span><input id="tr-sens" type="range" min="1" max="100" value="${t.sens}" style="width:100%;max-width:360px">${meter}<p class="muted" style="font-size:.85rem">Wyżej = czulej. Jeśli aplikacja liczy za dużo (hałas), zmniejsz. Jeśli pomija uderzenia, zwiększ albo użyj kalibracji.</p>${TR.msg?`<p class="msg-tr">${esc(TR.msg)}</p>`:''}</div>
      <div><span class="lbl">Przerwa kończąca serię</span>${seg('trgap','gap',[[1.5,'1,5 s'],[2.5,'2,5 s'],[4,'4 s']])}</div>
+     <div><span class="lbl">Filtr odbić o podłogę</span>${seg('trfloor','floor',[[1,'Włączony'],[0,'Wyłączony']])}</div>
      <div class="row"><button class="btn pri" data-act="trstart">Start</button><button class="btn" data-act="trcalib">Kalibruj czułość</button></div></section>`}
   const rows=pl.map(q=>({q,ts:TA[q.id]||{best:0,round:{60:0,180:0,300:0},n:0,hits:0}})).sort((a,b)=>b.ts.best-a.ts.best);
   const hist=Object.values(S.trainings).filter(r=>S.players[r.pid]).sort((a,b)=>b.t.localeCompare(a.t)).slice(0,8);
@@ -1447,6 +1461,7 @@ const H={
  spause:()=>{const L=ui.live;if(!L||!L.sprint)return;if(L.pausedAt){L.end+=Date.now()-L.pausedAt;L.pausedAt=0}else L.pausedAt=Date.now();saveUi();render()},
  trpick:d=>{ui.train.pid=d.id;saveTrain();render()},
  trex:d=>{ui.train.ex=+d.v;saveTrain();render()},
+ trfloor:d=>{ui.train.floor=+d.v;saveTrain();render()},
  trgap:d=>{ui.train.gap=+d.v;saveTrain();render()},
  trstart:trStart,trstop:()=>trStop(false),trcalib:trCalib,
  trplus:()=>{if(TR.mode==='run')hit(performance.now())},
