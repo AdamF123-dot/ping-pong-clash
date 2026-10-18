@@ -62,3 +62,4 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 - Rekord serii i najlepsze rundy są w profilu gracza i w tabeli w zakładce Trening; monety za trening (do 30 + 20 za rekord) oraz 10 medali.
 
 - **Filtr odbić o podłogę** (Trening): jeśli kolejne uderzenia przyspieszają i cichną (piłeczka spadła), aplikacja ich nie liczy i kończy serię. Można wyłączyć w ustawieniach treningu.
+- **Trening w parze**: w zakładce Trening przełącz tryb na „W parze”, wybierz dwóch graczy. Liczona jest wspólna wymiana, opcjonalnie z pomijaniem cichszego odbicia od stołu. Rekordy par są w tabeli i w profilach obu graczy, a monety dostają oboje.
