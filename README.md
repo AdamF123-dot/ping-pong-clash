@@ -63,3 +63,8 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 
 - **Filtr odbić o podłogę** (Trening): jeśli kolejne uderzenia przyspieszają i cichną (piłeczka spadła), aplikacja ich nie liczy i kończy serię. Można wyłączyć w ustawieniach treningu.
 - **Trening w parze**: w zakładce Trening przełącz tryb na „W parze”, wybierz dwóch graczy. Liczona jest wspólna wymiana, opcjonalnie z pomijaniem cichszego odbicia od stołu. Rekordy par są w tabeli i w profilach obu graczy, a monety dostają oboje.
+- **Nowe ćwiczenia w zakładce Trening** (wybór „Ćwiczenie”):
+  - **Serwis na cel** – aplikacja losuje strefę stołu (6 stref), Ty serwujesz i zaznaczasz „Trafiony” albo „Pudło”. Bez mikrofonu. Celność i mapa stref w profilu.
+  - **Plan** – gotowe zestawy etapów (krótki 3 min, rozgrzewka 5 min, mocny 8 min) z głosowym prowadzeniem, odpoczynkami i liczeniem odbić w każdym etapie.
+  - **Refleks** – podczas odbijania aplikacja co kilka sekund podaje komendę (forhend, bekhend, na przemian, szybciej, spokojniej).
+  - Nowe medale: Pierwszy serwis na cel, Snajper serwisu, Plan wykonany, Refleks.
