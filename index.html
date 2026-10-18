@@ -48,12 +48,12 @@ p{margin:0}
 .chip.t{color:var(--ink);background:var(--surface2)}
 
 /* nawigacja */
-.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(6,1fr);gap:2px;
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(7,1fr);gap:1px;
   background:var(--surface);border-top:1.5px solid var(--line);
   padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
 .nav button{background:none;border:0;border-radius:12px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;
-  font-size:.72rem;font-weight:800;color:var(--muted);cursor:pointer}
-.nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  font-size:.66rem;font-weight:800;color:var(--muted);cursor:pointer}
+.nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .nav button[aria-current="page"]{color:var(--ink);background:color-mix(in srgb,var(--ball) 24%,var(--surface))}
 .nav .dot{position:relative}
 .nav .dot::after{content:"";position:absolute;top:-2px;right:-5px;width:9px;height:9px;border-radius:50%;background:var(--ball);border:2px solid var(--surface)}
@@ -220,6 +220,18 @@ select{background:var(--surface2);border:1.5px solid var(--line);border-radius:1
 @keyframes gl{to{box-shadow:0 0 22px #ffd23f}}
 @media (prefers-reduced-motion:reduce){.banner.gold{animation:none}}
 .king{border:2px solid #e0b21e;background:linear-gradient(120deg,color-mix(in srgb,#ffd23f 22%,var(--surface)),var(--surface))}
+.tr-big{font-family:var(--font-d);font-weight:600;font-size:clamp(5rem,30vw,9rem);line-height:1;text-align:center;color:var(--ink)}
+.tr-big.pulse{animation:trp .18s ease-out}
+@keyframes trp{0%{transform:scale(1.14);color:var(--ball)}100%{transform:scale(1)}}
+.tr3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.tr3 span{display:block;font-size:.75rem;font-weight:800;color:var(--muted)}
+.tr3 b{font-family:var(--font-d);font-size:1.8rem;font-weight:600}
+.meter{position:relative;height:14px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:8px;max-width:360px}
+.meter i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#2ec4b6,#ffd23f,#ef476f)}
+.meter u{position:absolute;top:0;bottom:0;width:3px;background:var(--ink);opacity:.8;text-decoration:none}
+.msg-tr{font-weight:800;margin-top:6px}
+.tres{border:2px solid var(--ball)}
+@media (prefers-reduced-motion:reduce){.tr-big.pulse{animation:none}}
 .trash{position:absolute;top:8px;right:8px;min-width:34px;height:34px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 8px;color:var(--muted)}
 .trash svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .trash:hover{color:var(--bad);border-color:var(--bad)}
@@ -538,8 +550,8 @@ const avb=(cfg,size)=>`<span class="avb" style="--s:${size||48}px">${avatarSvg(c
 const avf=(cfg,w)=>`<span class="avf" style="--w:${w||160}px">${avatarSvg(cfg,'full')}</span>`;
 
 /* ---------- stan i zapis ---------- */
-const COLL=['players','matches','tournaments'];
-const S={players:{},matches:{},tournaments:{},tomb:{players:{},matches:{},tournaments:{}},sync:{ok:true,last:0,err:''},mode:'local',loading:false};
+const COLL=['players','matches','tournaments','trainings'];
+const S={players:{},matches:{},tournaments:{},trainings:{},tomb:{players:{},matches:{},tournaments:{},trainings:{}},sync:{ok:true,last:0,err:''},mode:'local',loading:false};
 const ui={tab:lsGet('tt-tab','play'),setup:lsGet('tt-setup',{a:null,b:null,to:11,bo:3,first:'rnd'}),live:lsGet('tt-live',null),
   edit:null,prof:null,showLink:false,voice:Object.assign({speak:false},lsGet('tt-voice',{}),{listen:false}),voiceMsg:'',confirm:null,tsetup:{sel:[],bo:3,finalBo:5,to:11,name:''},tview:null,h2h:{a:'',b:''},hf:'',period:'all'};
 const saveUi=()=>{lsSet('tt-tab',ui.tab);lsSet('tt-setup',ui.setup);lsSet('tt-live',ui.live)};
@@ -547,7 +559,7 @@ const saveVoice=()=>lsSet('tt-voice',{speak:!!ui.voice.speak});
 function loadLocal(){
   const d=lsGet('tt-data',{});COLL.forEach(c=>S[c]=d[c]||{});
   S.tomb=d.tomb||{};COLL.forEach(c=>{S.tomb[c]=S.tomb[c]||{}})}
-function saveLocal(){lsSet('tt-data',{players:S.players,matches:S.matches,tournaments:S.tournaments,tomb:S.tomb})}
+function saveLocal(){lsSet('tt-data',{players:S.players,matches:S.matches,tournaments:S.tournaments,trainings:S.trainings,tomb:S.tomb})}
 async function put(c,id,obj){obj.u=Date.now();S[c][id]=obj;delete S.tomb[c][id];saveLocal();render();syncSoon()}
 async function del(c,id){delete S[c][id];S.tomb[c][id]=Date.now();saveLocal();render();syncSoon()}
 
@@ -564,7 +576,7 @@ function chip(){
 function updateChip(){const e=$('#chip');if(e)e.outerHTML=chip()}
 function syncSoon(){if(!sync)return;clearTimeout(syncT);syncT=setTimeout(syncNow,700)}
 function syncRender(){
-  if(ui.edit||(ui.shop&&ui.shop.reveal)||(ui.live&&ui.tab==='play'))return;
+  if(ui.edit||TR.mode!=='idle'||(ui.shop&&ui.shop.reveal)||(ui.live&&ui.tab==='play'))return;
   const a=document.activeElement;if(a&&/INPUT|SELECT|TEXTAREA/.test(a.tagName))return;
   render()}
 async function syncNow(){
@@ -637,13 +649,13 @@ function syncCard(){
    <div><label class="lbl" for="sync-code">Kod rodziny (tylko jeśli dołączasz do istniejących danych)</label><input id="sync-code" placeholder="zostaw puste na pierwszym telefonie" style="width:100%;border:2px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 12px"><p class="muted" style="font-size:.85rem;margin-top:6px">Na pozostałych telefonach łatwiej otworzyć link do dołączenia z pierwszego telefonu. Nie wklejaj tam adresu bazy bez kodu, bo powstaną osobne dane.</p></div>
    <div><button class="btn pri" data-act="syncon">Włącz synchronizację</button></div></section>`}
 function exportData(){
-  const blob=new Blob([JSON.stringify({v:1,exported:new Date().toISOString(),players:S.players,matches:S.matches,tournaments:S.tournaments},null,1)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({v:1,exported:new Date().toISOString(),players:S.players,matches:S.matches,tournaments:S.tournaments,trainings:S.trainings},null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ping-pong-kopia-'+new Date().toISOString().slice(0,10)+'.json';
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 function importData(f){
   if(!f)return;const r=new FileReader();
   r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||typeof d.players!=='object')throw 0;
-    S.players=d.players||{};S.matches=d.matches||{};S.tournaments=d.tournaments||{};COLL.forEach(c=>Object.values(S[c]).forEach(r=>{r.u=Date.now()}));saveLocal();syncSoon();toast('Wczytano kopię danych.');render()}
+    S.players=d.players||{};S.matches=d.matches||{};S.tournaments=d.tournaments||{};S.trainings=d.trainings||{};COLL.forEach(c=>Object.values(S[c]).forEach(r=>{r.u=Date.now()}));saveLocal();syncSoon();toast('Wczytano kopię danych.');render()}
     catch(e){toast('To nie jest poprawny plik kopii.')}};
   r.readAsText(f)}
 
@@ -907,6 +919,16 @@ const MEDALS=[
  {id:'shop30',n:'Wielki kolekcjoner',d:'Zbierz 30 przedmiotów ze sklepu',c:'#e0b21e',g:'bag',t:x=>x.inv>=30},
  {id:'king1',n:'Koronacja',d:'Zostań królem stołu',c:'#d4a017',g:'crown',t:x=>x.crowns>=1},
  {id:'kdef5',n:'Niezłomny król',d:'Obroń koronę 5 razy w jednym panowaniu',c:'#7b2cbf',g:'crown',t:x=>x.bestDef>=5},
+ {id:'tr1',n:'Pierwszy trening',d:'Zakończ pierwszy trening solo',c:'#cd7f32',g:'target',t:x=>x.tsess>=1},
+ {id:'tr10',n:'Regularny trening',d:'Zakończ 10 treningów solo',c:'#c0c7d1',g:'target',t:x=>x.tsess>=10},
+ {id:'ts25',n:'Seria 25 odbić',d:'Odbij piłeczkę 25 razy z rzędu',c:'#2a9d8f',g:'25',t:x=>x.tbest>=25},
+ {id:'ts50',n:'Seria 50 odbić',d:'Odbij piłeczkę 50 razy z rzędu',c:'#118ab2',g:'50',t:x=>x.tbest>=50},
+ {id:'ts100',n:'Seria 100 odbić',d:'Odbij piłeczkę 100 razy z rzędu',c:'#8338ec',g:'100',t:x=>x.tbest>=100},
+ {id:'ts250',n:'Seria 250 odbić',d:'Odbij piłeczkę 250 razy z rzędu',c:'#d4a017',g:'250',t:x=>x.tbest>=250},
+ {id:'th1k',n:'Tysiąc odbić',d:'Zbierz 1000 odbić w treningach',c:'#e0b21e',g:'1k',t:x=>x.thits>=1000},
+ {id:'th10k',n:'Dziesięć tysięcy odbić',d:'Zbierz 10000 odbić w treningach',c:'#b8860b',g:'10k',t:x=>x.thits>=10000},
+ {id:'td7',n:'Tydzień treningu',d:'Trenuj w 7 różnych dni',c:'#06a77d',g:'cal',t:x=>x.tdays>=7},
+ {id:'tround',n:'Pełna runda',d:'Ukończ rundę na czas',c:'#ff7a1a',g:'bolt',t:x=>x.trounds>=1},
  {id:'luck',n:'Szczęściarz',d:'Wylosuj legendarny przedmiot',c:'#f2b705',g:'gem',t:x=>x.hasL}];
 const GLYPH={
  star:'<path d="M24 19l2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L24 33.4l-5.7 3.1 1.1-6.3-4.6-4.5 6.4-.9z" fill="#fff"/>',
@@ -937,9 +959,9 @@ function computeProgress(){
     (m.sprint?[]:m.sets||[]).forEach(st=>{const sc=score(st),me=side==='A'?sc.a:sc.b,th=side==='A'?sc.b:sc.a;
       if(me>th){if(th===0)x.bagel++;if(me>m.to)x.deuce++}});
     if(won&&(m.sets||[]).length>1){const f=score(m.sets[0]);if(side==='A'?f.a<f.b:f.b<f.a)x.comeback++}})));
-  const n=rows.length,KB=kingBoard();
+  const n=rows.length,KB=kingBoard(),TA=trainAll();
   KB.events.forEach(e=>{const x=X[e.id];if(x)x.kb=(x.kb||0)+(e.type==='crown'?KING.crown:KING.def)});
-  Object.values(X).forEach(x=>{x.bonus=Math.floor(x.pf/1000)*LVLBONUS;const ks=KB.stats[x.id]||{crowns:0,bestDef:0};x.crowns=ks.crowns;x.bestDef=ks.bestDef;x.earned=x.sw*COIN.set+x.w*COIN.match+x.titles*COIN.title+x.bonus+(x.kb||0);x.coins=x.earned-((S.players[x.id]||{}).spent||0);const pr_=S.players[x.id]||{},invk=pr_.inv||[];x.inv=invk.length;x.hasL=invk.some(k=>ITEMBY[k]&&ITEMBY[k].r==='l');x.maxDay=Math.max(0,...Object.values(x.perDay));x.medals=MEDALS.filter(md=>md.t(x,n)).map(md=>md.id);x.level=1+Math.floor(x.pf/1000)});
+  Object.values(X).forEach(x=>{x.bonus=Math.floor(x.pf/1000)*LVLBONUS;const ks=KB.stats[x.id]||{crowns:0,bestDef:0};x.crowns=ks.crowns;x.bestDef=ks.bestDef;const tr_=TA[x.id]||{n:0,hits:0,best:0,days:new Set(),rounds:0,coins:0};x.tsess=tr_.n;x.thits=tr_.hits;x.tbest=tr_.best;x.tdays=tr_.days.size;x.trounds=tr_.rounds;x.earned=x.sw*COIN.set+x.w*COIN.match+x.titles*COIN.title+x.bonus+(x.kb||0)+tr_.coins;x.coins=x.earned-((S.players[x.id]||{}).spent||0);const pr_=S.players[x.id]||{},invk=pr_.inv||[];x.inv=invk.length;x.hasL=invk.some(k=>ITEMBY[k]&&ITEMBY[k].r==='l');x.maxDay=Math.max(0,...Object.values(x.perDay));x.medals=MEDALS.filter(md=>md.t(x,n)).map(md=>md.id);x.level=1+Math.floor(x.pf/1000)});
   return X}
 const plural=(n,a,b,c)=>n===1?a:(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?b:c;
 function progressNote(before,after,ids){
@@ -950,6 +972,18 @@ function progressNote(before,after,ids){
       out.push(`${name} awansuje na poziom ${a.level}${open?` i odblokowuje ${open} ${plural(open,'nowy element','nowe elementy','nowych elementów')}`:''}`)}
     const newM=a.medals.filter(m=>!b||!b.medals.includes(m));
     newM.forEach(mid=>{const md=MEDALS.find(q=>q.id===mid);out.push(`${name} zdobywa medal: ${md.n}`)})});
+  return out}
+const TRBOX=[0,60,180,300];
+function trainAll(){
+  const out={};
+  Object.values(S.trainings).sort((a,b)=>a.t.localeCompare(b.t)).forEach(r=>{
+    const o=out[r.pid]||(out[r.pid]={n:0,hits:0,best:0,days:new Set(),round:{60:0,180:0,300:0},rounds:0,coins:0,last:null,rec:0});
+    o.n++;o.hits+=r.hits;o.days.add(new Date(r.t).toLocaleDateString('sv'));o.last=r.t;
+    let c=Math.min(30,Math.floor(r.hits/20));
+    if(r.best>o.best&&r.best>=10){c+=20;o.rec++}
+    o.best=Math.max(o.best,r.best);
+    if(r.limit){o.round[r.limit]=Math.max(o.round[r.limit]||0,r.hits);if(r.full)o.rounds++}
+    o.coins+=c});
   return out}
 function kingBoard(){
   const ms=Object.values(S.matches).filter(m=>m.mode==='king'&&!m.a2).sort((x,y)=>x.t.localeCompare(y.t));
@@ -1008,10 +1042,11 @@ const ICON={
  tour:'<svg viewBox="0 0 24 24"><path d="M3 5h5v5H3zM3 14h5v5H3zM16 9.5h5v5h-5zM8 7.5h4v9H8M12 12h4"/></svg>',
  rank:'<svg viewBox="0 0 24 24"><path d="M4 20V11h4v9M10 20V4h4v16M16 20v-6h4v6"/></svg>',
  hist:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.2 2"/></svg>',
+ train:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.500"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
  shop:'<svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/></svg>',
  pl:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c.8-4 3.6-6 7.5-6s6.7 2 7.5 6"/></svg>'};
 const BALL='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ff7a1a"/><ellipse cx="8.5" cy="8" rx="3" ry="1.8" fill="#fff" opacity=".45" transform="rotate(-35 8.5 8)"/></svg>';
-const TABS=[['play','Mecz'],['tour','Turniej'],['rank','Ranking'],['hist','Historia'],['shop','Sklep'],['pl','Gracze']];
+const TABS=[['play','Mecz'],['tour','Turniej'],['rank','Ranking'],['hist','Historia'],['train','Trening'],['shop','Sklep'],['pl','Gracze']];
 function header(){return`<header class="top"><div class="brand"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" fill="#ff7a1a"/><ellipse cx="15" cy="14" rx="6" ry="3.4" fill="#fff" opacity=".45" transform="rotate(-35 15 14)"/></svg><div><h1>Ping-Pong Clash</h1><p>Mecze, punkty i drabinki przy naszym stole</p></div></div>
  ${chip()}</header>`}
 function nav(){return`<nav class="nav" aria-label="Sekcje">${TABS.map(([k,l])=>`<button data-act="tab" data-v="${k}" ${ui.tab===k?'aria-current="page"':''}><span class="${k==='play'&&ui.live?'dot':''}">${ICON[k]}</span>${l}</button>`).join('')}</nav>`}
@@ -1188,6 +1223,8 @@ function viewProfile(){
    <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="${into}"><i style="width:${Math.round(into/10)}%"></i></div>
    <p class="muted">${nextU.length?`Do poziomu ${pr.level+1} brakuje ${nextAt-pr.pf} pkt (+${LVLBONUS} monet). Następne odblokowanie przy ${nextT} pkt: ${esc(nextU.join(', '))}.`:`Do poziomu ${pr.level+1} brakuje ${nextAt-pr.pf} pkt (+${LVLBONUS} monet). Wszystkie style i postacie są już odblokowane.`}</p>
    ${pr.medals.length||1?'':''}</section>`;
+  const TS=trainAll()[id]||{n:0,hits:0,best:0,round:{60:0,180:0,300:0},rec:0,last:null};
+  const trainSec=sec('Trening solo (odbicia)',[tile('Rekord serii',TS.best,'odbić z rzędu','gold'),tile('Runda 1 min',TS.round[60]||'–','odbić'),tile('Runda 3 min',TS.round[180]||'–','odbić'),tile('Runda 5 min',TS.round[300]||'–','odbić'),tile('Treningi',TS.n,TS.last?'ostatni '+fmtShort(TS.last):'jeszcze brak'),tile('Odbicia łącznie',TS.hits,'w treningach')]);
   const medalCard=`<section class="card stack"><div class="row" style="justify-content:space-between"><h3>Medale</h3><span class="muted">${pr.medals.length} z ${MEDALS.length}</span></div><div class="medals">${MEDALS.map(md=>{const on=pr.medals.includes(md.id);return`<div class="medal ${on?'':'off'}" title="${esc(md.d)}">${medalSvg(md,on,56)}<b>${esc(md.n)}</b><span>${esc(md.d)}</span></div>`}).join('')}</div></section>`;
   return`<div class="stack"><section class="card phead">${avf(p.av,120)}<div style="flex:1;min-width:180px"><h2>${esc(p.name)}</h2>
    <p class="muted">${st.g?`${st.g} ${st.g===1?'mecz':'meczów'} · ${pct}% wygranych`:'Jeszcze nie grał(a). Statystyki pojawią się po pierwszym meczu.'}</p>
@@ -1198,6 +1235,7 @@ function viewProfile(){
    ${sec('Punkty',[tile('Zdobyte',st.pf,'w sumie',st.pf?'good':''),tile('Stracone',st.pa,'w sumie',st.pa?'bad':''),tile('Średnio zdobyte na set',sets?f1(st.pf/sets):'–','punktów'),tile('Średnio stracone na set',sets?f1(st.pa/sets):'–','punktów')])}
    ${sec('Rekordy i forma',[tile('Najdłuższa seria wygranych',st.best||'–','meczów pod rząd'),tile('Najdłuższa seria punktów',st.run||'–','punktów pod rząd'),tile('Tytuły mistrza',st.titles||'–','w turniejach'),
      tile('Ostatnie mecze',`<span class="form">${st.form.slice(-5).map(w=>`<b class="${w?'w':'l'}">${w?'Z':'P'}</b>`).join('')||'–'}</span>`,'Z wygrana, P porażka')])}
+   ${trainSec}
    ${medalCard}
    ${recent.length?`<section class="card"><h3 style="margin-bottom:10px">Ostatnie mecze gracza</h3>${recent.map(matchRow).join('')}</section>`:''}</div>`}
 
@@ -1248,6 +1286,115 @@ function equipItem(it){
   const p=S.players[ui.shop.pid];if(!p)return;
   const av=Object.assign({},DEF,p.av,{[it.k]:it.v});if(it.k==='hatC'&&!av.hat)av.hat=1;if(it.k==='faceC'&&!av.face)av.face=1;
   put('players',p.id,Object.assign({},p,{av}));toast(it.n+' założone.')}
+/* ---------- trening solo: liczenie odbić po dźwięku ---------- */
+const TR={mode:'idle',stream:null,ctx:null,an:null,buf:null,timer:null,th:.12,armed:true,last:0,t0:0,cur:0,total:0,bestDone:0,series:0,lastLevelUi:0,calib:null,msg:''};
+ui.train=Object.assign({pid:null,ex:0,sens:45,gap:2.5,res:null},lsGet('tt-train',{}),{res:null});
+const saveTrain=()=>lsSet('tt-train',{pid:ui.train.pid,ex:ui.train.ex,sens:ui.train.sens,gap:ui.train.gap});
+const sensToTh=v=>.5*Math.pow(.04,(v-1)/99);
+async function openMic(){
+  if(TR.stream)return true;
+  try{
+    TR.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    const AC=window.AudioContext||window.webkitAudioContext;TR.ctx=new AC();if(TR.ctx.resume)await TR.ctx.resume();
+    const src=TR.ctx.createMediaStreamSource(TR.stream),hp=TR.ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=1200;
+    TR.an=TR.ctx.createAnalyser();TR.an.fftSize=1024;TR.an.smoothingTimeConstant=0;TR.buf=new Float32Array(TR.an.fftSize);
+    src.connect(hp);hp.connect(TR.an);
+    TR.loop=setInterval(poll,10);return true}
+  catch(e){TR.msg='Brak dostępu do mikrofonu. Zezwól na niego w ustawieniach przeglądarki dla tej strony.';closeMic();return false}}
+function closeMic(){
+  clearInterval(TR.loop);TR.loop=null;
+  try{TR.stream&&TR.stream.getTracks().forEach(t=>t.stop())}catch(e){}
+  try{TR.ctx&&TR.ctx.close()}catch(e){}
+  TR.stream=TR.ctx=TR.an=null}
+function poll(){
+  if(!TR.an)return;
+  TR.an.getFloatTimeDomainData(TR.buf);let pk=0;for(let i=0;i<TR.buf.length;i++){const v=Math.abs(TR.buf[i]);if(v>pk)pk=v}
+  const now=performance.now();TR.level=pk;
+  if(TR.mode==='calib'&&TR.calib){const c=TR.calib;
+    if(now-c.t0<1200){c.amb=Math.max(c.amb,pk)}
+    else{if(pk>Math.max(c.amb*3,.03)&&TR.armed&&now-TR.last>160){c.peaks.push(pk);TR.last=now;TR.armed=false;const e=$('#tr-cal');if(e)e.textContent='Usłyszałem uderzeń: '+c.peaks.length}}
+    if(pk<Math.max(c.amb*1.5,.015))TR.armed=true}
+  else if(TR.mode==='run'){
+    if(pk>TR.th&&TR.armed&&now-TR.last>140){TR.armed=false;hit(now)}
+    if(pk<TR.th*.5)TR.armed=true}
+  if(now-TR.lastLevelUi>45){TR.lastLevelUi=now;const l=$('#tr-lvl');if(l)l.style.width=Math.min(100,pk/.6*100)+'%'}}
+function trUi(){
+  const set=(id,v)=>{const e=$('#'+id);if(e)e.textContent=v};
+  set('tr-hits',TR.total);set('tr-cur',TR.cur);set('tr-best',Math.max(TR.bestDone,TR.cur));set('tr-n',TR.series+(TR.cur?1:0))}
+function endSeries(){if(TR.cur>0){TR.bestDone=Math.max(TR.bestDone,TR.cur);TR.series++;TR.cur=0}}
+function hit(now){
+  if(TR.cur>0&&now-TR.last>ui.train.gap*1000)endSeries();
+  TR.cur++;TR.total++;TR.last=now;trUi();
+  const e=$('#tr-hits');if(e){e.classList.remove('pulse');void e.offsetWidth;e.classList.add('pulse')}}
+async function trStart(){
+  const t=ui.train;if(!S.players[t.pid]){toast('Wybierz gracza.');return}
+  if(!await openMic()){render();return}
+  Object.assign(TR,{mode:'run',th:sensToTh(t.sens),armed:true,last:0,cur:0,total:0,bestDone:0,series:0,t0:performance.now(),msg:''});
+  t.res=null;keepAwake();render();
+  clearInterval(TR.timer);
+  TR.timer=setInterval(()=>{
+    const now=performance.now();
+    if(TR.cur>0&&now-TR.last>ui.train.gap*1000){endSeries();trUi()}
+    if(ui.train.ex){const rem=ui.train.ex*1000-(now-TR.t0),e=$('#tr-time');if(e)e.textContent=fmtClock(rem);if(rem<=0)trStop(true)}
+    else{const e=$('#tr-time');if(e)e.textContent=fmtClock(now-TR.t0)}},250)}
+async function trStop(auto){
+  if(TR.mode!=='run')return;
+  clearInterval(TR.timer);endSeries();closeMic();
+  const t=ui.train,dur=Math.round((performance.now()-TR.t0)/1000),hits=TR.total,best=TR.bestDone;
+  TR.mode='idle';
+  if(auto){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);g.gain.value=.15;o.frequency.value=880;o.start();o.stop(c.currentTime+.5);navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
+  if(hits>0){
+    const before=computeProgress()[t.pid],id=uid(),prev=trainAll()[t.pid]||{best:0};
+    const rec={id,pid:t.pid,t:new Date().toISOString(),hits,best,series:TR.series,dur,limit:t.ex||0,full:!!(t.ex&&auto)};
+    await put('trainings',id,rec);
+    const after=computeProgress()[t.pid],gain=((after||{}).earned||0)-((before||{}).earned||0);
+    const note=progressNote({[t.pid]:before},{[t.pid]:after},[t.pid]);
+    t.res={hits,best,dur,record:best>prev.best&&best>=10,gain,note};
+    toast('Trening zapisany: '+hits+' odbić, najdłuższa seria '+best+(gain>0?'. Monety: +'+gain:'')+(note.length?'. '+note.join('. '):'')+'.')}
+  else{t.res={hits:0,best:0,dur,record:false,gain:0,note:[]}}
+  render()}
+async function trCalib(){
+  if(TR.mode!=='idle')return;
+  if(!await openMic()){render();return}
+  TR.mode='calib';TR.calib={t0:performance.now(),amb:0,peaks:[]};TR.armed=true;TR.last=0;render();
+  setTimeout(()=>{
+    const c=TR.calib;TR.mode='idle';TR.calib=null;closeMic();
+    if(c.peaks.length<3){TR.msg='Usłyszałem tylko '+c.peaks.length+' uderzeń. Zbliż telefon do stołu i spróbuj jeszcze raz.'}
+    else{c.peaks.sort((a,b)=>a-b);const med=c.peaks[Math.floor(c.peaks.length/2)],th=Math.max(c.amb*3,Math.min(med*.45,.45));
+      ui.train.sens=Math.max(1,Math.min(100,Math.round(1+99*Math.log(.5/th)/Math.log(25))));saveTrain();
+      TR.msg='Gotowe. Ustawiłem czułość na podstawie '+c.peaks.length+' uderzeń (hałas tła: '+Math.round(c.amb*100)+'%).'}
+    render()},7200)}
+function viewTrain(){
+  const pl=plist();
+  if(!pl.length)return`<section class="card empty"><h2>Trening samemu</h2><p>Najpierw dodaj gracza w zakładce Gracze.</p><button class="btn pri" data-act="pnew">Dodaj gracza</button></section>`;
+  const t=ui.train;if(!S.players[t.pid])t.pid=pl[0].id;
+  const th=sensToTh(t.sens),TA=trainAll(),mine=TA[t.pid]||{best:0,round:{60:0,180:0,300:0},n:0,hits:0};
+  const seg=(act,k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-act="${act}" data-v="${v}" class="${String(t[k])===String(v)?'on':''}">${l}</button>`).join('')}</div>`;
+  const meter=`<div class="meter" aria-hidden="true"><i id="tr-lvl"></i><u id="tr-th" style="left:${Math.min(100,th/.6*100)}%"></u></div>`;
+  const clock=t.ex?fmtClock(t.ex*1000):'0:00';
+  let main;
+  if(TR.mode==='run'){
+    main=`<section class="card trun"><div class="row" style="justify-content:space-between"><span class="chip t num" id="tr-time">${t.ex?fmtClock(t.ex*1000-(performance.now()-TR.t0)):fmtClock(performance.now()-TR.t0)}</span><span class="muted">Trening: ${esc(nm(t.pid))}</span></div>
+     <div class="tr-big num" id="tr-hits">${TR.total}</div><p class="muted" style="text-align:center">odbić łącznie</p>
+     <div class="tr3"><div><span>Seria</span><b class="num" id="tr-cur">${TR.cur}</b></div><div><span>Najdłuższa</span><b class="num" id="tr-best">${Math.max(TR.bestDone,TR.cur)}</b></div><div><span>Serie</span><b class="num" id="tr-n">${TR.series+(TR.cur?1:0)}</b></div></div>
+     ${meter}<p class="muted" style="font-size:.82rem">Pasek pokazuje głośność. Kreska to próg: uderzenie musi ją przekroczyć.</p>
+     <div class="row" style="justify-content:center"><button class="btn" data-act="trminus">−1</button><button class="btn" data-act="trplus">+1</button><button class="btn pri" data-act="trstop">Zakończ trening</button></div></section>`}
+  else if(TR.mode==='calib'){
+    main=`<section class="card trun"><h2>Kalibracja</h2><p>Przez 1 sekundę bądź cicho, potem odbij piłeczkę rakietką 5 do 8 razy (tak, jak będziesz trenować).</p><div class="tr-big num" id="tr-cal" style="font-size:2rem">Słucham…</div>${meter}</section>`}
+  else{
+    const r=t.res;
+    main=`${r?`<section class="card tres"><h2>${r.hits?'Koniec treningu':'Nic nie policzyłem'}</h2><p><b class="num">${r.hits}</b> odbić w ${fmtClock(r.dur*1000)}, najdłuższa seria <b class="num">${r.best}</b>${r.record?' 🎉 <b>NOWY REKORD!</b>':''}.</p>${r.gain>0?`<p class="muted">Monety: +${r.gain} ${coinSvg(14)}</p>`:''}${(r.note||[]).map(n=>`<p class="muted">${esc(n)}</p>`).join('')}</section>`:''}
+     <section class="card stack"><h2>Trening samemu</h2><p class="muted">Aplikacja liczy odbicia piłeczki o rakietkę po dźwięku uderzenia. Połóż telefon na stole obok siebie, w cichym miejscu.</p>
+     <div><span class="lbl">Kto trenuje?</span><div class="spl">${pl.map(q=>`<button class="${q.id===t.pid?'on':''}" data-act="trpick" data-id="${q.id}">${avb(q.av,44)}<b>${esc(q.name)}</b><small>rekord ${(TA[q.id]||{best:0}).best}</small></button>`).join('')}</div></div>
+     <div><span class="lbl">Rodzaj treningu</span>${seg('trex','ex',[[0,'Swobodnie'],[60,'1 minuta'],[180,'3 minuty'],[300,'5 minut']])}</div>
+     <div><span class="lbl">Czułość mikrofonu</span><input id="tr-sens" type="range" min="1" max="100" value="${t.sens}" style="width:100%;max-width:360px">${meter}<p class="muted" style="font-size:.85rem">Wyżej = czulej. Jeśli aplikacja liczy za dużo (hałas), zmniejsz. Jeśli pomija uderzenia, zwiększ albo użyj kalibracji.</p>${TR.msg?`<p class="msg-tr">${esc(TR.msg)}</p>`:''}</div>
+     <div><span class="lbl">Przerwa kończąca serię</span>${seg('trgap','gap',[[1.5,'1,5 s'],[2.5,'2,5 s'],[4,'4 s']])}</div>
+     <div class="row"><button class="btn pri" data-act="trstart">Start</button><button class="btn" data-act="trcalib">Kalibruj czułość</button></div></section>`}
+  const rows=pl.map(q=>({q,ts:TA[q.id]||{best:0,round:{60:0,180:0,300:0},n:0,hits:0}})).sort((a,b)=>b.ts.best-a.ts.best);
+  const hist=Object.values(S.trainings).filter(r=>S.players[r.pid]).sort((a,b)=>b.t.localeCompare(a.t)).slice(0,8);
+  return`<div class="stack">${main}
+   ${TR.mode==='idle'?`<section class="card stack"><h3>Rekordy treningu</h3><div class="tw"><table><thead><tr><th>Gracz</th><th>Seria</th><th>1 min</th><th>3 min</th><th>5 min</th><th>Treningi</th></tr></thead><tbody>${rows.map(({q,ts})=>`<tr><td class="who"><button class="lnk" data-act="pprofile" data-id="${q.id}">${avb(q.av,32)}<span>${esc(q.name)}</span></button></td><td>${ts.best||'–'}</td><td>${ts.round[60]||'–'}</td><td>${ts.round[180]||'–'}</td><td>${ts.round[300]||'–'}</td><td>${ts.n}</td></tr>`).join('')}</tbody></table></div></section>
+   ${hist.length?`<section class="card"><h3 style="margin-bottom:10px">Ostatnie treningi</h3>${hist.map(r=>`<div class="mrow" style="grid-template-columns:auto 1fr auto auto"><span>${avb(av_(r.pid),36)}</span><div><b>${esc(nm(r.pid))}</b><div class="mmeta"><span>${fmtShort(r.t)} ${fmtTime(r.t)}</span><span>${r.limit?r.limit/60+' min':'swobodnie'}</span></div></div><div style="text-align:right"><div class="mbig num">${r.hits}</div><span class="muted" style="font-size:.78rem">seria ${r.best}</span></div><button class="trash" style="position:static" data-act="trdel" data-id="${r.id}" aria-label="Usuń trening" title="Usuń trening">${ui.confirm==='trd'+r.id?'<span>Usunąć?</span>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4.500h6V7M6.500 7l1 13h9l1-13"/></svg>'}</button></div>`).join('')}</section>`:''}`:''}</div>`}
 function viewEditor(){
   const e=ui.edit,a=e.av,inv=new Set(((e.id&&S.players[e.id])||{}).inv||[]),pts=e.id?((computeProgress()[e.id]||{}).pf||0):0,orig=(e.id&&S.players[e.id]&&S.players[e.id].av)||{};
   const total=UNLOCKS.length,open=UNLOCKS.filter(u=>u[2]<=pts).length;
@@ -1263,7 +1410,7 @@ function viewEditor(){
 
 function viewLoading(){return`<section class="card empty"><p>Wczytuję dane…</p></section>`}
 function render(){
-  const views={play:viewPlay,tour:viewTour,rank:viewRank,hist:viewHist,shop:viewShop,pl:viewPlayers};
+  const views={play:viewPlay,tour:viewTour,rank:viewRank,hist:viewHist,shop:viewShop,train:viewTrain,pl:viewPlayers};
   const y=window.scrollY;
   $('#app').innerHTML=header()+nav()+`<main>${S.loading?viewLoading():views[ui.tab]()}</main>`;
   window.scrollTo(0,y)}
@@ -1298,6 +1445,13 @@ const H={
  kingch:()=>{const kg=kingBoard().king;ui.setup.mode='king';ui.setup.team=1;if(kg){ui.setup.a=kg;if(ui.setup.b===kg)ui.setup.b=null}ui.tab='play';saveUi();render();window.scrollTo(0,0)},
  x2:d=>armX2(d.s),
  spause:()=>{const L=ui.live;if(!L||!L.sprint)return;if(L.pausedAt){L.end+=Date.now()-L.pausedAt;L.pausedAt=0}else L.pausedAt=Date.now();saveUi();render()},
+ trpick:d=>{ui.train.pid=d.id;saveTrain();render()},
+ trex:d=>{ui.train.ex=+d.v;saveTrain();render()},
+ trgap:d=>{ui.train.gap=+d.v;saveTrain();render()},
+ trstart:trStart,trstop:()=>trStop(false),trcalib:trCalib,
+ trplus:()=>{if(TR.mode==='run')hit(performance.now())},
+ trminus:()=>{if(TR.mode==='run'&&TR.total>0){TR.total--;if(TR.cur>0)TR.cur--;else if(TR.bestDone>0){}trUi()}},
+ trdel:d=>ask('trd'+d.id,()=>del('trainings',d.id)),
  shoppick:d=>{ui.shop.pid=d.id;render()},
  buybox:d=>{
    const box=BOXES.find(b=>b.id===d.id),p=S.players[ui.shop.pid];if(!box||!p)return;
@@ -1334,7 +1488,8 @@ const H={
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.disabled)return;const f=H[el.dataset.act];if(f)f(el.dataset)});
 document.addEventListener('input',e=>{
   if(e.target.id==='p-name'&&ui.edit)ui.edit.name=e.target.value;
-  if(e.target.id==='t-name')ui.tsetup.name=e.target.value});
+  if(e.target.id==='t-name')ui.tsetup.name=e.target.value;
+  if(e.target.id==='tr-sens'){ui.train.sens=+e.target.value;saveTrain();const m=$('#tr-th');if(m)m.style.left=Math.min(100,sensToTh(ui.train.sens)/.6*100)+'%'}});
 document.addEventListener('change',e=>{
   if(e.target.id==='imp'){importData(e.target.files[0]);e.target.value='';return}
   const k=e.target.dataset&&e.target.dataset.chg;if(!k)return;const v=e.target.value;

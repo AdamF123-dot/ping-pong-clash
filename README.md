@@ -56,3 +56,7 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 - Sprint 3 lub 5 minut: wygrywa lepszy wynik po czasie, przy remisie złoty punkt; jest pauza i odliczanie (głos ostrzega o minucie i 10 sekundach).
 - Podwójna stawka: raz w każdym secie każda drużyna może podbić stawkę, a najbliższy punkt jest wart 2 dla zwycięzcy wymiany (głosem: „podwójna stawka” i imię).
 - Król stołu: mecze o koronę z obecnym królem; ranking panowań w zakładce Ranking, bonus monet za koronę (30) i obronę (15) oraz dwa medale.
+
+## Trening solo (liczenie odbić po dźwięku)
+- Zakładka Trening: aplikacja słucha mikrofonu i liczy uderzenia piłeczki o rakietkę (kalibracja, suwak czułości, ręczne +1/−1). Tryby: swobodnie oraz runda 1, 3 lub 5 minut. Serię kończy przerwa 1,5–4 s.
+- Rekord serii i najlepsze rundy są w profilu gracza i w tabeli w zakładce Trening; monety za trening (do 30 + 20 za rekord) oraz 10 medali.
