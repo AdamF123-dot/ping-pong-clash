@@ -1312,11 +1312,11 @@ function poll(){
   const now=performance.now();TR.level=pk;
   if(TR.mode==='calib'&&TR.calib){const c=TR.calib;
     if(now-c.t0<1200){c.samp.push(pk);const q=c.samp.slice().sort((a,b)=>a-b);c.amb=q[Math.floor(q.length*.7)]||0}
-    else{if(pk>Math.max(c.amb*3,.03)&&TR.armed&&now-TR.last>160){c.peaks.push(pk);TR.last=now;TR.armed=false;const e=$('#tr-cal');if(e)e.textContent='Usłyszałem uderzeń: '+c.peaks.length}}
-    if(pk<Math.max(c.amb*1.5,.015))TR.armed=true}
+    else{if(pk>Math.max(c.amb*3,.03)&&pk>(TR.env||0)*1.6&&now-TR.last>70){c.peaks.push(pk);TR.last=now;const e=$('#tr-cal');if(e)e.textContent='Usłyszałem uderzeń: '+c.peaks.length}}
+    TR.env=Math.max(pk,(TR.env||0)*.8)}
   else if(TR.mode==='run'){
-    if(pk>TR.th&&TR.armed&&now-TR.last>140){TR.armed=false;hit(now)}
-    if(pk<TR.th*.5)TR.armed=true}
+    if(pk>TR.th&&pk>(TR.env||0)*1.6&&now-TR.last>60){hit(now)}
+    TR.env=Math.max(pk,(TR.env||0)*.8)}
   if(now-TR.lastLevelUi>45){TR.lastLevelUi=now;const l=$('#tr-lvl');if(l)l.style.width=Math.min(100,pk/.6*100)+'%'}}
 function trUi(){
   const set=(id,v)=>{const e=$('#'+id);if(e)e.textContent=v};
@@ -1329,7 +1329,7 @@ function hit(now){
 async function trStart(){
   const t=ui.train;if(!S.players[t.pid]){toast('Wybierz gracza.');return}
   if(!await openMic()){render();return}
-  Object.assign(TR,{mode:'run',th:sensToTh(t.sens),armed:true,last:0,cur:0,total:0,bestDone:0,series:0,t0:performance.now(),msg:''});
+  Object.assign(TR,{mode:'run',th:sensToTh(t.sens),env:0,armed:true,last:0,cur:0,total:0,bestDone:0,series:0,t0:performance.now(),msg:''});
   t.res=null;keepAwake();render();
   clearInterval(TR.timer);
   TR.timer=setInterval(()=>{
@@ -1356,7 +1356,7 @@ async function trStop(auto){
 async function trCalib(){
   if(TR.mode!=='idle')return;
   if(!await openMic()){render();return}
-  TR.mode='calib';TR.calib={t0:performance.now(),amb:0,samp:[],peaks:[]};TR.armed=true;TR.last=0;render();
+  TR.mode='calib';TR.calib={t0:performance.now(),amb:0,samp:[],peaks:[]};TR.armed=true;TR.env=0;TR.last=0;render();
   setTimeout(()=>{
     const c=TR.calib;TR.mode='idle';TR.calib=null;closeMic();
     if(c.peaks.length<3){TR.msg='Usłyszałem tylko '+c.peaks.length+' uderzeń. Zbliż telefon do stołu i spróbuj jeszcze raz.'}
