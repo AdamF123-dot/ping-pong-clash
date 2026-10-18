@@ -1321,7 +1321,7 @@ function poll(){
 function trUi(){
   const set=(id,v)=>{const e=$('#'+id);if(e)e.textContent=v};
   set('tr-hits',TR.total);set('tr-cur',TR.cur);set('tr-best',Math.max(TR.bestDone,TR.cur));set('tr-n',TR.series+(TR.cur?1:0))}
-function endSeries(){if(TR.cur>0){TR.bestDone=Math.max(TR.bestDone,TR.cur);TR.series++;TR.cur=0}}
+function endSeries(){if(TR.cur>0){(TR.done=TR.done||[]).push(TR.cur);TR.bestDone=Math.max(TR.bestDone,TR.cur);TR.series++;TR.cur=0}}
 function hit(now){
   if(TR.cur>0&&now-TR.last>ui.train.gap*1000)endSeries();
   TR.cur++;TR.total++;TR.last=now;trUi();
@@ -1329,7 +1329,7 @@ function hit(now){
 async function trStart(){
   const t=ui.train;if(!S.players[t.pid]){toast('Wybierz gracza.');return}
   if(!await openMic()){render();return}
-  Object.assign(TR,{mode:'run',th:sensToTh(t.sens),env:0,armed:true,last:0,cur:0,total:0,bestDone:0,series:0,t0:performance.now(),msg:''});
+  Object.assign(TR,{mode:'run',th:sensToTh(t.sens),env:0,armed:true,last:0,cur:0,total:0,bestDone:0,done:[],series:0,t0:performance.now(),msg:''});
   t.res=null;keepAwake();render();
   clearInterval(TR.timer);
   TR.timer=setInterval(()=>{
@@ -1450,7 +1450,10 @@ const H={
  trgap:d=>{ui.train.gap=+d.v;saveTrain();render()},
  trstart:trStart,trstop:()=>trStop(false),trcalib:trCalib,
  trplus:()=>{if(TR.mode==='run')hit(performance.now())},
- trminus:()=>{if(TR.mode==='run'&&TR.total>0){TR.total--;if(TR.cur>0)TR.cur--;else if(TR.bestDone>0){}trUi()}},
+ trminus:()=>{if(TR.mode==='run'&&TR.total>0){TR.total--;
+  if(TR.cur>0)TR.cur--;
+  else if(TR.done&&TR.done.length){TR.cur=TR.done.pop()-1;TR.series--;TR.bestDone=TR.done.length?Math.max(...TR.done):0}
+  trUi()}},
  trdel:d=>ask('trd'+d.id,()=>del('trainings',d.id)),
  shoppick:d=>{ui.shop.pid=d.id;render()},
  buybox:d=>{
