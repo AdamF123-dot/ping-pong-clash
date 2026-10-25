@@ -348,10 +348,10 @@ const PADC=['#d62828','#111111','#2a9d8f','#3a86ff','#ff9f1c','#7b2cbf'];
 const HAIRS=['Łysy','Kitka','Kolce','Grzywka','Loki','Irokez','Kok','Afro','Długie włosy','Wysoki irokez','Warkocze'];
 const EYES=['Kropki','Duże oczy','Wesołe','Mrugnięcie','Gwiazdki','Serduszka','Zmrużone','Laserowe','Spiralki'];
 const MOUTHS=['Uśmiech','Szeroki uśmiech','Chytry','Zdziwiony','Język','Zęby','Kropka','Gwizd','Złoty ząb'];
-const HATS=['Bez czapki','Czapka z daszkiem','Czapka zimowa','Opaska','Korona','Cylinder','Słuchawki','Czapka imprezowa','Kapelusz czarodzieja','Opaska ninja','Kowbojski kapelusz','Czapka kucharza','Aureola','Hełm wikinga','Beret','Antenki','Sombrero','Uszy królika','Kapelusz pirata','Rogi diabełka','Złota korona','Płomienna czupryna','Kask kosmonauty','Lodowa korona','Czapka z propellerem','Hełm gladiatora','Laur zwycięzcy','Diamentowa korona','Płomienna aureola'];
-const FACES=['Bez gadżetu','Okulary okrągłe','Okulary przeciwsłoneczne','Monokl','Wąsy','Opaska na oko','Czerwony nos','Gogle','Okulary serca','Maska','Broda','Plaster','Okulary gwiazdki','Okulary 3D','Okulary retro','Aviatorki','Cyber-wizjer','Maska zapaśnika','Złote okulary gwiazdy','Neonowe okulary','Maska bohatera','Złote wąsy'];
+const HATS=['Bez czapki','Czapka z daszkiem','Czapka zimowa','Opaska','Korona','Cylinder','Słuchawki','Czapka imprezowa','Kapelusz czarodzieja','Opaska ninja','Kowbojski kapelusz','Czapka kucharza','Aureola','Hełm wikinga','Beret','Antenki','Sombrero','Uszy królika','Kapelusz pirata','Rogi diabełka','Złota korona','Płomienna czupryna','Kask kosmonauty','Lodowa korona','Czapka z propellerem','Hełm gladiatora','Laur zwycięzcy','Diamentowa korona','Płomienna aureola','Daszek rzutkarza','Tarcza na głowie','Korona mistrza tarczy','Złota rzutka','Diamentowa tarcza'];
+const FACES=['Bez gadżetu','Okulary okrągłe','Okulary przeciwsłoneczne','Monokl','Wąsy','Opaska na oko','Czerwony nos','Gogle','Okulary serca','Maska','Broda','Plaster','Okulary gwiazdki','Okulary 3D','Okulary retro','Aviatorki','Cyber-wizjer','Maska zapaśnika','Złote okulary gwiazdy','Neonowe okulary','Maska bohatera','Złote wąsy','Okulary celownik','Monokl bullseye','Złote okulary mistrza'];
 const KINDS=['Klasyk','Kot','Lis','Sowa','Robot','Dino','Kosmita','Panda','Duszek','Jednorożec','Smok','Żaba','Pingwin','Wampir','Yeti','Złoty Mistrz'];
-const FX=['Bez efektu','Iskry','Blask','Konfetti','Serduszka','Bąbelki','Płomienie','Tęczowy blask','Gwiazdozbiór','Błyskawice','Aura mocy','Gwiezdny pył','Złota aura'];
+const FX=['Bez efektu','Iskry','Blask','Konfetti','Serduszka','Bąbelki','Płomienie','Tęczowy blask','Gwiazdozbiór','Błyskawice','Aura mocy','Gwiezdny pył','Złota aura','Lecące rzutki','Aura bullseye','Deszcz złotych rzutek'];
 const DEF={skin:'#ced4da',shirt:'#868e96',hair:0,hairC:'#555555',eyes:0,mouth:0,hat:0,hatC:'#888888',face:0,faceC:'#222222',paddle:'#999999',kind:0,fx:0};
 /* ---------- sklep: skrzynki z losową zawartością ---------- */
 const RN={c:'Zwykły',r:'Rzadki',e:'Epicki',l:'Legendarny'},RC={c:'#8d99a6',r:'#3a86ff',e:'#9d4edd',l:'#f2b705'},RP={c:'Zwykłe',r:'Rzadkie',e:'Epickie',l:'Legendarne'};
@@ -399,8 +399,13 @@ const UNLOCKS=[['kind',1,1000],['hat',8,1000],['eyes',4,1000],['fx',1,1000],
  ['hat',28,28000],['skin','#ff7b00',28000],
  ['kind',15,30000],['fx',12,30000]];
 const MAXPTS=30000,LVLBONUS=50;
+/* odblokowania za punkty rzucone w darcie: [kategoria, wartość, wymagane punkty w darcie] */
+const DUNL=[['hat',29,5000],['face',23,10000],['hat',30,20000],['fx',13,30000],['face',24,50000],['hat',31,75000],['fx',14,100000],['hat',32,125000],['face',25,150000],['fx',15,175000],['hat',33,200000]];
+const dneed=(k,v)=>{const u=DUNL.find(x=>x[0]===k&&x[1]===v);return u?u[2]:0};
+const DCOIN={leg:3,set:10,match:40,v180:10,perfect:150};
+const fK=n=>n>=1000?(n/1000).toString().replace('.',',')+' tys.':String(n);
 const SKINN={'#d4af37':'złoty','#c0c7d1':'srebrny','#2d2d34':'cień','#00f5d4':'neonowy turkus','#ff7b00':'lawa'};
-const need=(k,v)=>{if(SHOPSET.has(k+':'+v))return 1e9;const u=UNLOCKS.find(x=>x[0]===k&&x[1]===v);return u?u[2]:0};
+const need=(k,v)=>{if(SHOPSET.has(k+':'+v)||dneed(k,v))return 1e9;const u=UNLOCKS.find(x=>x[0]===k&&x[1]===v);return u?u[2]:0};
 const LISTS={kind:KINDS,hat:HATS,face:FACES,hair:HAIRS,eyes:EYES,mouth:MOUTHS,fx:FX};
 const KLAB={kind:'Postać',hat:'Gadżet',face:'Dodatek',hair:'Fryzura',eyes:'Oczy',mouth:'Buzia',fx:'Efekt',skin:'Kolor'};
 buildItems();
@@ -471,6 +476,9 @@ function faceSvg(i,c){switch(i){
  case 20:return`<path d="M20 52c9-7 22-7 30 1 8-8 21-8 30-1l-3 13c-8 5-18 2-25-5-7 7-17 10-25 5z" fill="${c}" stroke="${EDGE}" stroke-width="1.800"/><ellipse cx="37" cy="58" rx="7" ry="5" fill="#fff"/><ellipse cx="63" cy="58" rx="7" ry="5" fill="#fff"/><circle cx="38" cy="58" r="2.800" fill="${INK}"/><circle cx="62" cy="58" r="2.800" fill="${INK}"/>`;
  case 21:return`<path d="M50 66C44 61 34 63 31 71C38 70 44 73 50 69C56 73 62 70 69 71C66 63 56 61 50 66Z" fill="#ffd700" stroke="${EDGE}" stroke-width="1.400"/><path d="M33 69l-4 3M67 69l4 3" stroke="#ffd700" stroke-width="2.600" stroke-linecap="round"/>`;
  case 12:{const st='<path d="M0 -10L3 -3.4 10 -3 5 2.4 6.6 9.6 0 6 -6.6 9.6 -5 2.4 -10 -3 -3 -3.4Z" fill="'+c+'" stroke="'+EDGE+'" stroke-width="1.4" stroke-linejoin="round"/>';return`<g transform="translate(37 58) scale(1.35)">${st}</g><g transform="translate(63 58) scale(1.35)">${st}</g><path d="M47 56h6" stroke="${c}" stroke-width="2.6"/>`}
+ case 23:return`<g fill="rgba(255,255,255,.35)" stroke="${c}" stroke-width="3"><circle cx="38" cy="58" r="10"/><circle cx="62" cy="58" r="10"/></g><path d="M48 58h4M28 56L18 52M72 56L82 52" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M38 50v16M30 58h16M62 50v16M54 58h16" stroke="#d62828" stroke-width="1.500"/><circle cx="38" cy="58" r="3.500" fill="none" stroke="#d62828" stroke-width="1.200"/><circle cx="62" cy="58" r="3.500" fill="none" stroke="#d62828" stroke-width="1.200"/>`;
+ case 24:return`<circle cx="62" cy="58" r="11" fill="#fff" stroke="${c}" stroke-width="3"/><circle cx="62" cy="58" r="8" fill="none" stroke="#d62828" stroke-width="3"/><circle cx="62" cy="58" r="4" fill="none" stroke="#1b9e4b" stroke-width="2.400"/><circle cx="62" cy="58" r="1.600" fill="#d62828"/><path d="M62 69Q67 84 58 98" fill="none" stroke="${c}" stroke-width="1.800"/>`;
+ case 25:return`<g fill="rgba(255,236,150,.4)" stroke="#ffd700" stroke-width="3.600"><circle cx="38" cy="58" r="10.500"/><circle cx="62" cy="58" r="10.500"/></g><path d="M48.500 58h3M27.500 56L17 52M72.500 56L83 52" stroke="#ffd700" stroke-width="3.200" fill="none" stroke-linecap="round"/><circle cx="38" cy="58" r="3" fill="#d62828"/><circle cx="62" cy="58" r="3" fill="#d62828"/><path d="M32 53l3-2M56 53l3-2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`;
  default:return''}}
 function faceBack(i,c){
  if(i===10)return`<path d="M18 62C14 100 86 100 82 62C76 72 66 69 50 69C34 69 24 72 18 62Z" fill="${c}" stroke="${EDGE}" stroke-width="1.6"/>`;
@@ -504,6 +512,11 @@ function hatSvg(i,c){const st=`fill="${c}" stroke="${EDGE}" stroke-width="1.6"`,
  case 26:{const lf=(x,y,r)=>`<ellipse cx="${x}" cy="${y}" rx="9" ry="4.200" fill="#43a047" stroke="${EDGE}" stroke-width="1.200" transform="rotate(${r} ${x} ${y})"/>`;return[[17,40,60],[14,30,80],[16,20,110],[24,11,130],[36,5,160],[83,40,-60],[86,30,-80],[84,20,-110],[76,11,-130],[64,5,-160]].map(a=>lf(a[0],a[1],a[2])).join('')+`<path d="M44 4Q50 8 56 4" fill="none" stroke="#2e7d32" stroke-width="2"/>`}
  case 27:return`<path d="M16 38L12 8L32 22L42 -2L50 -12L58 -2L68 22L88 8L84 38Z" fill="#7df9ff" stroke="#1ec8d6" stroke-width="2" stroke-linejoin="round"/><path d="M42 -2L50 22L58 -2M32 22L50 22L68 22" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.600"/><rect x="16" y="32" width="68" height="7.500" rx="2" fill="#1ec8d6" stroke="${EDGE}" stroke-width="1.400"/><path d="M50 -12l-4 8 4 4 4-4z" fill="#fff"/>`;
  case 28:return`<ellipse cx="50" cy="6" rx="26" ry="7.500" fill="none" stroke="#ff7a1a" stroke-width="6"/><ellipse cx="50" cy="6" rx="26" ry="7.500" fill="none" stroke="#ffd23f" stroke-width="2"/><path d="M26 4C22 -4 28 -10 30 -16C33 -9 38 -6 34 2Z" fill="#ff5a1f"/><path d="M50 -2C45 -10 52 -16 52 -24C57 -16 62 -12 58 -2Z" fill="#ff7a1a"/><path d="M74 4C78 -4 72 -10 70 -16C67 -9 62 -6 66 2Z" fill="#ff5a1f"/>`;
+ case 29:return`<path d="M17 45C17 10 83 10 83 45Z" ${st}/><path d="M12 45Q50 57 88 45Q50 50 12 45Z" ${st}/><g transform="translate(50 27)"><circle r="9" fill="#15151f"/><circle r="7.500" fill="#fff"/><circle r="5.500" fill="#d62828"/><circle r="3.200" fill="#1b9e4b"/><circle r="1.300" fill="#d62828"/></g>`;
+ case 30:return`<circle cx="50" cy="14" r="22" fill="#15151f" stroke="${EDGE}" stroke-width="1.6"/><circle cx="50" cy="14" r="18" fill="#f4e9c8"/><circle cx="50" cy="14" r="15" fill="none" stroke="#d62828" stroke-width="5" stroke-dasharray="7.850 7.850"/><circle cx="50" cy="14" r="9" fill="none" stroke="#1b9e4b" stroke-width="4" stroke-dasharray="7 7"/><circle cx="50" cy="14" r="4" fill="#1b9e4b"/><circle cx="50" cy="14" r="1.800" fill="#d62828"/><ellipse cx="50" cy="40" rx="22" ry="6" ${st}/>`;
+ case 31:return`<path d="M26 35L27 10L40 22L50 5L60 22L73 10L74 35Z" ${st}/><g transform="translate(50 24)"><circle r="8" fill="#15151f"/><circle r="6.500" fill="#fff"/><circle r="4.800" fill="#d62828"/><circle r="2.600" fill="#1b9e4b"/><circle r="1" fill="#d62828"/></g><g fill="#fff" stroke="${EDGE}" stroke-width="1"><circle cx="27" cy="10" r="3.200"/><circle cx="50" cy="5" r="3.200"/><circle cx="73" cy="10" r="3.200"/></g>`;
+ case 32:return`<g transform="rotate(-14 50 44)"><path d="M50 44L47.500 31H52.500Z" fill="#c0c7d1" stroke="${EDGE}" stroke-width="1"/><rect x="46.500" y="15" width="7" height="17" rx="3" fill="#ffd700" stroke="${EDGE}" stroke-width="1.200"/><path d="M50 15L50 3" stroke="#c0c7d1" stroke-width="2.600"/><path d="M50 9L38 -6L50 -2L62 -6Z" fill="#d62828" stroke="${EDGE}" stroke-width="1.200"/></g>`;
+ case 33:return`<circle cx="50" cy="8" r="25" fill="#bff6ff" stroke="#38c8e6" stroke-width="3"/><circle cx="50" cy="8" r="18" fill="none" stroke="#38c8e6" stroke-width="4" stroke-dasharray="7 7"/><circle cx="50" cy="8" r="10" fill="#fff" stroke="#38c8e6" stroke-width="1.500"/><circle cx="50" cy="8" r="4" fill="#ff3b6b"/><path d="M20 -8l2 4 4 2-4 2-2 4-2-4-4-2 4-2zM80 -10l1.500 3 3 1.500-3 1.500-1.500 3-1.500-3-3-1.500 3-1.500z" fill="#fff" stroke="#38c8e6" stroke-width=".8"/><ellipse cx="50" cy="42" rx="22" ry="5" ${st}/>`;
  default:return''}}
 function fxSvg(i){
  const spark=(x,y,sc)=>`<path transform="translate(${x} ${y}) scale(${sc})" d="M0-7Q0 0 7 0Q0 0 0 7Q0 0-7 0Q0 0 0-7Z" fill="#ffd23f" stroke="${EDGE}" stroke-width=".8"/>`;
@@ -520,6 +533,10 @@ function fxSvg(i){
  if(i===10)return`<path d="M50 -14C58 6 90 14 92 54C94 90 70 112 50 112C30 112 6 90 8 54C10 14 42 6 50 -14Z" fill="#ffd23f" opacity=".35"/><path d="M50 -4C56 12 80 20 82 54C84 82 66 100 50 100C34 100 16 82 18 54C20 20 44 12 50 -4Z" fill="#ff9f1c" opacity=".35"/>`;
  if(i===11)return[[10,10,1],[28,-8,.7],[72,-6,.9],[94,26,.7],[4,52,.6],[96,60,1],[14,90,.8],[88,94,.7],[50,-10,.6],[2,28,.5]].map(a=>`<circle cx="${a[0]}" cy="${a[1]}" r="${a[2]*2.200}" fill="#fff" opacity=".9"/><circle cx="${a[0]}" cy="${a[1]}" r="${a[2]*4.500}" fill="#ffe08a" opacity=".3"/>`).join('');
  if(i===12)return Array.from({length:12},(_,j)=>`<path d="M50 52L${50+80*Math.cos(j*Math.PI/6)} ${52+80*Math.sin(j*Math.PI/6)}" stroke="#ffd700" stroke-width="3" opacity=".35"/>`).join('')+`<circle cx="50" cy="52" r="50" fill="none" stroke="#ffd700" stroke-width="3.500" opacity=".6"/><circle cx="50" cy="52" r="44" fill="#ffd700" opacity=".14"/>`+[[8,14],[93,22],[96,70],[6,76]].map(a=>spark(a[0],a[1],1.200)).join('');
+ const dart=(x,y,rot,sc,g)=>`<g transform="translate(${x} ${y}) rotate(${rot}) scale(${sc})"><path d="M0 0L-8-1.800V1.800Z" fill="#c0c7d1"/><rect x="-17" y="-2.200" width="9" height="4.400" rx="2" fill="${g?'#ffd700':'#8a94a3'}" stroke="${EDGE}" stroke-width=".6"/><path d="M-17 0L-25-5.500L-21 0L-25 5.500Z" fill="#d62828" stroke="${EDGE}" stroke-width=".6"/></g>`;
+ if(i===13)return dart(30,10,35,1,0)+dart(80,22,150,1,0)+dart(90,80,210,1,0)+dart(12,70,-35,1,0);
+ if(i===14)return`<circle cx="50" cy="52" r="52" fill="#d62828" opacity=".22"/><circle cx="50" cy="52" r="44" fill="#fff" opacity=".3"/><circle cx="50" cy="52" r="38" fill="#1b9e4b" opacity=".22"/><circle cx="50" cy="52" r="32" fill="#fff" opacity=".18"/><circle cx="50" cy="52" r="52" fill="none" stroke="#d62828" stroke-width="2.500" opacity=".7"/><circle cx="50" cy="52" r="38" fill="none" stroke="#1b9e4b" stroke-width="2" opacity=".7"/>`;
+ if(i===15)return dart(24,2,60,1.100,1)+dart(70,-4,70,1,1)+dart(92,40,120,1.100,1)+dart(8,56,40,1,1)+dart(84,90,200,1.100,1)+dart(30,96,-20,1,1)+[[8,20],[94,70],[50,98]].map(a=>spark(a[0],a[1],1)).join('');
  return''}
 function kindSvg(c){
   const sk=c.skin,st=`stroke="${EDGE}" stroke-width="1.8"`,dk='fill="rgba(0,0,0,.2)"';
@@ -1033,7 +1050,7 @@ function computeProgress(){
     if(won&&(m.sets||[]).length>1){const f=score(m.sets[0]);if(side==='A'?f.a<f.b:f.b<f.a)x.comeback++}})));
   const n=rows.length,KB=kingBoard(),TA=trainAll();
   KB.events.forEach(e=>{const x=X[e.id];if(x)x.kb=(x.kb||0)+(e.type==='crown'?KING.crown:KING.def)});
-  Object.values(X).forEach(x=>{x.bonus=Math.floor(x.pf/1000)*LVLBONUS;const ks=KB.stats[x.id]||{crowns:0,bestDef:0};x.crowns=ks.crowns;x.bestDef=ks.bestDef;const tr_=TA[x.id]||{n:0,hits:0,best:0,days:new Set(),rounds:0,coins:0};x.tsess=tr_.n;x.thits=tr_.hits;x.tbest=tr_.best;x.tdays=tr_.days.size;x.trounds=tr_.rounds;x.sn=tr_.sn||0;x.spb=tr_.spb||0;x.plans=tr_.plans||0;x.rxn=tr_.rxn||0;x.earned=x.sw*COIN.set+x.w*COIN.match+x.titles*COIN.title+x.bonus+(x.kb||0)+tr_.coins;x.coins=x.earned-((S.players[x.id]||{}).spent||0);const pr_=S.players[x.id]||{},invk=pr_.inv||[];x.inv=invk.length;x.hasL=invk.some(k=>ITEMBY[k]&&ITEMBY[k].r==='l');x.maxDay=Math.max(0,...Object.values(x.perDay));x.medals=MEDALS.filter(md=>md.t(x,n)).map(md=>md.id);x.level=1+Math.floor(x.pf/1000)});
+  Object.values(X).forEach(x=>{x.bonus=Math.floor(x.pf/1000)*LVLBONUS;const ks=KB.stats[x.id]||{crowns:0,bestDef:0};x.crowns=ks.crowns;x.bestDef=ks.bestDef;const tr_=TA[x.id]||{n:0,hits:0,best:0,days:new Set(),rounds:0,coins:0};x.tsess=tr_.n;x.thits=tr_.hits;x.tbest=tr_.best;x.tdays=tr_.days.size;x.trounds=tr_.rounds;x.sn=tr_.sn||0;x.spb=tr_.spb||0;x.plans=tr_.plans||0;x.rxn=tr_.rxn||0;const dg=dAggAll()[x.id]||{legW:0,sW:0,w:0,v180:0,perfect:0,pts:0};x.dpts=dg.pts;x.dcoins=dg.legW*DCOIN.leg+dg.sW*DCOIN.set+dg.w*DCOIN.match+dg.v180*DCOIN.v180+dg.perfect*DCOIN.perfect;x.earned=x.sw*COIN.set+x.w*COIN.match+x.titles*COIN.title+x.bonus+(x.kb||0)+tr_.coins+x.dcoins;x.coins=x.earned-((S.players[x.id]||{}).spent||0);const pr_=S.players[x.id]||{},invk=pr_.inv||[];x.inv=invk.length;x.hasL=invk.some(k=>ITEMBY[k]&&ITEMBY[k].r==='l');x.maxDay=Math.max(0,...Object.values(x.perDay));x.medals=MEDALS.filter(md=>md.t(x,n)).map(md=>md.id);x.level=1+Math.floor(x.pf/1000)});
   return X}
 const plural=(n,a,b,c)=>n===1?a:(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?b:c;
 function progressNote(before,after,ids){
@@ -1297,16 +1314,30 @@ function viewHist(){
 
 function viewPlayers(){
   if(ui.edit)return viewEditor();
-  if(ui.prof)return viewProfile();
+  if(ui.prof)return ui.game==='dart'?viewDprofile():viewProfile();
   const ms=Object.values(S.matches),PR=computeProgress();
   return`<div class="stack"><section class="card"><h2>Gracze</h2><p class="muted">Dotknij gracza, żeby zobaczyć profil, statystyki i medale. Kosz usuwa gracza.</p></section>
-   <div class="pgrid">${plist().map(p=>{const g=ms.filter(m=>inM(m,p.id)).length,pr=PR[p.id]||{level:1,medals:[]},ask=ui.confirm==='pdc'+p.id;
-    return`<div class="pcard"><button class="pmain" data-act="pprofile" data-id="${p.id}">${avf(p.av,110)}${esc(p.name)}<small>${g} ${g===1?'mecz':'meczów'} · poz. ${pr.level}</small><small>${pr.medals.length} ${plural(pr.medals.length,'medal','medale','medali')} · ${pr.coins||0} ${coinSvg(13)}</small></button>
+   <div class="pgrid">${plist().map(p=>{const dm=ui.game==='dart',g=dm?Object.values(S.darts).filter(m=>m.ps.includes(p.id)).length:ms.filter(m=>inM(m,p.id)).length,pr=PR[p.id]||{level:1,medals:[]},ask=ui.confirm==='pdc'+p.id;
+    return`<div class="pcard"><button class="pmain" data-act="pprofile" data-id="${p.id}">${avf(p.av,110)}${esc(p.name)}${dm?`<small>${g} ${plural(g,'mecz','mecze','meczów')} w darcie</small><small>🎯 ${pr.dpts||0} pkt · ${pr.coins||0} ${coinSvg(13)}</small>`:`<small>${g} ${g===1?'mecz':'meczów'} · poz. ${pr.level}</small><small>${pr.medals.length} ${plural(pr.medals.length,'medal','medale','medali')} · ${pr.coins||0} ${coinSvg(13)}</small>`}</button>
      <button class="trash ${ask?'ask':''}" data-act="pcdel" data-id="${p.id}" aria-label="Usuń gracza ${esc(p.name)}" title="Usuń gracza"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4.500h6V7M6.500 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>${ask?'<span>Usunąć?</span>':''}</button></div>`}).join('')}
    <button class="pcard add" data-act="pnew"><b>+</b>Dodaj gracza</button></div>${syncCard()}${backupCard()}</div>`}
 
 function backupCard(){return`<section class="card"><h3>Kopia zapasowa</h3><p class="muted">Dane są zapisane w pamięci tej przeglądarki. Pobierz kopię, żeby je zabezpieczyć lub przenieść na inne urządzenie.</p>
  <div class="row" style="margin-top:10px"><button class="btn" data-act="pexport">Pobierz kopię</button><label class="btn" for="imp" style="cursor:pointer">Wczytaj kopię (zastąpi dane)</label><input id="imp" type="file" accept="application/json,.json" hidden></div></section>`}
+function viewDprofile(){
+  const id=ui.prof,p=S.players[id];if(!p){ui.prof=null;return viewPlayers()}
+  const pr=computeProgress()[id]||{coins:0,dpts:0},dp=pr.dpts||0,a=dAggAll()[id];
+  const later=DUNL.filter(u=>u[2]>dp),nx=later.length?later[0]:null,prev=DUNL.filter(u=>u[2]<=dp).length?Math.max(...DUNL.filter(u=>u[2]<=dp).map(u=>u[2])):0;
+  const pct=nx?Math.round(100*(dp-prev)/(nx[2]-prev)):100;
+  const recent=dlist().filter(m=>m.ps.includes(id)).slice(0,5);
+  return`<div class="stack"><section class="card phead">${avf(p.av,120)}<div style="flex:1;min-width:180px"><h2>${esc(p.name)}</h2>
+   <p class="muted">${a?`${a.g} ${plural(a.g,'mecz','mecze','meczów')} w darcie · ${Math.round(100*a.w/a.g)}% wygranych`:'Jeszcze nie grał(a) w darta. Statystyki pojawią się po pierwszym meczu.'}</p>
+   <div class="row" style="margin-top:10px"><button class="btn sm" data-act="pback">Wróć do graczy</button><button class="btn sm" data-act="pedit" data-id="${id}">Edytuj awatara</button></div></div></section>
+   <section class="card lvl"><div class="row" style="justify-content:space-between"><h3>Dart: punkty i monety</h3><span class="muted num">🎯 ${dp} pkt · ${pr.coins||0} ${coinSvg(14)}</span></div>
+   <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>
+   <p class="muted">${nx?`Następny gadżet darta: ${esc(unlockLabel([nx[0],nx[1],nx[2]]))} przy ${nx[2]} punktach rzuconych (brakuje ${nx[2]-dp}).`:'Wszystkie gadżety darta są odblokowane.'} Monety są wspólne z Ping Pongiem.</p></section>
+   ${a?dPlayerCard(a,1):''}
+   ${recent.length?`<section class="card"><h3 style="margin-bottom:8px">Ostatnie mecze</h3>${recent.map(dRow).join('')}</section>`:''}</div>`}
 function viewProfile(){
   const id=ui.prof,p=S.players[id];if(!p){ui.prof=null;return viewPlayers()}
   const z={g:0,w:0,l:0,sw:0,sl:0,pf:0,pa:0,best:0,run:0,titles:0,form:[]};
@@ -1377,7 +1408,7 @@ function viewShop(){
    :`<div class="rvr" style="color:${RC[it.r]}">${RN[it.r].toUpperCase()}</div><div class="rvp">${itemPreview(p,it,150)}</div>
     <h3>${esc(it.n)}</h3>${rv.dupe?`<p class="muted">Masz już ten przedmiot. Zwrot: ${rv.refund} ${coinSvg(14)}</p>`:`<p class="muted">Nowy przedmiot w kolekcji gracza ${esc(p.name)}.</p>`}
     <div class="row" style="justify-content:center"><button class="btn pri" data-act="rvequip">Załóż od razu</button><button class="btn" data-act="rvclose">Zamknij</button></div>`}</div></div>`;
-  return`<div class="stack"><section class="card"><h2>Sklep</h2><p class="muted">Monety dostajesz za wygrane sety (${COIN.set}), mecze (${COIN.match}), puchar w turnieju (${COIN.title}) i każdy nowy poziom (${LVLBONUS}). W skrzynkach czekają losowe gadżety i kolory. Powtórki wracają jako monety.</p></section>
+  return`<div class="stack"><section class="card"><h2>Sklep</h2><p class="muted">Monety dostajesz za wygrane sety (${COIN.set}), mecze (${COIN.match}), puchar w turnieju (${COIN.title}) i każdy nowy poziom (${LVLBONUS}). W darcie: leg (${DCOIN.leg}), set (${DCOIN.set}), mecz (${DCOIN.match}), 180 (${DCOIN.v180}) i leg w minimum rzutów (${DCOIN.perfect}). Monety są wspólne dla obu gier. W skrzynkach czekają losowe gadżety i kolory. Powtórki wracają jako monety.</p></section>
   <section class="card stack"><span class="lbl" style="margin:0">Kto kupuje?</span><div class="spl">${pl.map(q=>`<button class="${q.id===p.id?'on':''}" data-act="shoppick" data-id="${q.id}">${avb(q.av,44)}<b>${esc(q.name)}</b><small>${(PR[q.id]||{}).coins||0} ${coinSvg(12)}</small></button>`).join('')}</div></section>
   <section class="card"><div class="row" style="justify-content:space-between"><h3>Skrzynki</h3><span class="bal">${coins} ${coinSvg(20)}</span></div>
    <div class="boxes">${BOXES.map(b=>`<div class="box r-${b.id}" style="--bc:${b.col}"><div class="bxi">${chestSvg(b.col,86,false)}</div><b>${b.n}</b>${b.note?`<small class="nt">${b.note}</small>`:''}
@@ -1625,14 +1656,15 @@ function viewTrain(){
    ${hist.length?`<section class="card"><h3 style="margin-bottom:10px">Ostatnie treningi</h3>${hist.map(r=>`<div class="mrow" style="grid-template-columns:auto 1fr auto auto"><span style="display:flex">${avb(av_(r.pid),36)}${r.pair&&S.players[r.pid2]?avb(av_(r.pid2),36):''}</span><div><b>${esc(nm(r.pid))}${r.pair&&S.players[r.pid2]?' + '+esc(nm(r.pid2)):''}</b><div class="mmeta"><span>${fmtShort(r.t)} ${fmtTime(r.t)}</span><span>${r.kind==='serve'?'serwis na cel':r.kind==='plan'?'plan: '+esc(r.plan||''):(r.pair?'w parze · ':r.kind==='react'?'refleks · ':'')+(r.limit?r.limit/60+' min':'swobodnie')}</span></div></div><div style="text-align:right"><div class="mbig num">${r.kind==='serve'?r.hit+'/'+r.att:r.hits}</div><span class="muted" style="font-size:.78rem">${r.kind==='serve'?'celność '+(r.att?Math.round(100*r.hit/r.att):0)+'%':(r.pair?'wymiana':'seria')+' '+r.best}</span></div><button class="trash" style="position:static" data-act="trdel" data-id="${r.id}" aria-label="Usuń trening" title="Usuń trening">${ui.confirm==='trd'+r.id?'<span>Usunąć?</span>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4.500h6V7M6.500 7l1 13h9l1-13"/></svg>'}</button></div>`).join('')}</section>`:''}`:''}</div>`}
 function viewEditor(){
   const e=ui.edit,a=e.av,inv=new Set(((e.id&&S.players[e.id])||{}).inv||[]),pts=e.id?((computeProgress()[e.id]||{}).pf||0):0,orig=(e.id&&S.players[e.id]&&S.players[e.id].av)||{};
-  const total=UNLOCKS.length,open=UNLOCKS.filter(u=>u[2]<=pts).length;
+  const total=UNLOCKS.length,open=UNLOCKS.filter(u=>u[2]<=pts).length,dp=e.id?((computeProgress()[e.id]||{}).dpts||0):0,dop=DUNL.filter(u=>u[2]<=dp).length;
   return`<section class="card"><div class="editor"><div class="ed-prev">${avf(a,200)}
    <p class="muted" style="text-align:center;font-size:.85rem">Poziom ${1+Math.floor(pts/1000)} · odblokowano ${open} z ${total} nowych elementów. Co 1000 zdobytych punktów otwiera kolejne.</p>
+   <p class="muted" style="text-align:center;font-size:.85rem">🎯 Punkty rzucone w darcie: ${dp}. Odblokowano ${dop} z ${DUNL.length} gadżetów darta (od ${fK(DUNL[0][2])} do ${fK(DUNL[DUNL.length-1][2])} punktów).</p>
    <label class="lbl" for="p-name" style="margin:0">Imię lub ksywka</label><input id="p-name" maxlength="20" value="${esc(e.name)}" placeholder="np. Tata">
    <button class="btn" data-act="prand">Losuj wygląd</button></div>
    <div>${GROUPS.map(([k,t,type,list])=>`<div class="grp"><span class="lbl">${t}</span>${type==='c'
      ?`<div class="sw">${list.filter(c=>visible(k,c,a[k],inv)).map(c=>{const ok=isOpen(k,c,pts,orig[k],inv),nd=need(k,c);return`<button data-act="opt" data-k="${k}" data-v="${c}" class="${a[k]===c?'on':''} ${ok?'':'lock'}" style="background:${c}" aria-label="${t} ${c}${ok?'':', odblokujesz przy '+nd+' punktach'}" title="${ok?'':'Odblokujesz przy '+nd+' pkt'}" ${ok?'':'disabled'}></button>`}).join('')}</div>`
-     :`<div class="tiles">${list.map((l,i)=>{if(!visible(k,i,a[k],inv))return'';const ok=isOpen(k,i,pts,orig[k],inv),nd=need(k,i);return`<button class="tile ${a[k]===i?'on':''} ${ok?'':'lock'}" data-act="opt" data-k="${k}" data-v="${i}" data-n="1" title="${ok?l:l+': odblokujesz przy '+nd+' pkt'}" aria-label="${ok?l:l+', odblokujesz przy '+nd+' punktach'}" ${ok?'':'disabled'}>${avb(Object.assign({},a,{[k]:i},PREV[k]||{}),58)}${ok?'':`<span class="lk">${nd}</span>`}</button>`}).join('')}</div>`}</div>`).join('')}
+     :`<div class="tiles">${list.map((l,i)=>{if(!visible(k,i,a[k],inv))return'';const dn=dneed(k,i),ok=dn?(orig[k]===i||dp>=dn):isOpen(k,i,pts,orig[k],inv),nd=dn?'🎯'+fK(dn):need(k,i),tt=dn?dn+' pkt rzuconych w darcie':nd+' pkt';return`<button class="tile ${a[k]===i?'on':''} ${ok?'':'lock'}" data-act="opt" data-k="${k}" data-v="${i}" data-n="1" title="${ok?l:l+': odblokujesz przy '+tt}" aria-label="${ok?l:l+', odblokujesz przy '+tt}" ${ok?'':'disabled'}>${avb(Object.assign({},a,{[k]:i},PREV[k]||{}),58)}${ok?'':`<span class="lk">${nd}</span>`}</button>`}).join('')}</div>`}</div>`).join('')}
    <div class="row" style="margin-top:20px"><button class="btn pri" data-act="psave">Zapisz gracza</button><button class="btn" data-act="pcancel">Anuluj</button>
    ${e.id?`<button class="btn danger ${ui.confirm==='pdel'?'ask':''}" data-act="pdel">${ui.confirm==='pdel'?'Na pewno usunąć?':'Usuń gracza'}</button>`:''}</div></div></div></section>`}
 
@@ -1735,7 +1767,7 @@ const H={
  pdel:()=>ask('pdel',()=>{const id=ui.edit.id;ui.edit=null;ui.prof=null;if(ui.setup.a===id)ui.setup.a=null;if(ui.setup.b===id)ui.setup.b=null;saveUi();del('players',id)})
 };
 /* ====================== DART ====================== */
-const DTABS=[['dplay','Mecz'],['dhist','Historia'],['dstat','Statystyki'],['pl','Gracze']];
+const DTABS=[['dplay','Mecz'],['dhist','Historia'],['dstat','Statystyki'],['shop','Sklep'],['pl','Gracze']];
 Object.assign(ICON,{dplay:ICON.play,dhist:ICON.hist,dstat:ICON.rank});
 ui.game=null;
 ui.dsetup=Object.assign({ps:[],start:501,sets:1,legs:3,dbl:1,first:'rnd',opp:'pl',lvl:'adapt'},lsGet('tt-dsetup',{}));
@@ -1862,7 +1894,7 @@ function chooserView(){
     <button class="gcard" data-act="game" data-v="pp"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="40" cy="42" r="11" fill="#ff7a1a"/><ellipse cx="36" cy="38" rx="3.500" ry="2" fill="#fff" opacity=".5" transform="rotate(-35 36 38)"/><ellipse cx="22" cy="24" rx="14" ry="15" fill="#d62828" transform="rotate(-30 22 24)"/><path d="M30 36l12 14" stroke="#c9a06b" stroke-width="5" stroke-linecap="round"/></svg><b>Ping Pong</b><span class="muted">${pp?'Mecz w toku':'Mecze, turnieje, trening'}</span></button>
    </div></div></main>`}
 /* ---- nagłówek i nawigacja ---- */
-function dartNav(){return`<nav class="nav" aria-label="Sekcje" style="grid-template-columns:repeat(4,1fr)">${DTABS.map(([k,l])=>`<button data-act="tab" data-v="${k}" ${ui.tab===k?'aria-current="page"':''}><span class="${k==='dplay'&&ui.dlive?'dot':''}">${ICON[k]}</span>${l}</button>`).join('')}</nav>`}
+function dartNav(){return`<nav class="nav" aria-label="Sekcje" style="grid-template-columns:repeat(5,1fr)">${DTABS.map(([k,l])=>`<button data-act="tab" data-v="${k}" ${ui.tab===k?'aria-current="page"':''}><span class="${k==='dplay'&&ui.dlive?'dot':''}">${ICON[k]}</span>${l}</button>`).join('')}</nav>`}
 /* ---- ustawienia meczu ---- */
 function viewDplay(){
   if(ui.dlive)return viewDlive();
@@ -1969,9 +2001,10 @@ async function dSave(rematch){
   const id=uid(),rec={id,t:new Date().toISOString(),st:L.st,ps:L.ps,pn:L.ps.map((i,k)=>dN(L,k)),start:L.start,sets:L.sets,legs:L.legs,dbl:L.dbl,first:L.first,tk:L.tk.join(' '),w:L.ps[d.winner]};
   if(L.bot)rec.bot={level:L.bot.level,name:L.bot.name};
   const ps=L.bot?[L.ps[0]]:L.ps.slice(),nf=(L.first+1)%L.ps.length;
-  ui.dlive=null;saveD();
-  if(rematch){ui.dsetup.ps=ps;ui.dsetup.start=L.start;ui.dsetup.sets=L.sets;ui.dsetup.legs=L.legs;ui.dsetup.dbl=L.dbl;ui.tab='dplay';await put('darts',id,rec);dStart(nf);toast('Zapisano. Rewanż!')}
-  else{ui.tab='dhist';await put('darts',id,rec);toast('Mecz zapisany.')}}
+  const before=computeProgress();ui.dlive=null;saveD();
+  if(rematch){ui.dsetup.ps=ps;ui.dsetup.start=L.start;ui.dsetup.sets=L.sets;ui.dsetup.legs=L.legs;ui.dsetup.dbl=L.dbl;ui.tab='dplay';await put('darts',id,rec);dStart(nf);toast('Zapisano. Rewanż!'+dGain(before,L))}
+  else{ui.tab='dhist';await put('darts',id,rec);toast('Mecz zapisany.'+dGain(before,L))}}
+function dGain(b,L){const a=computeProgress(),out=[];L.ps.forEach(id=>{if(!S.players[id]||!a[id])return;const c=a[id].coins-((b[id]||{}).coins||0);if(c>0)out.push(nm(id)+' +'+c+' '+plural(c,'moneta','monety','monet'));const o=DUNL.filter(u=>u[2]>((b[id]||{}).dpts||0)&&u[2]<=a[id].dpts);o.forEach(u=>out.push(nm(id)+' odblokowuje: '+unlockLabel(u)))});return out.length?' '+out.join('. ')+'.':''}
 /* ---- historia ---- */
 const dlist=()=>Object.values(S.darts).sort((a,b)=>b.t.localeCompare(a.t));
 function dRow(m){
@@ -1989,6 +2022,8 @@ function viewDhist(){
   const groups=[];all.forEach(m=>{const k=fmtDay(m.t),g=groups[groups.length-1];if(g&&g.k===k)g.items.push(m);else groups.push({k,items:[m]})});
   return`<div class="stack"><section class="card"><h2>Historia darta</h2><p class="muted">${all.length} ${plural(all.length,'mecz','mecze','meczów')}</p></section>${groups.map(g=>`<div><div class="day">${esc(g.k)}</div>${g.items.map(dRow).join('')}</div>`).join('')}</div>`}
 /* ---- statystyki ---- */
+let _dAA=null;
+function dAggAll(){const k=Object.keys(S.darts).sort().join(',');if(_dAA&&_dAA.k===k)return _dAA.v;const v=dAgg(Object.values(S.darts));_dAA={k,v};return v}
 function dAgg(list){
   const agg={};
   list.forEach(m=>{const d=dDerive(dRec(m)),tot=d.sets.reduce((a,b)=>a+b,0),lt=d.legsLog.length;
@@ -2000,13 +2035,13 @@ function dAgg(list){
       Object.keys(x.tc).forEach(k=>a.tc[k]=(a.tc[k]||0)+x.tc[k])})});
   return agg}
 const dRank=(a,b)=>b.w-a.w||(b.w-(b.g-b.w))-(a.w-(a.g-a.w))||(b.legW-b.legL)-(a.legW-a.legL)||b.pts-a.pts;
-function dPlayerCard(a){
+function dPlayerCard(a,nohead){
   const pl_=S.players[a.id],avg=a.darts?3*a.pts/a.darts:0,pc=a.g?Math.round(100*a.w/a.g):0;
   const cnt=k=>a.tc[k]||0;
   let dbls=0,trs=0;Object.keys(a.tc).forEach(k=>{if(k[0]==='D')dbls+=a.tc[k];if(k[0]==='T')trs+=a.tc[k]});dbls+=cnt('50');
   const tile=(l,v,t)=>`<div class="dst"${t?` title="${t}"`:''}><b class="num">${v}</b><span>${l}</span></div>`;
   const tr=Array.from({length:20},(_,i)=>20-i).map(n=>`<span class="dtr ${cnt('T'+n)?'on':''}"><i>T${n}</i><b class="num">${cnt('T'+n)}</b></span>`).join('');
-  return`<div class="dcard"><div class="row" style="gap:10px">${avb(pl_.av,44)}<h3 style="margin:0">${esc(pl_.name)}</h3></div>
+  return`<div class="dcard">${nohead?'':`<div class="row" style="gap:10px">${avb(pl_.av,44)}<h3 style="margin:0">${esc(pl_.name)}</h3></div>`}
    <div class="dstg">${tile('Rzucone rzutki',a.darts)}${tile('Mecze',a.g)}${tile('Wygrane mecze',pc+'%',a.w+' z '+a.g)}${tile('Sety W:L',a.sW+':'+a.sL)}${tile('Legi W:L',a.legW+':'+a.legL)}${tile('Średnia (3 rzuty)',a.darts?f1d(avg):'–')}
    ${tile('Śr. punktów na leg',a.legsP?f1d(a.pts/a.legsP):'–','Punkty rzucone podzielone przez liczbę rozegranych legów')}${tile('Śr. punktów na mecz',a.g?f1d(a.pts/a.g):'–')}${tile('Najmniej rzutów w legu',a.bestLeg||'–')}${tile('Legi w minimum rzutów',a.perfect,'Leg zamknięty w najmniejszej możliwej liczbie rzutów (501: dziewięć)')}
    ${tile('Kolejki 100+',a.v100)}${tile('Kolejki 140+',a.v140)}${tile('180',a.v180)}${tile('Najwyższa kolejka',a.hiV||'–')}${tile('Najwyższe wykończenie',a.hiCo||'–')}${tile('Przebicia',a.busts)}${tile('Pudła',cnt('0'))}${tile('Trafione double',dbls)}${tile('Bull 25 / 50',cnt('25')+' / '+cnt('50'))}${tile('Wszystkie triple',trs)}</div>

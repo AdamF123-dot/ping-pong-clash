@@ -83,4 +83,7 @@ Po wejściu do aplikacji pojawia się pytanie „W co dzisiaj gramy?” z wybore
 - **Tryb z botem**: poziomy Bardzo łatwy, Łatwy, Średni, Trudny, Bardzo trudny oraz „Dopasuj do mnie” (bot startuje od Twojej dotychczasowej średniej i w trakcie meczu dostosowuje się do tego, jak rzucasz). Bot rzuca po jednym rzucie, cofnięcie usuwa jego kolejkę. Poziomy skalibrowano symulacją rozrzutu rzutów na tarczy.
 - W trakcie meczu przy każdym graczu widać **średnią w tym meczu**.
 - Statystyki: tabela **miesięczna i roczna** (bilans meczów W:L, legi W:L, punkty, mecze) oraz karta gracza: rzucone rzutki, wygrane sety i legi, % wygranych, średnia na leg i na mecz, najmniej rzutów w legu, 100+/140+/180, triple według pola (T20…T1), double, pudła.
+- **Monety wspólne** dla Ping Ponga i darta: w darcie leg 3, set 10, mecz 40, 180 po 10, leg w minimum rzutów 150. Sklep jest dostępny też z poziomu darta.
+- **Gadżety awatara za punkty rzucone w darcie**: 11 nowych elementów (czapki, okulary, efekty) odblokowywanych od 5 tys. do 200 tys. punktów (5 tys., 10 tys., 20 tys., 30 tys., 50 tys., 75 tys., 100 tys., 125 tys., 150 tys., 175 tys., 200 tys.).
+- Profil i lista graczy w trybie darta pokazują tylko statystyki darta (bez ping ponga).
 - Mecze darta synchronizują się tak samo jak Ping Pong (nowa kolekcja `darts`).
