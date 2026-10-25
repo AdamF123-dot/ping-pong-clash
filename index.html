@@ -1317,7 +1317,7 @@ function viewPlayers(){
   if(ui.prof)return ui.game==='dart'?viewDprofile():viewProfile();
   const ms=Object.values(S.matches),PR=computeProgress();
   return`<div class="stack"><section class="card"><h2>Gracze</h2><p class="muted">Dotknij gracza, żeby zobaczyć profil, statystyki i medale. Kosz usuwa gracza.</p></section>
-   <div class="pgrid">${plist().map(p=>{const dm=ui.game==='dart',g=dm?Object.values(S.darts).filter(m=>m.ps.includes(p.id)).length:ms.filter(m=>inM(m,p.id)).length,pr=PR[p.id]||{level:1,medals:[]},ask=ui.confirm==='pdc'+p.id;
+   <div class="pgrid">${plist().map(p=>{const dm=ui.game==='dart',g=dm?Object.values(S.darts).filter(m=>!isA(m)&&m.ps.includes(p.id)).length:ms.filter(m=>inM(m,p.id)).length,pr=PR[p.id]||{level:1,medals:[]},ask=ui.confirm==='pdc'+p.id;
     return`<div class="pcard"><button class="pmain" data-act="pprofile" data-id="${p.id}">${avf(p.av,110)}${esc(p.name)}${dm?`<small>${g} ${plural(g,'mecz','mecze','meczów')} w darcie</small><small>🎯 ${pr.dpts||0} pkt · ${pr.coins||0} ${coinSvg(13)}</small>`:`<small>${g} ${g===1?'mecz':'meczów'} · poz. ${pr.level}</small><small>${pr.medals.length} ${plural(pr.medals.length,'medal','medale','medali')} · ${pr.coins||0} ${coinSvg(13)}</small>`}</button>
      <button class="trash ${ask?'ask':''}" data-act="pcdel" data-id="${p.id}" aria-label="Usuń gracza ${esc(p.name)}" title="Usuń gracza"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4.500h6V7M6.500 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>${ask?'<span>Usunąć?</span>':''}</button></div>`}).join('')}
    <button class="pcard add" data-act="pnew"><b>+</b>Dodaj gracza</button></div>${syncCard()}${backupCard()}</div>`}
@@ -1770,7 +1770,7 @@ const H={
 const DTABS=[['dplay','Mecz'],['dhist','Historia'],['dstat','Statystyki'],['shop','Sklep'],['pl','Gracze']];
 Object.assign(ICON,{dplay:ICON.play,dhist:ICON.hist,dstat:ICON.rank});
 ui.game=null;
-ui.dsetup=Object.assign({ps:[],start:501,sets:1,legs:3,dbl:1,first:'rnd',opp:'pl',lvl:'adapt'},lsGet('tt-dsetup',{}));
+ui.dsetup=Object.assign({ps:[],start:501,sets:1,legs:3,dbl:1,first:'rnd',opp:'pl',lvl:'adapt',mode:'x01'},lsGet('tt-dsetup',{}));
 ui.dsel=null;ui.dtbl={mode:'month',y:new Date().getFullYear(),m:new Date().getMonth()};
 ui.dlive=lsGet('tt-dlive',null);ui.dmod=1;ui.dper='all';ui.dopen=null;ui.dvoice=!!lsGet('tt-dvoice',false);
 const saveD=()=>{lsSet('tt-dsetup',ui.dsetup);lsSet('tt-dlive',ui.dlive)};
@@ -1882,7 +1882,7 @@ const dN=(L,i)=>L.bot&&i===L.bot.i?L.bot.name:nm(L.ps[i],L.pn&&L.pn[i]);
 const avgOf=x=>x.darts?3*x.pts/x.darts:0;
 function dHumanAvg(id){
   let pts=0,darts=0;
-  Object.values(S.darts).forEach(m=>{const i=m.ps.indexOf(id);if(i<0)return;const x=dDerive(dRec(m)).pst[i];pts+=x.pts;darts+=x.darts});
+  Object.values(S.darts).forEach(m=>{const i=m.ps.indexOf(id);if(i<0||isA(m))return;const x=dDerive(dRec(m)).pst[i];pts+=x.pts;darts+=x.darts});
   return darts>=30?3*pts/darts:0}
 const f1d=v=>(Math.round(v*10)/10).toFixed(1);
 /* ---- wybór gry ---- */
@@ -1902,8 +1902,9 @@ function viewDplay(){
   if(!ps.length)return`<section class="card empty"><h2>Zacznijmy od awatarów</h2><p>Gracze są wspólni z Ping Pongiem. Dodaj swojego awatara, a pojawi się tutaj i w obu grach.</p><button class="btn pri" data-act="pnew">Dodaj gracza</button></section>`;
   const s=ui.dsetup;s.ps=s.ps.filter(id=>S.players[id]);
   const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-act="dfmt" data-k="${k}" data-v="${v}" class="${String(s[k])===String(v)?'on':''}">${l}</button>`).join('')}</div>`;
-  const ready=s.opp==='bot'?s.ps.length===1:s.ps.length>=2,last=Object.values(S.darts).sort((a,b)=>b.t.localeCompare(a.t)).slice(0,3);
+  const ready=s.opp==='bot'?s.ps.length===1:s.ps.length>=2,last=Object.values(S.darts).sort((a,b)=>b.t.localeCompare(a.t)).slice(0,3),atc=s.mode==='atc';
   return`<div class="stack"><section class="card stack"><h2>Nowy mecz w darta</h2>
+   <div><span class="lbl">Tryb gry</span>${seg('mode',[['x01','301 / 501 / 701'],['atc','Around the Clock']])}${atc?'<p class="muted" style="font-size:.85rem;margin-top:4px">Trafiasz po kolei pola od 1 do 20, na końcu środek tarczy (25 albo 50). Liczy się każde trafienie w dane pole (pojedyncze, double albo triple), jedno trafienie to jeden krok. W kolejce masz 3 rzuty. Wygrywa ten, kto pierwszy trafi bull.</p>':''}</div>
    <div><span class="lbl">Przeciwnik</span>${seg('opp',[['pl','Inni gracze'],['bot','Bot']])}</div>
    <div><span class="lbl">${s.opp==='bot'?'Kto gra z botem? (jeden gracz)':'Kto gra? (kolejność wyboru to kolejność rzucania, od 2 do 4 graczy)'}</span>
     <div class="pick">${ps.map(p=>{const i=s.ps.indexOf(p.id);return`<button class="pk ${i>=0?'on t':''}" data-act="dpick" data-id="${p.id}">${avb(p.av,40)}<span>${esc(p.name)}</span>${i>=0?`<b class="dnum">${i+1}</b>`:''}</button>`}).join('')}</div>
@@ -1912,17 +1913,63 @@ function viewDplay(){
    ${s.opp==='bot'?(()=>{const ha=s.ps[0]?dHumanAvg(s.ps[0]):0,sug=ha?DLV.slice(0,5).reduce((b,x)=>Math.abs(x[2]-ha)<Math.abs(b[2]-ha)?x:b):null;
      return`<div><span class="lbl">Poziom bota</span><div class="seg">${DLV.map(([k,l])=>`<button data-act="dfmt" data-k="lvl" data-v="${k}" class="${s.lvl===k?'on':''}">${l}</button>`).join('')}</div>
      <p class="muted" style="font-size:.85rem;margin-top:4px">${s.lvl==='adapt'?'Bot zaczyna na poziomie Twojej średniej'+(ha?' ('+f1d(ha)+')':' (jeszcze jej nie znam, zacznie od około 40)')+' i w trakcie meczu dostosowuje się do tego, jak naprawdę rzucasz.':'Poziom stały przez cały mecz.'}${sug&&s.lvl!=='adapt'?' Twoja dotychczasowa średnia '+f1d(ha)+' pasuje do poziomu: '+sug[1]+'.':''}</p></div>`})():''}
-   <div><span class="lbl">Gra od</span>${seg('start',[[301,'301'],[501,'501'],[701,'701']])}</div>
+   ${atc?'':`   <div><span class="lbl">Gra od</span>${seg('start',[[301,'301'],[501,'501'],[701,'701']])}</div>
    <div><span class="lbl">Do ilu wygranych setów</span>${seg('sets',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']])}</div>
    <div><span class="lbl">Ile legów w secie (wygrywa pierwszy do tylu)</span>${seg('legs',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']])}</div>
    <div><span class="lbl">Zakończenie lega</span>${seg('dbl',[[1,'Double out'],[0,'Dowolny rzut']])}<p class="muted" style="font-size:.85rem;margin-top:4px">${s.dbl?'Leg trzeba zamknąć rzutem w pole podwójne (double) albo w środek tarczy (50). Przebicie (poniżej zera, albo zostaje 1) unieważnia kolejkę.':'Leg kończy dowolny rzut, który doprowadzi dokładnie do zera.'}</p></div>
+`}
    <div><span class="lbl">Kto zaczyna</span>${seg('first',[['rnd','Losowo'],['first',s.opp==='bot'?'Ja':'Pierwszy z listy']])}</div>
-   <p class="muted">${s.start}, ${s.sets===1?'jeden set':'do '+s.sets+' setów'}, w secie do ${s.legs} ${s.legs===1?'lega':'legów'}.</p>
+   <p class="muted">${atc?'Around the Clock: 1, 2, 3 … 20, bull.':s.start+', '+(s.sets===1?'jeden set':'do '+s.sets+' setów')+', w secie do '+s.legs+' '+(s.legs===1?'lega':'legów')+'.'}</p>
    <div class="row"><button class="btn pri" data-act="dstart" ${ready?'':'disabled'}>Zaczynamy</button></div></section>
    ${last.length?`<section class="card"><h3 style="margin-bottom:8px">Ostatnie mecze</h3>${last.map(dRow).join('')}</section>`:''}</div>`}
+/* ---- Around the Clock ---- */
+const aNum=t=>t==='0'?0:(t==='25'||t==='50')?25:+t.replace(/^[DT]/,'');
+const aTgt=p=>p>20?25:p;
+function aDerive(L){
+  const n=L.ps.length,pos=Array(n).fill(1),darts=Array(n).fill(0),visits=Array(n).fill(0),hits=Array(n).fill(0);
+  let turn=L.first%n,visit=[],done=false,winner=null;
+  for(const tk of L.tk){
+    if(done)break;const p=turn;darts[p]++;visit.push(tk);
+    if(aNum(tk)===aTgt(pos[p])){pos[p]++;hits[p]++;if(pos[p]>21){done=true;winner=p;break}}
+    if(visit.length>=3){visits[p]++;visit=[];turn=(turn+1)%n}}
+  return{n,pos,darts,visits,hits,turn,visit,done,winner}}
+const dDer=L=>L.mode==='atc'?aDerive(L):dDerive(L);
+function aThrow(hit){
+  const L=ui.dlive;if(!L)return;const b=aDerive(L);if(b.done||(L.bot&&b.turn===L.bot.i))return;
+  L.tk.push(hit?(aTgt(b.pos[b.turn])===25?'25':String(aTgt(b.pos[b.turn]))):'0');saveD();aFeedback(b,aDerive(L),L);render()}
+function aFeedback(b,a,L){
+  const p=b.turn,hit=a.pos[p]>b.pos[p];let msg='';
+  if(a.done)msg=(dN(L,a.winner))+' trafia bull i wygrywa! ('+a.darts[a.winner]+' rzutów)';
+  else if(hit)msg='Trafione! Teraz '+(a.pos[p]>20?'bull':a.pos[p]);
+  if(msg)toast(msg);
+  if(ui.dvoice){if(a.done)speak('Mecz wygrywa '+dN(L,a.winner));else if(hit)speak(a.pos[p]>20?'Teraz bull':'Teraz '+a.pos[p])}}
+function aBotTok(L,st){
+  const t=aTgt(st.pos[st.turn]),tok=String(t),a=aimPt(tok),sg=sigFor(L.bot.level==='adapt'?(L.bot.prior||40):(DLV.find(x=>x[0]===L.bot.level)||DLV[2])[2]);
+  return landTok(a[0]+gauss()*sg,a[1]+gauss()*sg)}
+function viewAlive(){
+  const L=ui.dlive,d=aDerive(L),names=L.ps.map((id,i)=>dN(L,i)),cur=d.turn,botTurn=!!(L.bot&&cur===L.bot.i&&!d.done);
+  const tl=p=>p>20?'BULL':String(p);
+  const players=L.ps.map((id,i)=>{const on=i===cur&&!d.done,pc=Math.round(100*(d.pos[i]-1)/21);
+    return`<div class="dp ${on?'on':''} ${d.done&&d.winner===i?'win':''}"><div class="dph">${dAvb(id,40)}<b>${esc(names[i])}</b>${on?'<i class="dturn">rzuca</i>':''}</div>
+     <div class="drem num">${d.done&&d.winner===i?'✔':tl(d.pos[i])}</div><div class="pbar" style="margin:4px 0"><i style="width:${d.done&&d.winner===i?100:pc}%"></i></div>
+     <div class="dsub"><span>Trafione <b>${d.hits[i]}</b></span><span>Rzuty <b>${d.darts[i]}</b></span></div></div>`}).join('');
+  const slot=i=>{const t=d.visit[i];return`<span class="dslot ${t?'f':''}">${t?(t==='0'?'pudło':'trafiony'):'·'}</span>`};
+  const chip='Around the Clock · 1 do 20 i bull';
+  if(d.done)return`<div class="stack"><section class="card stack"><h2>🏆 Wygrywa ${esc(names[d.winner])}</h2><p class="muted">${chip}</p><div class="dplayers">${players}</div>
+   <div class="row"><button class="btn pri" data-act="dsave">Zapisz mecz</button><button class="btn" data-act="dsaverm">Zapisz i rewanż</button><button class="btn" data-act="dundo">Cofnij ostatni rzut</button>
+   <button class="btn danger ${ui.confirm==='ddrop'?'ask':''}" data-act="ddrop">${ui.confirm==='ddrop'?'Na pewno odrzucić?':'Odrzuć mecz'}</button></div></section></div>`;
+  const tgt=tl(d.pos[cur]),dis=botTurn?'disabled':'';
+  return`<div class="stack"><section class="card stack"><div class="row" style="justify-content:space-between"><span class="chip t">${chip}</span><button class="btn sm ${ui.dvoice?'pri':''}" data-act="dvoice" aria-pressed="${ui.dvoice}">🔊 Głos: ${ui.dvoice?'wł.':'wył.'}</button></div>
+   <div class="dplayers">${players}</div>
+   <div class="dvisit"><div class="dslots">${slot(0)}${slot(1)}${slot(2)}</div><div class="dvs"><span class="muted">${botTurn?'🤖 ':''}${esc(names[cur])}: cel</span><b class="num">${tgt}</b></div></div>
+   <div class="row" style="justify-content:center;gap:12px"><button class="dkey" style="min-width:140px;min-height:84px;font-size:1.3rem" data-act="athit" ${dis}>Trafiłem ${tgt==='BULL'?'bull':tgt}</button><button class="dkey miss" style="min-width:110px;min-height:84px;font-size:1.1rem" data-act="atmiss" ${dis}>Pudło</button></div>
+   <div class="row" style="justify-content:center"><button class="btn" data-act="dundo" ${L.tk.length?'':'disabled'}>↩ Cofnij rzut</button>
+    <button class="btn danger ${ui.confirm==='ddrop'?'ask':''}" data-act="ddrop">${ui.confirm==='ddrop'?'Na pewno przerwać?':'Przerwij mecz'}</button></div>
+   <p class="muted" style="font-size:.85rem;text-align:center">Naciśnij „Trafiłem”, gdy rzutka wbije się w aktualne pole (pojedyncze, double albo triple). Każda kolejka to 3 rzuty, a trafienie przesuwa cel o jedno pole dalej. Po 20 celem jest bull (25 albo 50).</p></section></div>`}
 /* ---- mecz na żywo ---- */
 function dChip(L){return`${L.start} · ${L.sets===1?'1 set':'do '+L.sets+' setów'} · do ${L.legs} ${L.legs===1?'lega':'legów'} · ${L.dbl?'double out':'dowolne zakończenie'}`}
 function viewDlive(){
+  if(ui.dlive.mode==='atc')return viewAlive();
   const L=ui.dlive,d=dDerive(L),n=d.n;
   const names=L.ps.map((id,i)=>dN(L,i)),cur=d.turn,left=3-d.visit.length,botTurn=!!(L.bot&&cur===L.bot.i&&!d.done),NP=dMinDarts(L.start,!!L.dbl);
   const slot=i=>{const t=d.visit[i];return`<span class="dslot ${t?'f':''}">${t?esc(dname(t)):'·'}</span>`};
@@ -1980,13 +2027,14 @@ function dThrow(n){
   if(!t){ui.dmod=1;toast('Takiego pola nie ma w rzutkach.');render();return}
   L.tk.push(t);ui.dmod=1;saveD();dFeedback(b,dDerive(L),L);render()}
 function dUndo(){const L=ui.dlive;if(!L||!L.tk.length)return;L.tk.pop();
-  if(L.bot)while(L.tk.length){const d=dDerive(L);if(d.done||d.turn!==L.bot.i)break;L.tk.pop()}
+  if(L.bot)while(L.tk.length){const d=dDer(L);if(d.done||d.turn!==L.bot.i)break;L.tk.pop()}
   ui.dmod=1;saveD();render()}
 let botT=null;
-function dBotOk(){const L=ui.dlive;if(!(ui.game==='dart'&&ui.tab==='dplay'&&L&&L.bot))return false;const d=dDerive(L);return!d.done&&d.turn===L.bot.i}
+function dBotOk(){const L=ui.dlive;if(!(ui.game==='dart'&&ui.tab==='dplay'&&L&&L.bot))return false;const d=dDer(L);return!d.done&&d.turn===L.bot.i}
 function dBotKick(){if(botT||!dBotOk())return;botT=setTimeout(()=>{botT=null;dBotStep()},ui.dlive.tk.length%3===0?1100:800)}
 function dBotStep(){
-  if(!dBotOk())return;const L=ui.dlive,b=dDerive(L);
+  if(!dBotOk())return;const L=ui.dlive,b=dDer(L);
+  if(L.mode==='atc'){L.tk.push(aBotTok(L,b));saveD();aFeedback(b,aDerive(L),L);render();return}
   L.tk.push(botPick(L,b));saveD();dFeedback(b,dDerive(L),L);render()}
 function dStart(first){
   const s=ui.dsetup;s.ps=s.ps.filter(id=>S.players[id]);
@@ -1994,20 +2042,30 @@ function dStart(first){
   if(bot?s.ps.length!==1:s.ps.length<2){toast(bot?'Wybierz jednego gracza do gry z botem.':'Wybierz co najmniej dwóch graczy.');return}
   const ps=bot?[s.ps[0],'bot']:s.ps.slice(),f=first!=null?first:(s.first==='rnd'?rint(ps.length):0);
   ui.dlive={ps,start:s.start,sets:s.sets,legs:s.legs,dbl:s.dbl?1:0,first:f,tk:[],st:new Date().toISOString()};
+  if(s.mode==='atc')ui.dlive.mode='atc';
   if(bot){const ha=dHumanAvg(s.ps[0]);ui.dlive.bot={i:1,level:s.lvl,prior:ha||40,name:'Bot ('+dlvName(s.lvl).toLowerCase()+')'}}
   ui.dmod=1;saveD();keepAwake();render();window.scrollTo(0,0)}
 async function dSave(rematch){
-  const L=ui.dlive,d=dDerive(L);if(!d.done)return;
+  const L=ui.dlive,d=dDer(L);if(!d.done)return;
   const id=uid(),rec={id,t:new Date().toISOString(),st:L.st,ps:L.ps,pn:L.ps.map((i,k)=>dN(L,k)),start:L.start,sets:L.sets,legs:L.legs,dbl:L.dbl,first:L.first,tk:L.tk.join(' '),w:L.ps[d.winner]};
   if(L.bot)rec.bot={level:L.bot.level,name:L.bot.name};
+  if(L.mode==='atc')rec.mode='atc';
   const ps=L.bot?[L.ps[0]]:L.ps.slice(),nf=(L.first+1)%L.ps.length;
   const before=computeProgress();ui.dlive=null;saveD();
-  if(rematch){ui.dsetup.ps=ps;ui.dsetup.start=L.start;ui.dsetup.sets=L.sets;ui.dsetup.legs=L.legs;ui.dsetup.dbl=L.dbl;ui.tab='dplay';await put('darts',id,rec);dStart(nf);toast('Zapisano. Rewanż!'+dGain(before,L))}
-  else{ui.tab='dhist';await put('darts',id,rec);toast('Mecz zapisany.'+dGain(before,L))}}
+  if(rematch){ui.dsetup.ps=ps;ui.dsetup.start=L.start;ui.dsetup.sets=L.sets;ui.dsetup.legs=L.legs;ui.dsetup.dbl=L.dbl;ui.dsetup.mode=L.mode==='atc'?'atc':'x01';ui.tab='dplay';await put('darts',id,rec);dStart(nf);toast('Zapisano. Rewanż!'+(L.mode==='atc'?'':dGain(before,L)))}
+  else{ui.tab='dhist';await put('darts',id,rec);toast('Mecz zapisany.'+(L.mode==='atc'?'':dGain(before,L)))}}
 function dGain(b,L){const a=computeProgress(),out=[];L.ps.forEach(id=>{if(!S.players[id]||!a[id])return;const c=a[id].coins-((b[id]||{}).coins||0);if(c>0)out.push(nm(id)+' +'+c+' '+plural(c,'moneta','monety','monet'));const o=DUNL.filter(u=>u[2]>((b[id]||{}).dpts||0)&&u[2]<=a[id].dpts);o.forEach(u=>out.push(nm(id)+' odblokowuje: '+unlockLabel(u)))});return out.length?' '+out.join('. ')+'.':''}
 /* ---- historia ---- */
-const dlist=()=>Object.values(S.darts).sort((a,b)=>b.t.localeCompare(a.t));
+const isA=m=>m.mode==='atc';
+const alist=()=>Object.values(S.darts).filter(isA).sort((a,b)=>b.t.localeCompare(a.t));
+const dlist=()=>Object.values(S.darts).filter(m=>!isA(m)).sort((a,b)=>b.t.localeCompare(a.t));
+function aRow(m){
+  const d=aDerive({ps:m.ps,first:m.first,tk:m.tk?m.tk.split(' '):[]}),open=ui.dopen===m.id;
+  return`<div class="mrow" style="grid-template-columns:1fr auto;align-items:start"><div style="min-width:0"><div style="display:flex;flex-direction:column;gap:6px">${m.ps.map((id,i)=>`<div class="mp">${dAvb(id,36)}<span style="${d.winner===i?'font-weight:900':''}">${esc(nm(id,m.pn&&m.pn[i]))}${d.winner===i?' 🏆':''}</span><b class="num" style="margin-left:auto;padding-left:10px">${d.done&&d.winner===i?'bull':(d.pos[i]>20?'bull':d.pos[i]-1)}</b></div>`).join('')}</div>
+   <div class="mmeta"><span>${fmtShort(m.t)} ${fmtTime(m.t)}</span><span>Around the Clock</span><span>rzuty: ${m.ps.map((_,i)=>d.darts[i]).join(' / ')}</span>${m.bot?`<span>🤖 ${esc(m.bot.name)}</span>`:''}</div></div>
+   <button class="btn sm danger ${ui.confirm==='dd'+m.id?'ask':''}" data-act="ddel" data-id="${m.id}">${ui.confirm==='dd'+m.id?'Usunąć?':'Usuń'}</button></div>`}
 function dRow(m){
+  if(isA(m))return aRow(m);
   const d=dDerive(dRec(m)),multi=m.sets>1,open=ui.dopen===m.id;
   const sc=i=>multi?d.sets[i]:d.pst[i].legW;
   return`<div class="mrow" style="grid-template-columns:1fr auto;align-items:start"><div style="min-width:0">
@@ -2017,13 +2075,13 @@ function dRow(m){
    <div style="display:flex;flex-direction:column;gap:6px"><button class="btn sm" data-act="dopen" data-id="${m.id}">${open?'Zwiń':'Statystyki'}</button>
    <button class="btn sm danger ${ui.confirm==='dd'+m.id?'ask':''}" data-act="ddel" data-id="${m.id}">${ui.confirm==='dd'+m.id?'Usunąć?':'Usuń'}</button></div></div>`}
 function viewDhist(){
-  const all=dlist();
+  const all=Object.values(S.darts).sort((a,b)=>b.t.localeCompare(a.t));
   if(!all.length)return`<section class="card empty"><h2>Historia jest pusta</h2><p>Zapisane mecze w darta pojawią się tutaj z datą i statystykami.</p><button class="btn pri" data-act="tab" data-v="dplay">Zagraj mecz</button></section>`;
   const groups=[];all.forEach(m=>{const k=fmtDay(m.t),g=groups[groups.length-1];if(g&&g.k===k)g.items.push(m);else groups.push({k,items:[m]})});
   return`<div class="stack"><section class="card"><h2>Historia darta</h2><p class="muted">${all.length} ${plural(all.length,'mecz','mecze','meczów')}</p></section>${groups.map(g=>`<div><div class="day">${esc(g.k)}</div>${g.items.map(dRow).join('')}</div>`).join('')}</div>`}
 /* ---- statystyki ---- */
 let _dAA=null;
-function dAggAll(){const k=Object.keys(S.darts).sort().join(',');if(_dAA&&_dAA.k===k)return _dAA.v;const v=dAgg(Object.values(S.darts));_dAA={k,v};return v}
+function dAggAll(){const k=Object.keys(S.darts).sort().join(',');if(_dAA&&_dAA.k===k)return _dAA.v;const v=dAgg(Object.values(S.darts).filter(m=>!isA(m)));_dAA={k,v};return v}
 function dAgg(list){
   const agg={};
   list.forEach(m=>{const d=dDerive(dRec(m)),tot=d.sets.reduce((a,b)=>a+b,0),lt=d.legsLog.length;
@@ -2055,6 +2113,11 @@ function dPeriodTable(){
    <div class="seg"><button data-act="dtblmode" data-v="month" class="${T.mode==='month'?'on':''}">Miesiąc</button><button data-act="dtblmode" data-v="year" class="${T.mode==='year'?'on':''}">Rok</button></div></div>
    <div class="row" style="justify-content:center;gap:14px"><button class="btn sm" data-act="dtblprev" aria-label="Poprzedni okres">◀</button><b class="num" style="min-width:150px;text-align:center">${esc(title)}</b><button class="btn sm" data-act="dtblnext" aria-label="Następny okres" ${cur?'disabled':''}>▶</button></div>
    ${rs.length?`<div class="tw pt"><table><thead><tr><th>#</th><th>Gracz</th><th title="Mecze wygrane:przegrane">Bilans</th><th title="Legi wygrane:przegrane">Legi</th><th title="Punkty rzucone">Punkty</th><th title="Rozegrane mecze">Mecze</th></tr></thead><tbody>${rs.map((p,i)=>{const pl_=S.players[p.id];return`<tr><td class="rank1">${i+1}</td><td class="who"><button class="lnk" data-act="dsel" data-id="${p.id}">${avb(pl_.av,30)}<span>${esc(pl_.name)}</span></button></td><td><b class="num">${p.w}:${p.g-p.w}</b></td><td class="num">${p.legW}:${p.legL}</td><td class="num">${p.pts}</td><td class="num">${p.g}</td></tr>`}).join('')}</tbody></table></div><p class="muted" style="font-size:.85rem">Bilans to mecze wygrane:przegrane, legi to wygrane:przegrane, punkty to wszystkie rzucone punkty (przebite kolejki się nie liczą). Kolejność: wygrane mecze, różnica meczów, różnica legów, punkty. Mecze z botem też się liczą.</p>`:`<p class="muted" style="text-align:center">Brak meczów w tym okresie.</p>`}</section>`}
+function aStatCard(){
+  const list=alist();if(!list.length)return'';const ag={};
+  list.forEach(m=>{const d=aDerive({ps:m.ps,first:m.first,tk:m.tk?m.tk.split(' '):[]});m.ps.forEach((id,i)=>{const a=ag[id]||(ag[id]={id,g:0,w:0,best:0,wd:0,hits:0,darts:0});a.g++;a.hits+=d.hits[i];a.darts+=d.darts[i];if(d.winner===i){a.w++;a.wd+=d.darts[i];a.best=a.best?Math.min(a.best,d.darts[i]):d.darts[i]}})});
+  const rows=Object.values(ag).filter(r=>S.players[r.id]).sort((a,b)=>b.w-a.w||(a.best||999)-(b.best||999));
+  return`<section class="card stack"><h2>Around the Clock</h2><div class="tw pt"><table><thead><tr><th>#</th><th>Gracz</th><th title="Mecze wygrane:przegrane">Bilans</th><th title="Najmniej rzutów w wygranym meczu">Rekord</th><th title="Średnia liczba rzutów w wygranych meczach">Śr. rzutów</th><th title="Skuteczność trafień">Celność</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="rank1">${i+1}</td><td class="who"><button class="lnk" data-act="dsel" data-id="${r.id}">${avb(S.players[r.id].av,30)}<span>${esc(S.players[r.id].name)}</span></button></td><td><b class="num">${r.w}:${r.g-r.w}</b></td><td class="num">${r.best||'–'}</td><td class="num">${r.w?f1d(r.wd/r.w):'–'}</td><td class="num">${r.darts?Math.round(100*r.hits/r.darts)+'%':'–'}</td></tr>`).join('')}</tbody></table></div><p class="muted" style="font-size:.85rem">Rekord to najmniej rzutów potrzebnych do trafienia całej tarczy od 1 do bulla.</p></section>`}
 function viewDstat(){
   const now=new Date();
   const inP=m=>{const t=new Date(m.t);return ui.dper==='all'||(ui.dper==='year'&&t.getFullYear()===now.getFullYear())||(ui.dper==='month'&&t.getFullYear()===now.getFullYear()&&t.getMonth()===now.getMonth())};
@@ -2062,7 +2125,7 @@ function viewDstat(){
   const rows=Object.values(agg).filter(r=>S.players[r.id]).sort(dRank);
   const sel=`<select data-chg="dper" aria-label="Okres"><option value="all" ${ui.dper==='all'?'selected':''}>Cały czas</option><option value="year" ${ui.dper==='year'?'selected':''}>Ten rok</option><option value="month" ${ui.dper==='month'?'selected':''}>Ten miesiąc</option></select>`;
   const cur=rows.find(r=>r.id===ui.dsel)||rows[0];
-  return`<div class="stack">${dPeriodTable()}<section class="card stack"><div class="row" style="justify-content:space-between"><div><h2>Statystyki darta</h2><p class="muted">${list.length} ${plural(list.length,'mecz','mecze','meczów')}</p></div>${sel}</div>
+  return`<div class="stack">${dPeriodTable()}${aStatCard()}<section class="card stack"><div class="row" style="justify-content:space-between"><div><h2>Statystyki darta</h2><p class="muted">${list.length} ${plural(list.length,'mecz','mecze','meczów')}</p></div>${sel}</div>
    ${rows.length?`<div class="tw"><table class="dtab"><thead><tr><th>#</th><th>Gracz</th><th title="Mecze wygrane:przegrane">Bilans</th><th title="Mecze rozegrane">Mecze</th><th title="Legi wygrane:przegrane">Legi</th><th title="Średnia z trzech rzutów">Śr.</th><th>100+</th><th>180</th><th title="Najwyższe wykończenie">Wykoń.</th><th title="Najmniej rzutów w wygranym legu">Najl. leg</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td style="text-align:left;font-weight:800">${esc(S.players[r.id].name)}</td><td><b class="num">${r.w}:${r.g-r.w}</b></td><td>${r.g}</td><td>${r.legW}:${r.legL}</td><td>${r.darts?f1d(3*r.pts/r.darts):'–'}</td><td>${r.v100}</td><td>${r.v180}</td><td>${r.hiCo||'–'}</td><td>${r.bestLeg||'–'}</td></tr>`).join('')}</tbody></table></div>
    <p class="muted" style="font-size:.85rem">Średnia to punkty na trzy rzuty (przebite kolejki liczą się jako zero). 100+ to kolejki za co najmniej 100 punktów, 180 to maksymalna kolejka.</p>
    <div><span class="lbl">Szczegóły gracza</span><div class="pick">${rows.map(r=>`<button class="pk ${cur&&cur.id===r.id?'on t':''}" data-act="dsel" data-id="${r.id}">${avb(S.players[r.id].av,32)}<span>${esc(S.players[r.id].name)}</span></button>`).join('')}</div></div>
@@ -2074,7 +2137,7 @@ Object.assign(H,{
   else if(ui.game==='pp'&&!TABS.some(t=>t[0]===ui.tab))ui.tab='play';
   saveUi();render();window.scrollTo(0,0)},
  dpick:d=>{const s=ui.dsetup,i=s.ps.indexOf(d.id);if(s.opp==='bot'){s.ps=i>=0?[]:[d.id]}else if(i>=0)s.ps.splice(i,1);else if(s.ps.length<4)s.ps.push(d.id);else toast('W darcie może grać maksymalnie czterech graczy.');saveD();render()},
- dfmt:d=>{const s=ui.dsetup;s[d.k]=(d.k==='first'||d.k==='opp'||d.k==='lvl')?d.v:+d.v;if(d.k==='opp'&&d.v==='bot')s.ps=s.ps.slice(0,1);saveD();render()},
+ dfmt:d=>{const s=ui.dsetup;s[d.k]=(d.k==='first'||d.k==='opp'||d.k==='lvl'||d.k==='mode')?d.v:+d.v;if(d.k==='opp'&&d.v==='bot')s.ps=s.ps.slice(0,1);saveD();render()},
  dstart:()=>dStart(),
  dmod:d=>{ui.dmod=ui.dmod===+d.v?1:+d.v;render()},
  dthrow:d=>dThrow(+d.n),
@@ -2082,6 +2145,7 @@ Object.assign(H,{
  dvoice:()=>{ui.dvoice=!ui.dvoice;lsSet('tt-dvoice',ui.dvoice);if(!ui.dvoice){try{TTS&&TTS.cancel()}catch(e){}}render()},
  ddrop:()=>ask('ddrop',()=>{ui.dlive=null;saveD();try{TTS&&TTS.cancel()}catch(e){}render()}),
  dsave:()=>dSave(false),dsaverm:()=>dSave(true),
+ athit:()=>aThrow(true),atmiss:()=>aThrow(false),
  dsel:d=>{ui.dsel=d.id;render()},
  dtblmode:d=>{ui.dtbl.mode=d.v;render()},
  dtblprev:()=>{const T=ui.dtbl;if(T.mode==='year')T.y--;else{T.m--;if(T.m<0){T.m=11;T.y--}}render()},

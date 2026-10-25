@@ -86,4 +86,5 @@ Po wejściu do aplikacji pojawia się pytanie „W co dzisiaj gramy?” z wybore
 - **Monety wspólne** dla Ping Ponga i darta: w darcie leg 3, set 10, mecz 40, 180 po 10, leg w minimum rzutów 150. Sklep jest dostępny też z poziomu darta.
 - **Gadżety awatara za punkty rzucone w darcie**: 11 nowych elementów (czapki, okulary, efekty) odblokowywanych od 5 tys. do 200 tys. punktów (5 tys., 10 tys., 20 tys., 30 tys., 50 tys., 75 tys., 100 tys., 125 tys., 150 tys., 175 tys., 200 tys.).
 - Profil i lista graczy w trybie darta pokazują tylko statystyki darta (bez ping ponga).
+- **Around the Clock**: tryb wybierany na górze ustawień meczu. Trafiasz po kolei pola od 1 do 20, na końcu bull (25 albo 50). Każde trafienie w dane pole (pojedyncze, double, triple) to jeden krok, w kolejce są 3 rzuty, wygrywa pierwszy, kto trafi bull. Działa z botem, cofaniem, historią i tabelą Around the Clock (bilans, rekord w rzutach, celność). Mecze Around the Clock nie wchodzą do punktów darta, monet ani statystyk 301/501/701.
 - Mecze darta synchronizują się tak samo jak Ping Pong (nowa kolekcja `darts`).
