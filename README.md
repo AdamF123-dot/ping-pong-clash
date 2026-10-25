@@ -71,3 +71,4 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 - **Głos: wynik zamiast imienia** – można powiedzieć np. „5 do 5” (najpierw wynik serwującego, potem odbierającego). Aplikacja sama ustala, kto zdobył punkt, uwzględniając zmianę serwisu, złotą piłkę, świnkę i koniec seta.
 - **Dogrywka do 30** – w ustawieniach meczu i turnieju przełącznik „Dogrywka: Do 30 pkt / Bez limitu”. Przy „do 30” punkt przy 29:29 kończy seta (30:29). Aplikacja zapowiada to głosem.
 - **Trening w parze: „Co drugi dźwięk”** – uderzenie rakietką i odbicie od stołu to dwa dźwięki, liczone jako jedno odbicie (domyślnie).
+- **Tabela miesięczna i roczna** (Ranking): bilans meczów (wygrane:przegrane), punkty (zdobyte:stracone) i liczba meczów, z przełączaniem miesiąca lub roku strzałkami.

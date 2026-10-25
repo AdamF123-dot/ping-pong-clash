@@ -223,6 +223,7 @@ select{background:var(--surface2);border:1.5px solid var(--line);border-radius:1
 .tr-big{font-family:var(--font-d);font-weight:600;font-size:clamp(5rem,30vw,9rem);line-height:1;text-align:center;color:var(--ink)}
 .tr-big.pulse{animation:trp .18s ease-out}
 @keyframes trp{0%{transform:scale(1.14);color:var(--ball)}100%{transform:scale(1)}}
+.pt table{width:100%;min-width:0}.pt th,.pt td{padding:8px 5px;white-space:nowrap}.pt .lnk span{max-width:84px;overflow:hidden;text-overflow:ellipsis}.pt td.who{display:table-cell;border-top:1.5px solid var(--line)}.pt .lnk{display:inline-flex;gap:6px}
 .tr-cmd{font-family:var(--font-d);font-size:2rem;text-align:center;color:var(--accent,#ff7a1a);min-height:2.6rem;line-height:1.2}
 .trstage{text-align:center;display:flex;flex-direction:column;gap:2px}
 .trstage b{font-family:var(--font-d);font-size:1.2rem}
@@ -1223,6 +1224,17 @@ function viewTour(){
    <div><button class="btn pri" data-act="tstart" ${n>=3?'':'disabled'}>Losuj drabinkę i zaczynamy</button></div></section>
    ${past.length?`<section class="card"><h3 style="margin-bottom:10px">Zakończone turnieje</h3>${past.map(t=>`<div class="mrow" style="grid-template-columns:auto 1fr auto"><span>${avb(av_(t.champ),44)}</span><div><b>${esc(t.name)}</b><div class="muted" style="font-size:.85rem">${fmtShort(t.done||t.created)} · mistrz: ${esc(nm(t.champ))}</div></div><button class="btn sm" data-act="topen" data-t="${t.id}">Drabinka</button></div>`).join('')}</section>`:''}</div>`}
 
+const MONTHS=['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+ui.tbl=ui.tbl||{mode:'month',y:new Date().getFullYear(),m:new Date().getMonth()};
+function periodTable(){
+  const T=ui.tbl,now=new Date(),cur=T.mode==='year'?T.y>=now.getFullYear():(T.y>now.getFullYear()||(T.y===now.getFullYear()&&T.m>=now.getMonth()));
+  const list=mlist().filter(m=>{const d=new Date(m.t);return d.getFullYear()===T.y&&(T.mode==='year'||d.getMonth()===T.m)});
+  const rs=computeStats(list).rows.filter(p=>p.g>0&&S.players[p.id]).sort((a,b)=>b.w-a.w||(b.w-b.l)-(a.w-a.l)||(b.pf-b.pa)-(a.pf-a.pa)||a.l-b.l);
+  const title=T.mode==='year'?String(T.y):MONTHS[T.m]+' '+T.y;
+  return`<section class="card stack"><div class="row" style="justify-content:space-between"><h2>Tabela ${T.mode==='year'?'roczna':'miesięczna'}</h2>
+   <div class="seg"><button data-act="tblmode" data-v="month" class="${T.mode==='month'?'on':''}">Miesiąc</button><button data-act="tblmode" data-v="year" class="${T.mode==='year'?'on':''}">Rok</button></div></div>
+   <div class="row" style="justify-content:center;gap:14px"><button class="btn sm" data-act="tblprev" aria-label="Poprzedni okres">◀</button><b class="num" style="min-width:150px;text-align:center">${esc(title)}</b><button class="btn sm" data-act="tblnext" aria-label="Następny okres" ${cur?'disabled':''}>▶</button></div>
+   ${rs.length?`<div class="tw pt"><table><thead><tr><th>#</th><th>Gracz</th><th title="Mecze wygrane:przegrane">Bilans</th><th title="Punkty zdobyte:stracone">Punkty</th><th title="Rozegrane mecze">Mecze</th></tr></thead><tbody>${rs.map((p,i)=>{const pl_=S.players[p.id];return`<tr><td class="rank1">${i+1}</td><td class="who"><button class="lnk" data-act="pprofile" data-id="${p.id}">${avb(pl_.av,30)}<span>${esc(pl_.name)}</span></button></td><td><b class="num">${p.w}:${p.l}</b></td><td class="num">${p.pf}:${p.pa}</td><td class="num">${p.g}</td></tr>`}).join('')}</tbody></table></div><p class="muted" style="font-size:.85rem">Bilans to mecze wygrane:przegrane, punkty to zdobyte:stracone. Kolejność: najwięcej wygranych, potem różnica meczów, potem różnica punktów. Mecze deblowe liczą się każdemu z czterech graczy.</p>`:`<p class="muted" style="text-align:center">Brak meczów w tym okresie.</p>`}</section>`}
 function viewRank(){
   if(!Object.keys(S.players).length)return noPlayers();
   const list=mlist().filter(inPeriod),{rows,rec}=computeStats(list),pl=plist(),PR=computeProgress();
@@ -1250,7 +1262,7 @@ function viewRank(){
       body=ms.length?`<div class="h2h"><div class="side">${avb(av_(a),64)}${esc(nm(a))}<span class="big num">${wa}</span></div><span class="muted" style="font-weight:800">wygrane</span><div class="side">${avb(av_(b),64)}${esc(nm(b))}<span class="big num">${wb}</span></div></div>
        <p class="muted" style="text-align:center;margin-top:10px">Punkty w sumie ${pa}:${pb} · ostatnie spotkanie ${fmtShort(ms[0].t)}</p>`:'<p class="muted" style="margin-top:12px">Ci dwaj gracze jeszcze ze sobą nie grali.</p>'}
     h2h=`<section class="card"><h3 style="margin-bottom:10px">Pojedynek</h3><div class="row"><select data-chg="h2ha" aria-label="Pierwszy gracz">${opts(a)}</select><span class="muted">kontra</span><select data-chg="h2hb" aria-label="Drugi gracz">${opts(b)}</select></div>${body}</section>`}
-  return`<div class="stack"><section class="card stack"><div class="row" style="justify-content:space-between"><div><h2>Ranking</h2><p class="muted">${list.length} meczów · ${totalPts} rozegranych punktów</p></div>${periodSel}</div>${table}</section>${recs}${kingTable()}${h2h}</div>`}
+  return`<div class="stack">${periodTable()}<section class="card stack"><div class="row" style="justify-content:space-between"><div><h2>Ranking</h2><p class="muted">${list.length} meczów · ${totalPts} rozegranych punktów</p></div>${periodSel}</div>${table}</section>${recs}${kingTable()}${h2h}</div>`}
 
 function viewHist(){
   const all=mlist();
@@ -1649,6 +1661,9 @@ const H={
  svstart:()=>svStart(),svok:()=>svAns(true),svmiss:()=>svAns(false),svundo:()=>svUndo(),
  svstop:()=>{if(SV.att>0)svFinish();else{SV.on=false;try{TTS&&TTS.cancel()}catch(e){}render()}},
  trtbl:d=>{ui.train.tm=+d.v;saveTrain();render()},
+ tblmode:d=>{ui.tbl.mode=d.v;render()},
+ tblprev:()=>{const T=ui.tbl;if(T.mode==='year')T.y--;else{T.m--;if(T.m<0){T.m=11;T.y--}}render()},
+ tblnext:()=>{const T=ui.tbl;if(T.mode==='year')T.y++;else{T.m++;if(T.m>11){T.m=0;T.y++}}render()},
  capset:d=>{RULES.cap=+d.v;lsSet('tt-rules',RULES);render()},
  trex:d=>{ui.train.ex=+d.v;saveTrain();render()},
  trfloor:d=>{ui.train.floor=+d.v;saveTrain();render()},
