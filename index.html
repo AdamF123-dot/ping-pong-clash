@@ -233,6 +233,9 @@ select{background:var(--surface2);border:1.5px solid var(--line);border-radius:1
 .dp{border:2px solid var(--line);background:var(--surface2);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:4px;align-items:center}
 .dp.on{border-color:var(--ball);background:color-mix(in srgb,var(--ball) 14%,var(--surface))}.dp.win{border-color:var(--good)}
 .dph{display:flex;align-items:center;gap:8px;font-weight:800;max-width:100%}.dph b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d9{font-style:normal;font-weight:900;font-size:.68rem;background:#c0392b;color:#fff;border-radius:6px;padding:1px 6px;line-height:1.3}
+.dstg{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:8px}.dst{background:var(--surface2);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}.dst b{font-size:1.15rem}.dst span{font-size:.75rem;color:var(--muted)}
+.dtrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:6px}.dtr{background:var(--surface2);border-radius:10px;padding:4px 6px;text-align:center;opacity:.55;display:flex;flex-direction:column}.dtr.on{opacity:1;outline:2px solid var(--line)}.dtr i{font-style:normal;font-size:.7rem;color:var(--muted)}
 .dturn{font-style:normal;font-size:.7rem;background:var(--ball);color:var(--on-ball);border-radius:99px;padding:1px 8px}
 .drem{font-family:var(--font-d);font-size:3.2rem;line-height:1;font-weight:600}
 .dsub{display:flex;gap:12px;font-size:.82rem;color:var(--muted)}.dsub b{color:var(--ink)}
@@ -751,7 +754,7 @@ setInterval(()=>{
   if(rem<=0){L.timeUp=true;
     if(score(L.cur).a!==score(L.cur).b)finishSprint(L);
     else{L.sudden=true;saveUi();render();if(ui.voice.speak)speak('Remis. Złoty punkt rozstrzyga.')}}},500);
-const nm=(id,snap)=>(S.players[id]&&S.players[id].name)||snap||'Usunięty gracz';
+const nm=(id,snap)=>(S.players[id]&&S.players[id].name)||snap||(id==='bot'?'Bot':'Usunięty gracz');
 const av_=id=>S.players[id]?S.players[id].av:DEF;
 const mSets=m=>(m.sets||[]).map(score);
 function setsWon(m){let a=0,b=0;(m.sets||[]).forEach(s=>{const x=score(s);x.a>x.b?a++:b++});return{a,b}}
@@ -1642,7 +1645,7 @@ function render(){
   if(dart&&!DTABS.some(t=>t[0]===ui.tab))ui.tab='dplay';
   if(!dart&&!TABS.some(t=>t[0]===ui.tab))ui.tab='play';
   $('#app').innerHTML=header()+(dart?dartNav():nav())+`<main>${S.loading?viewLoading():views[ui.tab]()}</main>`;
-  window.scrollTo(0,y)}
+  window.scrollTo(0,y);dBotKick()}
 
 /* ---------- zdarzenia ---------- */
 function ask(key,fn){
@@ -1735,7 +1738,8 @@ const H={
 const DTABS=[['dplay','Mecz'],['dhist','Historia'],['dstat','Statystyki'],['pl','Gracze']];
 Object.assign(ICON,{dplay:ICON.play,dhist:ICON.hist,dstat:ICON.rank});
 ui.game=null;
-ui.dsetup=Object.assign({ps:[],start:501,sets:1,legs:3,dbl:1,first:'rnd'},lsGet('tt-dsetup',{}));
+ui.dsetup=Object.assign({ps:[],start:501,sets:1,legs:3,dbl:1,first:'rnd',opp:'pl',lvl:'adapt'},lsGet('tt-dsetup',{}));
+ui.dsel=null;ui.dtbl={mode:'month',y:new Date().getFullYear(),m:new Date().getMonth()};
 ui.dlive=lsGet('tt-dlive',null);ui.dmod=1;ui.dper='all';ui.dopen=null;ui.dvoice=!!lsGet('tt-dvoice',false);
 const saveD=()=>{lsSet('tt-dsetup',ui.dsetup);lsSet('tt-dlive',ui.dlive)};
 const DALL=[];
@@ -1746,7 +1750,7 @@ const dtok=(n,m)=>n===0?'0':n===50?(m===1?'50':null):n===25?(m===1?'25':m===2?'5
 const dname=t=>t==='0'?'pudło':t==='50'?'bull':t;
 /* kto rzuca i co się dzieje: stan meczu odtwarzany z listy rzutów */
 function dDerive(L){
-  const n=L.ps.length,pst=L.ps.map(()=>({darts:0,pts:0,visits:0,v100:0,v140:0,v180:0,hi:0,hiCo:0,bestLeg:0,legW:0,setW:0,busts:0,ldarts:0}));
+  const n=L.ps.length,pst=L.ps.map(()=>({darts:0,pts:0,visits:0,v100:0,v140:0,v180:0,hi:0,hiCo:0,bestLeg:0,legW:0,setW:0,busts:0,ldarts:0,tc:{},perfect:0}));
   const st={n,rem:Array(n).fill(L.start),legs:Array(n).fill(0),sets:Array(n).fill(0),leg:0,starter:L.first%n,turn:L.first%n,visit:[],vrem:L.start,done:false,winner:null,pst,visits:[],legsLog:[],lastVisit:Array(n).fill(null),ev:null};
   const endVisit=(p,score,bust)=>{
     const x=pst[p];x.visits++;x.pts+=score;x.hi=Math.max(x.hi,score);if(score>=100)x.v100++;if(score>=140)x.v140++;if(score===180)x.v180++;if(bust)x.busts++;
@@ -1756,13 +1760,13 @@ function dDerive(L){
     if(st.done)break;
     const p=st.turn,d=DMAP[tk];if(!d)continue;
     const before=st.rem[p],after=before-d.v;
-    st.visit.push(tk);pst[p].darts++;pst[p].ldarts++;
+    st.visit.push(tk);pst[p].darts++;pst[p].ldarts++;pst[p].tc[tk]=(pst[p].tc[tk]||0)+1;
     const bust=after<0||(dbl&&(after===1||(after===0&&!d.d)));
     if(bust){st.rem[p]=st.vrem;endVisit(p,0,true);st.turn=(p+1)%n;st.visit=[];st.vrem=st.rem[st.turn]}
     else if(after===0){
       st.rem[p]=0;const score=st.vrem;endVisit(p,score,false);
       pst[p].hiCo=Math.max(pst[p].hiCo,score);
-      const ld=pst[p].ldarts;pst[p].bestLeg=pst[p].bestLeg?Math.min(pst[p].bestLeg,ld):ld;
+      const ld=pst[p].ldarts;pst[p].bestLeg=pst[p].bestLeg?Math.min(pst[p].bestLeg,ld):ld;if(ld<=dMinDarts(L.start,dbl))pst[p].perfect++;
       st.legsLog.push({p,leg:st.leg,darts:ld});
       st.legs[p]++;pst[p].legW++;
       if(st.legs[p]>=L.legs){st.sets[p]++;pst[p].setW++;st.legs.fill(0);
@@ -1785,9 +1789,69 @@ function dCheckout(rem,k){
   if(k>=2)for(const a of DALL)for(const b of dbls)if(a.v+b.v===rem)consider([a,b]);
   if(k>=3)for(const a of DALL)for(const b of DALL)for(const c of dbls)if(a.v+b.v+c.v===rem)consider([a,b,c]);
   return DCO[key]=best?best.map(x=>x.t):null}
+const DFIN={};
+function dFinTable(dbl){
+  const k=dbl?'d':'a';if(DFIN[k])return DFIN[k];
+  const vals=[...new Set(DALL.map(x=>x.v))],dvals=new Set(DALL.filter(x=>x.d).map(x=>x.v)),M=701,K=14,f=[];
+  f[0]=new Uint8Array(M+1);
+  f[1]=new Uint8Array(M+1);for(let R=1;R<=M;R++)f[1][R]=(dbl?dvals.has(R):vals.includes(R))?1:0;
+  for(let j=2;j<=K;j++){f[j]=new Uint8Array(M+1);for(let R=1;R<=M;R++){let ok=f[j-1][R];if(!ok)for(const v of vals){if(v<R&&f[j-1][R-v]){ok=1;break}}f[j][R]=ok}}
+  return DFIN[k]=f}
+function dMinDarts(start,dbl){const f=dFinTable(dbl);for(let j=1;j<f.length;j++)if(f[j][start])return j;return 99}
+const dCanFinish=(R,k,dbl)=>k>=1&&k<=14&&R>=1&&R<=701&&!!dFinTable(dbl)[k][R];
+/* ---- bot: symulacja rzutów w tarczę ---- */
+const BORD=[20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+function landTok(x,y){
+  const r=Math.hypot(x,y);if(r<6.35)return'50';if(r<15.9)return'25';if(r>=170)return'0';
+  let th=Math.atan2(x,y)*180/Math.PI;th=(th+360+9)%360;const n=BORD[Math.floor(th/18)];
+  return r>=99&&r<107?'T'+n:r>=162?'D'+n:String(n)}
+function aimPt(tok){
+  if(tok==='50')return[0,0];if(tok==='25')return[0,11];
+  const m=tok[0]==='T'?3:tok[0]==='D'?2:1,n=+(m>1?tok.slice(1):tok),a=BORD.indexOf(n)*18*Math.PI/180,r=m===3?103:m===2?166:57;
+  return[r*Math.sin(a),r*Math.cos(a)]}
+function dSetup(R){
+  let best=null,bs=1e9;
+  for(const x of DALL){
+    if(x.v>R-2)continue;const r=R-x.v;let q;
+    if(r<=40&&r%2===0)q=DPREF.indexOf('D'+r/2);else if(r===50)q=20;else if(r<=170&&dCheckout(r,3))q=30;else q=60;
+    q=q*10-x.v/10+(x.d||x.t[0]==='T'?2:0);if(q<bs){bs=q;best=x}}
+  return best?best.t:'20'}
+function botTarget(L,st){
+  const p=st.turn,R=st.rem[p],left=3-st.visit.length;
+  if(L.dbl){
+    if(R<=170){const rt=dCheckout(R,left);if(rt)return rt[0]}
+    if(R>170)return'T20';
+    return dSetup(R)}
+  const ex=DALL.filter(x=>x.v===R).sort((a,b)=>(a.t.length>2?1:0)-(b.t.length>2?1:0)||(a.t[0]==='T'?1:0)-(b.t[0]==='T'?1:0));
+  if(ex.length&&left>=1)return ex[0].t;
+  if(R>60)return'T20';
+  const lo=DALL.filter(x=>x.v<R).sort((a,b)=>b.v-a.v);return lo.length?lo[0].t:'20'}
+/* poziom bota: σ rozrzutu rzutów w mm (większy = gorszy), tablica z kalibracji pod średnią z trzech rzutów */
+let DSIG=[[8,88],[10,75],[12,64],[14,56],[17,47],[20,40],[24,35],[28,29],[34,25],[40,21],[48,17.5],[56,15]];
+const sigFor=avg=>{const t=DSIG;if(avg>=t[0][1])return t[0][0];if(avg<=t[t.length-1][1])return t[t.length-1][0];
+  for(let i=1;i<t.length;i++)if(avg>=t[i][1]){const a=t[i-1],b=t[i],w=(avg-b[1])/(a[1]-b[1]);return b[0]+(a[0]-b[0])*w}return t[0][0]};
+const DLV=[['vesy','Bardzo łatwy',20],['easy','Łatwy',30],['mid','Średni',45],['hard','Trudny',62],['vhard','Bardzo trudny',85],['adapt','Dopasuj do mnie',0]];
+const dlvName=k=>(DLV.find(x=>x[0]===k)||DLV[2])[1];
+function botSigma(L,st){
+  const lv=L.bot.level;
+  if(lv!=='adapt')return sigFor((DLV.find(x=>x[0]===lv)||DLV[2])[2]);
+  const hi=L.bot.i===0?1:0,h=st.pst[hi],prior=L.bot.prior||40,n=h.visits;
+  const tgt=Math.max(12,Math.min(90,(prior*2+(h.darts?avgOf(h):prior)*n)/(2+n)));
+  return sigFor(tgt)}
+function botPick(L,st){
+  const tok=botTarget(L,st),a=aimPt(tok),sg=botSigma(L,st);
+  return landTok(a[0]+gauss()*sg,a[1]+gauss()*sg)}
 const PL100=['','sto','dwieście','trzysta','czterysta','pięćset','sześćset','siedemset','osiemset','dziewięćset'];
 const plN=n=>n<100?pl(n):PL100[Math.floor(n/100)]+(n%100?' '+pl(n%100):'');
+const botAvb=sz=>`<span class="avb" style="--s:${sz||48}px"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="22.500" y="3" width="3" height="7" rx="1.500" fill="#5b6475"/><circle cx="24" cy="4" r="3" fill="#ff7a1a"/><rect x="7" y="9" width="34" height="30" rx="9" fill="#8fa3bf"/><rect x="11" y="14" width="26" height="17" rx="6" fill="#1d2433"/><circle cx="18" cy="22" r="3.500" fill="#4cd6c0"/><circle cx="30" cy="22" r="3.500" fill="#4cd6c0"/><rect x="17" y="27" width="14" height="2.200" rx="1.100" fill="#4cd6c0"/><rect x="3" y="19" width="4" height="10" rx="2" fill="#5b6475"/><rect x="41" y="19" width="4" height="10" rx="2" fill="#5b6475"/></svg></span>`;
+const dAvb=(id,sz)=>id==='bot'?botAvb(sz):avb(S.players[id]?S.players[id].av:DEF,sz);
+const dN=(L,i)=>L.bot&&i===L.bot.i?L.bot.name:nm(L.ps[i],L.pn&&L.pn[i]);
 const avgOf=x=>x.darts?3*x.pts/x.darts:0;
+function dHumanAvg(id){
+  let pts=0,darts=0;
+  Object.values(S.darts).forEach(m=>{const i=m.ps.indexOf(id);if(i<0)return;const x=dDerive(dRec(m)).pst[i];pts+=x.pts;darts+=x.darts});
+  return darts>=30?3*pts/darts:0}
 const f1d=v=>(Math.round(v*10)/10).toFixed(1);
 /* ---- wybór gry ---- */
 function chooserView(){
@@ -1806,17 +1870,21 @@ function viewDplay(){
   if(!ps.length)return`<section class="card empty"><h2>Zacznijmy od awatarów</h2><p>Gracze są wspólni z Ping Pongiem. Dodaj swojego awatara, a pojawi się tutaj i w obu grach.</p><button class="btn pri" data-act="pnew">Dodaj gracza</button></section>`;
   const s=ui.dsetup;s.ps=s.ps.filter(id=>S.players[id]);
   const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-act="dfmt" data-k="${k}" data-v="${v}" class="${String(s[k])===String(v)?'on':''}">${l}</button>`).join('')}</div>`;
-  const ready=s.ps.length>=2,last=Object.values(S.darts).sort((a,b)=>b.t.localeCompare(a.t)).slice(0,3);
+  const ready=s.opp==='bot'?s.ps.length===1:s.ps.length>=2,last=Object.values(S.darts).sort((a,b)=>b.t.localeCompare(a.t)).slice(0,3);
   return`<div class="stack"><section class="card stack"><h2>Nowy mecz w darta</h2>
-   <div><span class="lbl">Kto gra? (kolejność wyboru to kolejność rzucania, od 2 do 4 graczy)</span>
+   <div><span class="lbl">Przeciwnik</span>${seg('opp',[['pl','Inni gracze'],['bot','Bot']])}</div>
+   <div><span class="lbl">${s.opp==='bot'?'Kto gra z botem? (jeden gracz)':'Kto gra? (kolejność wyboru to kolejność rzucania, od 2 do 4 graczy)'}</span>
     <div class="pick">${ps.map(p=>{const i=s.ps.indexOf(p.id);return`<button class="pk ${i>=0?'on t':''}" data-act="dpick" data-id="${p.id}">${avb(p.av,40)}<span>${esc(p.name)}</span>${i>=0?`<b class="dnum">${i+1}</b>`:''}</button>`}).join('')}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm" data-act="pnew">＋ Dodaj gracza (awatara)</button></div>
-    ${ps.length<2?'<p class="muted" style="margin-top:6px">Do gry potrzeba co najmniej dwóch graczy. Dodaj drugiego awatara.</p>':''}</div>
+    ${s.opp!=='bot'&&ps.length<2?'<p class="muted" style="margin-top:6px">Do gry potrzeba co najmniej dwóch graczy. Dodaj drugiego awatara.</p>':''}</div>
+   ${s.opp==='bot'?(()=>{const ha=s.ps[0]?dHumanAvg(s.ps[0]):0,sug=ha?DLV.slice(0,5).reduce((b,x)=>Math.abs(x[2]-ha)<Math.abs(b[2]-ha)?x:b):null;
+     return`<div><span class="lbl">Poziom bota</span><div class="seg">${DLV.map(([k,l])=>`<button data-act="dfmt" data-k="lvl" data-v="${k}" class="${s.lvl===k?'on':''}">${l}</button>`).join('')}</div>
+     <p class="muted" style="font-size:.85rem;margin-top:4px">${s.lvl==='adapt'?'Bot zaczyna na poziomie Twojej średniej'+(ha?' ('+f1d(ha)+')':' (jeszcze jej nie znam, zacznie od około 40)')+' i w trakcie meczu dostosowuje się do tego, jak naprawdę rzucasz.':'Poziom stały przez cały mecz.'}${sug&&s.lvl!=='adapt'?' Twoja dotychczasowa średnia '+f1d(ha)+' pasuje do poziomu: '+sug[1]+'.':''}</p></div>`})():''}
    <div><span class="lbl">Gra od</span>${seg('start',[[301,'301'],[501,'501'],[701,'701']])}</div>
    <div><span class="lbl">Do ilu wygranych setów</span>${seg('sets',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']])}</div>
    <div><span class="lbl">Ile legów w secie (wygrywa pierwszy do tylu)</span>${seg('legs',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']])}</div>
    <div><span class="lbl">Zakończenie lega</span>${seg('dbl',[[1,'Double out'],[0,'Dowolny rzut']])}<p class="muted" style="font-size:.85rem;margin-top:4px">${s.dbl?'Leg trzeba zamknąć rzutem w pole podwójne (double) albo w środek tarczy (50). Przebicie (poniżej zera, albo zostaje 1) unieważnia kolejkę.':'Leg kończy dowolny rzut, który doprowadzi dokładnie do zera.'}</p></div>
-   <div><span class="lbl">Kto zaczyna</span>${seg('first',[['rnd','Losowo'],['first','Pierwszy z listy']])}</div>
+   <div><span class="lbl">Kto zaczyna</span>${seg('first',[['rnd','Losowo'],['first',s.opp==='bot'?'Ja':'Pierwszy z listy']])}</div>
    <p class="muted">${s.start}, ${s.sets===1?'jeden set':'do '+s.sets+' setów'}, w secie do ${s.legs} ${s.legs===1?'lega':'legów'}.</p>
    <div class="row"><button class="btn pri" data-act="dstart" ${ready?'':'disabled'}>Zaczynamy</button></div></section>
    ${last.length?`<section class="card"><h3 style="margin-bottom:8px">Ostatnie mecze</h3>${last.map(dRow).join('')}</section>`:''}</div>`}
@@ -1824,19 +1892,21 @@ function viewDplay(){
 function dChip(L){return`${L.start} · ${L.sets===1?'1 set':'do '+L.sets+' setów'} · do ${L.legs} ${L.legs===1?'lega':'legów'} · ${L.dbl?'double out':'dowolne zakończenie'}`}
 function viewDlive(){
   const L=ui.dlive,d=dDerive(L),n=d.n;
-  const names=L.ps.map(id=>nm(id)),cur=d.turn,left=3-d.visit.length;
+  const names=L.ps.map((id,i)=>dN(L,i)),cur=d.turn,left=3-d.visit.length,botTurn=!!(L.bot&&cur===L.bot.i&&!d.done),NP=dMinDarts(L.start,!!L.dbl);
   const slot=i=>{const t=d.visit[i];return`<span class="dslot ${t?'f':''}">${t?esc(dname(t)):'·'}</span>`};
   const vsum=d.visit.reduce((a,t)=>a+DMAP[t].v,0);
-  const hint=L.dbl&&!d.done&&d.rem[cur]<=170&&left>0?dCheckout(d.rem[cur],left):null;
+  const hint=L.dbl&&!d.done&&!botTurn&&d.rem[cur]<=170&&left>0?dCheckout(d.rem[cur],left):null;
   const mod=ui.dmod,lab=m=>m===3?'T':m===2?'D':'';
-  const pad=Array.from({length:20},(_,i)=>i+1).map(k=>{const t=dtok(k,mod);return`<button class="dkey" data-act="dthrow" data-n="${k}">${lab(mod)}${k}</button>`}).join('');
+  const dis=botTurn?'disabled':'';
+  const pad=Array.from({length:20},(_,i)=>i+1).map(k=>`<button class="dkey" data-act="dthrow" data-n="${k}" ${dis}>${lab(mod)}${k}</button>`).join('');
+  const nine=i=>{if(d.done)return false;const p=d.pst[i],ld=p.ldarts;if(ld<1||ld>=NP)return false;const R=i===cur?d.vrem-vsum:d.rem[i];return dCanFinish(R,NP-ld,!!L.dbl)};
   const players=L.ps.map((id,i)=>{
     const p=d.pst[i],on=i===cur&&!d.done,lv=d.lastVisit[i];
     return`<div class="dp ${on?'on':''} ${d.done&&d.winner===i?'win':''}">
-     <div class="dph">${avb(S.players[id]?S.players[id].av:DEF,40)}<b>${esc(names[i])}</b>${on?'<i class="dturn">rzuca</i>':''}</div>
+     <div class="dph">${dAvb(id,40)}<b>${esc(names[i])}</b>${nine(i)?`<i class="d9" title="Nadal może rzucić leg w ${NP} rzutów">${NP}</i>`:''}${on?'<i class="dturn">rzuca</i>':''}</div>
      <div class="drem num">${d.rem[i]}</div>
      <div class="dsub"><span>Sety <b>${d.sets[i]}</b></span><span>Legi <b>${d.legs[i]}</b></span></div>
-     <div class="dsub"><span>Śr. <b>${p.darts?f1d(avgOf(p)):'–'}</b></span><span>Ost. <b>${lv?(lv.bust?'przeb.':lv.score):'–'}</b></span></div></div>`}).join('');
+     <div class="dsub"><span>Śr. w meczu <b>${p.darts?f1d(avgOf(p)):'–'}</b></span><span>Ost. <b>${lv?(lv.bust?'przeb.':lv.score):'–'}</b></span></div></div>`}).join('');
   if(d.done){
     const w=d.winner;
     return`<div class="stack"><section class="card stack"><h2>🏆 Wygrywa ${esc(names[w])}</h2>
@@ -1847,11 +1917,11 @@ function viewDlive(){
   return`<div class="stack"><section class="card stack">
    <div class="row" style="justify-content:space-between"><span class="chip t">${esc(dChip(L))}</span><button class="btn sm ${ui.dvoice?'pri':''}" data-act="dvoice" aria-pressed="${ui.dvoice}" style="${ui.dvoice?'font-size:.9rem;padding:6px 14px':''}">🔊 Głos: ${ui.dvoice?'wł.':'wył.'}</button></div>
    <div class="dplayers">${players}</div>
-   <div class="dvisit"><div class="dslots">${slot(0)}${slot(1)}${slot(2)}</div><div class="dvs"><span class="muted">${esc(names[cur])}: kolejka</span><b class="num">${vsum}</b>${d.visit.length?`<span class="muted">zostanie ${Math.max(0,d.rem[cur]-vsum)}</span>`:''}</div></div>
+   <div class="dvisit"><div class="dslots">${slot(0)}${slot(1)}${slot(2)}</div><div class="dvs"><span class="muted">${botTurn?'🤖 ':''}${esc(names[cur])}: kolejka</span><b class="num">${vsum}</b>${d.visit.length?`<span class="muted">zostanie ${Math.max(0,d.rem[cur]-vsum)}</span>`:''}</div></div>
    ${hint?`<p class="dhint">Wykończenie: <b>${hint.map(dname).join(' · ')}</b></p>`:''}
-   <div class="row" style="justify-content:center"><button class="dmod ${mod===2?'on':''}" data-act="dmod" data-v="2" aria-pressed="${mod===2}">Double</button><button class="dmod ${mod===3?'on':''}" data-act="dmod" data-v="3" aria-pressed="${mod===3}">Triple</button></div>
+   <div class="row" style="justify-content:center"><button class="dmod ${mod===2?'on':''}" data-act="dmod" data-v="2" ${dis} aria-pressed="${mod===2}">Double</button><button class="dmod ${mod===3?'on':''}" data-act="dmod" data-v="3" ${dis} aria-pressed="${mod===3}">Triple</button></div>
    <div class="dpad">${pad}</div>
-   <div class="dpad3"><button class="dkey" data-act="dthrow" data-n="25">25</button><button class="dkey" data-act="dthrow" data-n="50">50</button><button class="dkey miss" data-act="dthrow" data-n="0">Pudło</button></div>
+   <div class="dpad3"><button class="dkey" data-act="dthrow" data-n="25" ${dis}>25</button><button class="dkey" data-act="dthrow" data-n="50" ${dis}>50</button><button class="dkey miss" data-act="dthrow" data-n="0" ${dis}>Pudło</button></div>
    <div class="row" style="justify-content:center"><button class="btn" data-act="dundo" ${L.tk.length?'':'disabled'}>↩ Cofnij rzut</button>
     <button class="btn danger ${ui.confirm==='ddrop'?'ask':''}" data-act="ddrop">${ui.confirm==='ddrop'?'Na pewno przerwać?':'Przerwij mecz'}</button></div>
    <p class="muted" style="font-size:.85rem;text-align:center">${mod===3?'Triple: teraz wybierz liczbę (np. 20 = 60).':mod===2?'Double: teraz wybierz liczbę (np. 20 = 40, 25 = 50).':'Kliknij liczbę, którą trafiłeś. Przed liczbą kliknij Double albo Triple, jeśli trafiłeś w pole podwójne lub potrójne.'} Każda kolejka to 3 rzuty.</p>
@@ -1861,33 +1931,44 @@ function dDetails(L,d){
 function dFeedback(b,a,L){
   const say=[];let msg='';
   if(a.visits.length>b.visits.length){
-    const ev=a.ev,name=nm(L.ps[ev.p]);
+    const ev=a.ev;
     if(ev.bust){msg='Przebite! Kolejka się nie liczy.';say.push('Przebite')}
     else if(ev.score===180){msg='180! 🎯';say.push('Sto osiemdziesiąt!')}
     else say.push(plN(ev.score));
     if(!ev.bust&&!(a.legsLog.length>b.legsLog.length)){const r=a.rem[ev.p];say.push('zostało '+plN(r))}
     if(a.legsLog.length>b.legsLog.length){
-      const lg=a.legsLog[a.legsLog.length-1],w=nm(L.ps[lg.p]);
+      const lg=a.legsLog[a.legsLog.length-1],w=dN(L,lg.p);
       msg=(a.done?'Mecz dla ':a.sets.some((x,i)=>x>b.sets[i])?'Set dla ':'Leg dla ')+w+' ('+lg.darts+' rzutów)';
       say.length=0;say.push(a.done?'Mecz wygrywa '+w:a.sets.some((x,i)=>x>b.sets[i])?'Set dla '+w:'Leg dla '+w)}}
   if(msg)toast(msg);
   if(ui.dvoice&&say.length)speak(say.join('. '))}
 function dThrow(n){
-  const L=ui.dlive;if(!L)return;const b=dDerive(L);if(b.done)return;
+  const L=ui.dlive;if(!L)return;const b=dDerive(L);if(b.done||(L.bot&&b.turn===L.bot.i))return;
   const t=dtok(n,n===0?1:ui.dmod);
   if(!t){ui.dmod=1;toast('Takiego pola nie ma w rzutkach.');render();return}
   L.tk.push(t);ui.dmod=1;saveD();dFeedback(b,dDerive(L),L);render()}
-function dUndo(){const L=ui.dlive;if(!L||!L.tk.length)return;L.tk.pop();ui.dmod=1;saveD();render()}
+function dUndo(){const L=ui.dlive;if(!L||!L.tk.length)return;L.tk.pop();
+  if(L.bot)while(L.tk.length){const d=dDerive(L);if(d.done||d.turn!==L.bot.i)break;L.tk.pop()}
+  ui.dmod=1;saveD();render()}
+let botT=null;
+function dBotOk(){const L=ui.dlive;if(!(ui.game==='dart'&&ui.tab==='dplay'&&L&&L.bot))return false;const d=dDerive(L);return!d.done&&d.turn===L.bot.i}
+function dBotKick(){if(botT||!dBotOk())return;botT=setTimeout(()=>{botT=null;dBotStep()},ui.dlive.tk.length%3===0?1100:800)}
+function dBotStep(){
+  if(!dBotOk())return;const L=ui.dlive,b=dDerive(L);
+  L.tk.push(botPick(L,b));saveD();dFeedback(b,dDerive(L),L);render()}
 function dStart(first){
   const s=ui.dsetup;s.ps=s.ps.filter(id=>S.players[id]);
-  if(s.ps.length<2){toast('Wybierz co najmniej dwóch graczy.');return}
-  const f=first!=null?first:(s.first==='rnd'?rint(s.ps.length):0);
-  ui.dlive={ps:s.ps.slice(),start:s.start,sets:s.sets,legs:s.legs,dbl:s.dbl?1:0,first:f,tk:[],st:new Date().toISOString()};
+  const bot=s.opp==='bot';
+  if(bot?s.ps.length!==1:s.ps.length<2){toast(bot?'Wybierz jednego gracza do gry z botem.':'Wybierz co najmniej dwóch graczy.');return}
+  const ps=bot?[s.ps[0],'bot']:s.ps.slice(),f=first!=null?first:(s.first==='rnd'?rint(ps.length):0);
+  ui.dlive={ps,start:s.start,sets:s.sets,legs:s.legs,dbl:s.dbl?1:0,first:f,tk:[],st:new Date().toISOString()};
+  if(bot){const ha=dHumanAvg(s.ps[0]);ui.dlive.bot={i:1,level:s.lvl,prior:ha||40,name:'Bot ('+dlvName(s.lvl).toLowerCase()+')'}}
   ui.dmod=1;saveD();keepAwake();render();window.scrollTo(0,0)}
 async function dSave(rematch){
   const L=ui.dlive,d=dDerive(L);if(!d.done)return;
-  const id=uid(),rec={id,t:new Date().toISOString(),st:L.st,ps:L.ps,pn:L.ps.map(i=>nm(i)),start:L.start,sets:L.sets,legs:L.legs,dbl:L.dbl,first:L.first,tk:L.tk.join(' '),w:L.ps[d.winner]};
-  const ps=L.ps.slice(),nf=(L.first+1)%ps.length;
+  const id=uid(),rec={id,t:new Date().toISOString(),st:L.st,ps:L.ps,pn:L.ps.map((i,k)=>dN(L,k)),start:L.start,sets:L.sets,legs:L.legs,dbl:L.dbl,first:L.first,tk:L.tk.join(' '),w:L.ps[d.winner]};
+  if(L.bot)rec.bot={level:L.bot.level,name:L.bot.name};
+  const ps=L.bot?[L.ps[0]]:L.ps.slice(),nf=(L.first+1)%L.ps.length;
   ui.dlive=null;saveD();
   if(rematch){ui.dsetup.ps=ps;ui.dsetup.start=L.start;ui.dsetup.sets=L.sets;ui.dsetup.legs=L.legs;ui.dsetup.dbl=L.dbl;ui.tab='dplay';await put('darts',id,rec);dStart(nf);toast('Zapisano. Rewanż!')}
   else{ui.tab='dhist';await put('darts',id,rec);toast('Mecz zapisany.')}}
@@ -1897,8 +1978,8 @@ function dRow(m){
   const d=dDerive(dRec(m)),multi=m.sets>1,open=ui.dopen===m.id;
   const sc=i=>multi?d.sets[i]:d.pst[i].legW;
   return`<div class="mrow" style="grid-template-columns:1fr auto;align-items:start"><div style="min-width:0">
-   <div style="display:flex;flex-direction:column;gap:6px">${m.ps.map((id,i)=>`<div class="mp">${avb(S.players[id]?S.players[id].av:DEF,36)}<span style="${d.winner===i?'font-weight:900':''}">${esc(nm(id,m.pn&&m.pn[i]))}${d.winner===i?' 🏆':''}</span><b class="num" style="margin-left:auto;padding-left:10px">${sc(i)}</b></div>`).join('')}</div>
-   <div class="mmeta"><span>${fmtShort(m.t)} ${fmtTime(m.t)}</span><span>${m.start}</span><span>${multi?'do '+m.sets+' setów, ':''}do ${m.legs} ${m.legs===1?'lega':'legów'}</span><span>${m.dbl?'double out':'dowolne'}</span></div>
+   <div style="display:flex;flex-direction:column;gap:6px">${m.ps.map((id,i)=>`<div class="mp">${dAvb(id,36)}<span style="${d.winner===i?'font-weight:900':''}">${esc(nm(id,m.pn&&m.pn[i]))}${d.winner===i?' 🏆':''}</span><b class="num" style="margin-left:auto;padding-left:10px">${sc(i)}</b></div>`).join('')}</div>
+   <div class="mmeta"><span>${fmtShort(m.t)} ${fmtTime(m.t)}</span><span>${m.start}</span><span>${multi?'do '+m.sets+' setów, ':''}do ${m.legs} ${m.legs===1?'lega':'legów'}</span><span>${m.dbl?'double out':'dowolne'}</span>${m.bot?`<span>🤖 ${esc(m.bot.name)}</span>`:''}</div>
    ${open?dDetails(Object.assign(dRec(m),{pn:m.pn}),d):''}</div>
    <div style="display:flex;flex-direction:column;gap:6px"><button class="btn sm" data-act="dopen" data-id="${m.id}">${open?'Zwiń':'Statystyki'}</button>
    <button class="btn sm danger ${ui.confirm==='dd'+m.id?'ask':''}" data-act="ddel" data-id="${m.id}">${ui.confirm==='dd'+m.id?'Usunąć?':'Usuń'}</button></div></div>`}
@@ -1908,27 +1989,57 @@ function viewDhist(){
   const groups=[];all.forEach(m=>{const k=fmtDay(m.t),g=groups[groups.length-1];if(g&&g.k===k)g.items.push(m);else groups.push({k,items:[m]})});
   return`<div class="stack"><section class="card"><h2>Historia darta</h2><p class="muted">${all.length} ${plural(all.length,'mecz','mecze','meczów')}</p></section>${groups.map(g=>`<div><div class="day">${esc(g.k)}</div>${g.items.map(dRow).join('')}</div>`).join('')}</div>`}
 /* ---- statystyki ---- */
+function dAgg(list){
+  const agg={};
+  list.forEach(m=>{const d=dDerive(dRec(m)),tot=d.sets.reduce((a,b)=>a+b,0),lt=d.legsLog.length;
+    m.ps.forEach((id,i)=>{const x=d.pst[i],a=agg[id]||(agg[id]={id,g:0,w:0,legW:0,legL:0,sW:0,sL:0,legsP:0,darts:0,pts:0,visits:0,v100:0,v140:0,v180:0,hiCo:0,bestLeg:0,hiV:0,perfect:0,busts:0,tc:{}});
+      a.g++;if(d.winner===i)a.w++;a.legW+=x.legW;a.legL+=lt-x.legW;a.legsP+=lt;a.sW+=d.sets[i];a.sL+=tot-d.sets[i];
+      a.darts+=x.darts;a.pts+=x.pts;a.visits+=x.visits;a.v100+=x.v100;a.v140+=x.v140;a.v180+=x.v180;a.busts+=x.busts;a.perfect+=x.perfect;
+      a.hiCo=Math.max(a.hiCo,x.hiCo);a.hiV=Math.max(a.hiV,x.hi);
+      if(x.bestLeg)a.bestLeg=a.bestLeg?Math.min(a.bestLeg,x.bestLeg):x.bestLeg;
+      Object.keys(x.tc).forEach(k=>a.tc[k]=(a.tc[k]||0)+x.tc[k])})});
+  return agg}
+const dRank=(a,b)=>b.w-a.w||(b.w-(b.g-b.w))-(a.w-(a.g-a.w))||(b.legW-b.legL)-(a.legW-a.legL)||b.pts-a.pts;
+function dPlayerCard(a){
+  const pl_=S.players[a.id],avg=a.darts?3*a.pts/a.darts:0,pc=a.g?Math.round(100*a.w/a.g):0;
+  const cnt=k=>a.tc[k]||0;
+  let dbls=0,trs=0;Object.keys(a.tc).forEach(k=>{if(k[0]==='D')dbls+=a.tc[k];if(k[0]==='T')trs+=a.tc[k]});dbls+=cnt('50');
+  const tile=(l,v,t)=>`<div class="dst"${t?` title="${t}"`:''}><b class="num">${v}</b><span>${l}</span></div>`;
+  const tr=Array.from({length:20},(_,i)=>20-i).map(n=>`<span class="dtr ${cnt('T'+n)?'on':''}"><i>T${n}</i><b class="num">${cnt('T'+n)}</b></span>`).join('');
+  return`<div class="dcard"><div class="row" style="gap:10px">${avb(pl_.av,44)}<h3 style="margin:0">${esc(pl_.name)}</h3></div>
+   <div class="dstg">${tile('Rzucone rzutki',a.darts)}${tile('Mecze',a.g)}${tile('Wygrane mecze',pc+'%',a.w+' z '+a.g)}${tile('Sety W:L',a.sW+':'+a.sL)}${tile('Legi W:L',a.legW+':'+a.legL)}${tile('Średnia (3 rzuty)',a.darts?f1d(avg):'–')}
+   ${tile('Śr. punktów na leg',a.legsP?f1d(a.pts/a.legsP):'–','Punkty rzucone podzielone przez liczbę rozegranych legów')}${tile('Śr. punktów na mecz',a.g?f1d(a.pts/a.g):'–')}${tile('Najmniej rzutów w legu',a.bestLeg||'–')}${tile('Legi w minimum rzutów',a.perfect,'Leg zamknięty w najmniejszej możliwej liczbie rzutów (501: dziewięć)')}
+   ${tile('Kolejki 100+',a.v100)}${tile('Kolejki 140+',a.v140)}${tile('180',a.v180)}${tile('Najwyższa kolejka',a.hiV||'–')}${tile('Najwyższe wykończenie',a.hiCo||'–')}${tile('Przebicia',a.busts)}${tile('Pudła',cnt('0'))}${tile('Trafione double',dbls)}${tile('Bull 25 / 50',cnt('25')+' / '+cnt('50'))}${tile('Wszystkie triple',trs)}</div>
+   <span class="lbl" style="margin-top:6px">Triple według pola</span><div class="dtrs">${tr}</div></div>`}
+function dPeriodTable(){
+  const T=ui.dtbl,now=new Date(),cur=T.mode==='year'?T.y>=now.getFullYear():(T.y>now.getFullYear()||(T.y===now.getFullYear()&&T.m>=now.getMonth()));
+  const list=dlist().filter(m=>{const d=new Date(m.t);return d.getFullYear()===T.y&&(T.mode==='year'||d.getMonth()===T.m)});
+  const rs=Object.values(dAgg(list)).filter(r=>S.players[r.id]).sort(dRank);
+  const title=T.mode==='year'?String(T.y):MONTHS[T.m]+' '+T.y;
+  return`<section class="card stack"><div class="row" style="justify-content:space-between"><h2>Tabela ${T.mode==='year'?'roczna':'miesięczna'} darta</h2>
+   <div class="seg"><button data-act="dtblmode" data-v="month" class="${T.mode==='month'?'on':''}">Miesiąc</button><button data-act="dtblmode" data-v="year" class="${T.mode==='year'?'on':''}">Rok</button></div></div>
+   <div class="row" style="justify-content:center;gap:14px"><button class="btn sm" data-act="dtblprev" aria-label="Poprzedni okres">◀</button><b class="num" style="min-width:150px;text-align:center">${esc(title)}</b><button class="btn sm" data-act="dtblnext" aria-label="Następny okres" ${cur?'disabled':''}>▶</button></div>
+   ${rs.length?`<div class="tw pt"><table><thead><tr><th>#</th><th>Gracz</th><th title="Mecze wygrane:przegrane">Bilans</th><th title="Legi wygrane:przegrane">Legi</th><th title="Punkty rzucone">Punkty</th><th title="Rozegrane mecze">Mecze</th></tr></thead><tbody>${rs.map((p,i)=>{const pl_=S.players[p.id];return`<tr><td class="rank1">${i+1}</td><td class="who"><button class="lnk" data-act="dsel" data-id="${p.id}">${avb(pl_.av,30)}<span>${esc(pl_.name)}</span></button></td><td><b class="num">${p.w}:${p.g-p.w}</b></td><td class="num">${p.legW}:${p.legL}</td><td class="num">${p.pts}</td><td class="num">${p.g}</td></tr>`}).join('')}</tbody></table></div><p class="muted" style="font-size:.85rem">Bilans to mecze wygrane:przegrane, legi to wygrane:przegrane, punkty to wszystkie rzucone punkty (przebite kolejki się nie liczą). Kolejność: wygrane mecze, różnica meczów, różnica legów, punkty. Mecze z botem też się liczą.</p>`:`<p class="muted" style="text-align:center">Brak meczów w tym okresie.</p>`}</section>`}
 function viewDstat(){
   const now=new Date();
   const inP=m=>{const t=new Date(m.t);return ui.dper==='all'||(ui.dper==='year'&&t.getFullYear()===now.getFullYear())||(ui.dper==='month'&&t.getFullYear()===now.getFullYear()&&t.getMonth()===now.getMonth())};
-  const list=dlist().filter(inP),agg={};
-  list.forEach(m=>{const d=dDerive(dRec(m));
-    m.ps.forEach((id,i)=>{const x=d.pst[i],a=agg[id]||(agg[id]={id,g:0,w:0,legW:0,legL:0,darts:0,pts:0,v100:0,v180:0,hi:0,hiCo:0,bestLeg:0,hiV:0});
-      a.g++;if(d.winner===i)a.w++;a.legW+=x.legW;a.legL+=d.legsLog.length-x.legW;a.darts+=x.darts;a.pts+=x.pts;a.v100+=x.v100;a.v180+=x.v180;a.hiCo=Math.max(a.hiCo,x.hiCo);a.hiV=Math.max(a.hiV,x.hi);
-      if(x.bestLeg)a.bestLeg=a.bestLeg?Math.min(a.bestLeg,x.bestLeg):x.bestLeg})});
-  const rows=Object.values(agg).filter(r=>S.players[r.id]).sort((a,b)=>b.w-a.w||(b.w-(b.g-b.w))-(a.w-(a.g-a.w))||(b.pts/(b.darts||1))-(a.pts/(a.darts||1)));
+  const list=dlist().filter(inP),agg=dAgg(list);
+  const rows=Object.values(agg).filter(r=>S.players[r.id]).sort(dRank);
   const sel=`<select data-chg="dper" aria-label="Okres"><option value="all" ${ui.dper==='all'?'selected':''}>Cały czas</option><option value="year" ${ui.dper==='year'?'selected':''}>Ten rok</option><option value="month" ${ui.dper==='month'?'selected':''}>Ten miesiąc</option></select>`;
-  return`<div class="stack"><section class="card stack"><div class="row" style="justify-content:space-between"><div><h2>Statystyki darta</h2><p class="muted">${list.length} ${plural(list.length,'mecz','mecze','meczów')}</p></div>${sel}</div>
-   ${rows.length?`<div class="tw"><table class="dtab"><thead><tr><th>#</th><th>Gracz</th><th title="Mecze wygrane:przegrane">Bilans</th><th title="Mecze rozegrane">Mecze</th><th title="Legi wygrane:przegrane">Legi</th><th title="Średnia z trzech rzutów">Śr.</th><th>100+</th><th>180</th><th title="Najwyższe wykończenie">Wykoń.</th><th title="Najmniej rzutów w wygranym legu">Najl. leg</th></tr></thead><tbody>${rows.map((r,i)=>{const p=S.players[r.id];return`<tr><td class="rank1">${i+1}</td><td class="who"><button class="lnk" data-act="pprofile" data-id="${r.id}">${avb(p.av,30)}<span>${esc(p.name)}</span></button></td><td><b class="num">${r.w}:${r.g-r.w}</b></td><td>${r.g}</td><td>${r.legW}:${r.legL}</td><td>${r.darts?f1d(3*r.pts/r.darts):'–'}</td><td>${r.v100}</td><td>${r.v180}</td><td>${r.hiCo||'–'}</td><td>${r.bestLeg?r.bestLeg+' rz.':'–'}</td></tr>`}).join('')}</tbody></table></div>
-   <p class="muted" style="font-size:.85rem">Średnia to punkty na trzy rzuty (przebite kolejki liczą się jako zero). 100+ to kolejki za co najmniej 100 punktów, 180 to maksymalna kolejka.</p>`:`<p class="muted" style="text-align:center">Brak zapisanych meczów w tym okresie.</p>`}</section></div>`}
+  const cur=rows.find(r=>r.id===ui.dsel)||rows[0];
+  return`<div class="stack">${dPeriodTable()}<section class="card stack"><div class="row" style="justify-content:space-between"><div><h2>Statystyki darta</h2><p class="muted">${list.length} ${plural(list.length,'mecz','mecze','meczów')}</p></div>${sel}</div>
+   ${rows.length?`<div class="tw"><table class="dtab"><thead><tr><th>#</th><th>Gracz</th><th title="Mecze wygrane:przegrane">Bilans</th><th title="Mecze rozegrane">Mecze</th><th title="Legi wygrane:przegrane">Legi</th><th title="Średnia z trzech rzutów">Śr.</th><th>100+</th><th>180</th><th title="Najwyższe wykończenie">Wykoń.</th><th title="Najmniej rzutów w wygranym legu">Najl. leg</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td style="text-align:left;font-weight:800">${esc(S.players[r.id].name)}</td><td><b class="num">${r.w}:${r.g-r.w}</b></td><td>${r.g}</td><td>${r.legW}:${r.legL}</td><td>${r.darts?f1d(3*r.pts/r.darts):'–'}</td><td>${r.v100}</td><td>${r.v180}</td><td>${r.hiCo||'–'}</td><td>${r.bestLeg||'–'}</td></tr>`).join('')}</tbody></table></div>
+   <p class="muted" style="font-size:.85rem">Średnia to punkty na trzy rzuty (przebite kolejki liczą się jako zero). 100+ to kolejki za co najmniej 100 punktów, 180 to maksymalna kolejka.</p>
+   <div><span class="lbl">Szczegóły gracza</span><div class="pick">${rows.map(r=>`<button class="pk ${cur&&cur.id===r.id?'on t':''}" data-act="dsel" data-id="${r.id}">${avb(S.players[r.id].av,32)}<span>${esc(S.players[r.id].name)}</span></button>`).join('')}</div></div>
+   ${cur?dPlayerCard(cur):''}`:`<p class="muted" style="text-align:center">Brak zapisanych meczów w tym okresie.</p>`}</section></div>`}
 Object.assign(H,{
  game:d=>{
   ui.game=d.v||null;ui.confirm=null;ui.edit=null;ui.prof=null;ui.tview=null;
   if(ui.game==='dart')ui.tab=DTABS.some(t=>t[0]===ui.tab)?ui.tab:'dplay';
   else if(ui.game==='pp'&&!TABS.some(t=>t[0]===ui.tab))ui.tab='play';
   saveUi();render();window.scrollTo(0,0)},
- dpick:d=>{const s=ui.dsetup,i=s.ps.indexOf(d.id);if(i>=0)s.ps.splice(i,1);else if(s.ps.length<4)s.ps.push(d.id);else toast('W darcie może grać maksymalnie czterech graczy.');saveD();render()},
- dfmt:d=>{ui.dsetup[d.k]=d.k==='first'?d.v:+d.v;saveD();render()},
+ dpick:d=>{const s=ui.dsetup,i=s.ps.indexOf(d.id);if(s.opp==='bot'){s.ps=i>=0?[]:[d.id]}else if(i>=0)s.ps.splice(i,1);else if(s.ps.length<4)s.ps.push(d.id);else toast('W darcie może grać maksymalnie czterech graczy.');saveD();render()},
+ dfmt:d=>{const s=ui.dsetup;s[d.k]=(d.k==='first'||d.k==='opp'||d.k==='lvl')?d.v:+d.v;if(d.k==='opp'&&d.v==='bot')s.ps=s.ps.slice(0,1);saveD();render()},
  dstart:()=>dStart(),
  dmod:d=>{ui.dmod=ui.dmod===+d.v?1:+d.v;render()},
  dthrow:d=>dThrow(+d.n),
@@ -1936,6 +2047,10 @@ Object.assign(H,{
  dvoice:()=>{ui.dvoice=!ui.dvoice;lsSet('tt-dvoice',ui.dvoice);if(!ui.dvoice){try{TTS&&TTS.cancel()}catch(e){}}render()},
  ddrop:()=>ask('ddrop',()=>{ui.dlive=null;saveD();try{TTS&&TTS.cancel()}catch(e){}render()}),
  dsave:()=>dSave(false),dsaverm:()=>dSave(true),
+ dsel:d=>{ui.dsel=d.id;render()},
+ dtblmode:d=>{ui.dtbl.mode=d.v;render()},
+ dtblprev:()=>{const T=ui.dtbl;if(T.mode==='year')T.y--;else{T.m--;if(T.m<0){T.m=11;T.y--}}render()},
+ dtblnext:()=>{const T=ui.dtbl;if(T.mode==='year')T.y++;else{T.m++;if(T.m>11){T.m=0;T.y++}}render()},
  dopen:d=>{ui.dopen=ui.dopen===d.id?null:d.id;render()},
  ddel:d=>ask('dd'+d.id,()=>del('darts',d.id))});
 

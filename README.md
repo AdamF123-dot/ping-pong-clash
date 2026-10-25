@@ -79,4 +79,8 @@ Po wejściu do aplikacji pojawia się pytanie „W co dzisiaj gramy?” z wybore
 - Wpisywanie rzutów przyciskami 1–20, 25, 50 i Pudło oraz **Double** i **Triple** (np. Triple, potem 20 = 60). Kolejka to 3 rzuty, potem rzuca następny gracz. Przebicie (poniżej zera, zostaje 1 albo zero nie dublem) unieważnia kolejkę.
 - Podpowiedź wykończenia przy double out, średnia z trzech rzutów, kolejki 100+ i 180, cofanie rzutów, opcjonalny głos.
 - Zakładki: Mecz, Historia (ze statystykami meczu), Statystyki (bilans, legi, średnia, 180, najwyższe wykończenie, najlepszy leg), Gracze.
+- **Mały czerwony znaczek z liczbą rzutów** (9 przy 501, 6 przy 301, 12 przy 701) przy nicku gracza, który nadal może zamknąć leg w minimalnej liczbie rzutów.
+- **Tryb z botem**: poziomy Bardzo łatwy, Łatwy, Średni, Trudny, Bardzo trudny oraz „Dopasuj do mnie” (bot startuje od Twojej dotychczasowej średniej i w trakcie meczu dostosowuje się do tego, jak rzucasz). Bot rzuca po jednym rzucie, cofnięcie usuwa jego kolejkę. Poziomy skalibrowano symulacją rozrzutu rzutów na tarczy.
+- W trakcie meczu przy każdym graczu widać **średnią w tym meczu**.
+- Statystyki: tabela **miesięczna i roczna** (bilans meczów W:L, legi W:L, punkty, mecze) oraz karta gracza: rzucone rzutki, wygrane sety i legi, % wygranych, średnia na leg i na mecz, najmniej rzutów w legu, 100+/140+/180, triple według pola (T20…T1), double, pudła.
 - Mecze darta synchronizują się tak samo jak Ping Pong (nowa kolekcja `darts`).
