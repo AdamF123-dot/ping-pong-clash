@@ -68,3 +68,4 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
   - **Plan** – gotowe zestawy etapów (krótki 3 min, rozgrzewka 5 min, mocny 8 min) z głosowym prowadzeniem, odpoczynkami i liczeniem odbić w każdym etapie.
   - **Refleks** – podczas odbijania aplikacja co kilka sekund podaje komendę (forhend, bekhend, na przemian, szybciej, spokojniej).
   - Nowe medale: Pierwszy serwis na cel, Snajper serwisu, Plan wykonany, Refleks.
+- **Głos: wynik zamiast imienia** – można powiedzieć np. „5 do 5” (najpierw wynik serwującego, potem odbierającego). Aplikacja sama ustala, kto zdobył punkt, uwzględniając zmianę serwisu, złotą piłkę, świnkę i koniec seta.

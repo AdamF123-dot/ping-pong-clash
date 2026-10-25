@@ -804,6 +804,34 @@ function interpret(text,L){
   return hit.size===1?[...hit][0]:hit.size===2?'amb':null}
 const isX2=text=>norm(text).split(/[^a-z0-9]+/).some(w=>w==='x2'||w.startsWith('podwojn')||w.startsWith('stawk'));
 const isPig=text=>norm(text).split(/[^a-z0-9]+/).some(w=>w.length>=4&&w.length<=8&&(w.startsWith('swin')||lev(w,'swinka')<=1));
+const NUMW={zero:0,jeden:1,jednego:1,jedna:1,jedno:1,dwa:2,dwie:2,dwoch:2,trzy:3,trzech:3,cztery:4,czterech:4,piec:5,pieciu:5,szesc:6,szesciu:6,siedem:7,siedmiu:7,osiem:8,osmiu:8,dziewiec:9,dziewieciu:9,dziesiec:10,dziesieciu:10,jedenascie:11,jedenastu:11,dwanascie:12,dwunastu:12,trzynascie:13,trzynastu:13,czternascie:14,czternastu:14,pietnascie:15,pietnastu:15,szesnascie:16,szesnastu:16,siedemnascie:17,siedemnastu:17,osiemnascie:18,osiemnastu:18,dziewietnascie:19,dziewietnastu:19,dwadziescia:20,dwudziestu:20};
+const FILL=new Set(['do','na','a','wynik','jest','mamy','punkt','dla','i']);
+function parseScore(text){
+  const w=norm(text).split(/[^a-z0-9]+/).filter(Boolean),nums=[];
+  for(const t of w){if(/^\d{1,2}$/.test(t))nums.push(+t);else if(Object.prototype.hasOwnProperty.call(NUMW,t))nums.push(NUMW[t]);else if(!FILL.has(t))return null}
+  return nums.length===2?nums:null}
+/* symulacja jednego punktu na kopii meczu, bez zmian w stanie aplikacji */
+function simPoint(L,side,n){
+  const c=JSON.parse(JSON.stringify(L)),old=derive(c).server,k=n||(c.mode==='pig'?1:worth(c,side));let ended=null;
+  for(let i=0;i<k&&!ended&&!derive(c).done;i++){
+    c.cur+=side;if(!c.sprint&&setWinner(c.cur,c.to)){ended=c.cur;c.sets.push(c.cur);c.cur='';c.flip=!c.flip}}
+  if(c.sprint&&c.sudden&&!ended){ended=c.cur;c.sets.push(c.cur);c.cur='';c.flip=!c.flip}
+  if(c.sv!=null){
+    if(ended){const idx=c.sets.length;c.sv=idx%2===0?c.first:other(c.first);c.sn=0}
+    else{c.sn=(c.sn||0)+1;const sc=score(c.cur);if((!c.sprint&&sc.a>=c.to-1&&sc.b>=c.to-1)||c.sn>=(c.to>=21?5:2)){c.sv=other(c.sv);c.sn=0}}}
+  return{ended,old,d:derive(c)}}
+/* z wypowiedzianego wyniku (najpierw serwujący) ustala, kto zdobył punkt */
+function scoreVoice(L,x,y){
+  const d0=derive(L),cur=d0.server==='A'?[d0.a,d0.b]:[d0.b,d0.a];
+  if(cur[0]===x&&cur[1]===y)return{same:true};
+  const cands=[];['A','B'].forEach(side=>(L.mode==='pig'?[1,2]:[0]).forEach(n=>{
+    const q=simPoint(L,side,n);let strict,len=[];
+    if(q.ended){const e=score(q.ended);strict=[[e.a,e.b],[e.b,e.a]]}
+    else{const d=q.d;strict=[d.server==='A'?[d.a,d.b]:[d.b,d.a]];len=[q.old==='A'?[d.a,d.b]:[d.b,d.a]]}
+    const eq=l=>l.some(p=>p[0]===x&&p[1]===y);cands.push({side,n,strict:eq(strict),len:eq(len)})}));
+  let m=cands.filter(c=>c.strict);if(!m.length)m=cands.filter(c=>c.len);
+  if(m.length===1)return{side:m[0].side,n:m[0].n};
+  return m.length?{amb:true}:{none:true}}
 function handleSpeech(alts){
   if(speaking||Date.now()<mutedUntil)return;
   const L=ui.live;if(!L||ui.tab!=='play')return;
@@ -816,10 +844,18 @@ function handleSpeech(alts){
   else if(res&&L.mode==='x2'&&alts.some(isX2)){setMsg('Usłyszałem: „'+top+'”. Podwójna stawka.');armX2(res)}
   else if(res){const two=L.mode==='pig'&&alts.some(isPig);
     setMsg('Usłyszałem: „'+top+'”. '+(two?'Świnka! Dwa punkty dla ':'Punkt dla ')+tnames(L,res)+'.');addPoint(res,two?2:0)}
-  else setMsg(amb?'Usłyszałem: „'+top+'”. Padły imiona obu graczy, powiedz tylko jedno.':'Usłyszałem: „'+top+'”. Nie rozpoznałem imienia gracza.')}
+  else{
+    const sp=!amb?alts.map(parseScore).find(Boolean):null;
+    if(sp){
+      const q=scoreVoice(L,sp[0],sp[1]),d=derive(L),cur=d.server==='A'?d.a+' do '+d.b:d.b+' do '+d.a;
+      if(q.same)setMsg('Usłyszałem wynik '+sp[0]+' do '+sp[1]+'. Tyle już jest, nic nie zmieniam.');
+      else if(q.side){setMsg('Usłyszałem wynik '+sp[0]+' do '+sp[1]+'. Punkt dla '+tnames(L,q.side)+'.');addPoint(q.side,q.n||0)}
+      else if(q.amb)setMsg('Usłyszałem wynik '+sp[0]+' do '+sp[1]+', ale nie wiem, kto zdobył punkt. Powiedz imię gracza.');
+      else setMsg('Usłyszałem wynik '+sp[0]+' do '+sp[1]+', ale to nie pasuje do jednego punktu od obecnego stanu ('+cur+', najpierw serwujący).')}
+    else setMsg(amb?'Usłyszałem: „'+top+'”. Padły imiona obu graczy, powiedz tylko jedno.':'Usłyszałem: „'+top+'”. Nie rozpoznałem imienia gracza ani wyniku.')}}
 function startListen(){
   if(!SR){toast('Rozpoznawanie mowy działa w Chrome.');return}
-  recWant=true;ui.voice.listen=true;keepAwake();makeRec();setMsg('Słucham. Powiedz imię gracza, który zdobył punkt.');render()}
+  recWant=true;ui.voice.listen=true;keepAwake();makeRec();setMsg('Słucham. Powiedz imię gracza, który zdobył punkt, albo wynik, np. „5 do 5” (najpierw serwujący).');render()}
 function makeRec(){
   rec=new SR();rec.lang='pl-PL';rec.continuous=true;rec.interimResults=false;rec.maxAlternatives=3;
   rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)handleSpeech(Array.from(r).map(a=>a.transcript))}};
@@ -835,7 +871,7 @@ function voiceCard(){
   return`<section class="card voice">${pig?`<div class="row" style="margin-bottom:10px"><button class="btn tog ${ui.pigArm?'on':''}" data-act="pig" aria-pressed="${!!ui.pigArm}">🐷 Świnka: ${ui.pigArm?'następny punkt liczy się za 2':'dotknij, a punkt będzie za 2'}</button></div>`:''}<div class="row">
    ${SR?`<button class="btn tog ${on?'on':''}" data-act="vlisten" aria-pressed="${on}">${on?'<span class="live-dot"></span>Słucham. Dotknij, żeby wyłączyć':MIC+'Włącz sterowanie głosem'}</button>`:'<span class="muted">Sterowanie głosem działa w Chrome na telefonie z Androidem i na komputerze.</span>'}
    ${TTS?`<button class="btn tog ${sp?'on':''}" data-act="vspeak" aria-pressed="${sp}">Czytaj wynik po każdym punkcie: ${sp?'tak':'nie'}</button>`:''}</div>
-   <p class="muted msg" id="voice-msg" aria-live="polite">${esc(ui.voiceMsg||(pig?'Powiedz imię gracza, żeby dodać mu punkt, a „świnka” i imię, żeby dać mu 2 punkty. „Cofnij” cofa jeden punkt.':'Powiedz imię gracza, żeby dodać mu punkt. Powiedz „cofnij”, żeby cofnąć punkt.'))}</p></section>`}
+   <p class="muted msg" id="voice-msg" aria-live="polite">${esc(ui.voiceMsg||(pig?'Powiedz imię gracza, żeby dodać mu punkt, a „świnka” i imię, żeby dać mu 2 punkty. Możesz też podać wynik, np. „5 do 5” (najpierw serwujący). „Cofnij” cofa jeden punkt.':'Powiedz imię gracza, żeby dodać mu punkt, albo wynik, np. „5 do 5” (najpierw serwujący). Powiedz „cofnij”, żeby cofnąć punkt.'))}</p></section>`}
 
 /* ---------- turniej ---------- */
 function seedOrder(n){let o=[1,2];while(o.length<n){const m=o.length*2;o=o.flatMap(x=>[x,m+1-x])}return o}
