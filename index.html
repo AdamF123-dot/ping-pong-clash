@@ -340,17 +340,17 @@ let toastT;
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),Math.min(9000,2800+m.length*45))}
 
 /* ---------- awatary ---------- */
-const SKIN=['#ffd23f','#ff9f6e','#ff8fab','#8bd3ff','#9be564','#c3a6ff','#f2c9a0','#b5774a','#6b4a35','#ef476f','#2ec4b6','#e9ecef','#d4af37','#c0c7d1','#2d2d34','#00f5d4','#ff7b00','#ff4d8d','#7bff6a','#1e90ff','#8a2be2','#b87333','#e5e4e2','#50c878','#e0115f'];
-const SHIRT=['#ef476f','#ff9f1c','#ffd23f','#2ec4b6','#118ab2','#7b2cbf','#06d6a0','#f8f9fa','#343a40','#ff6b35'];
-const HAIRC=['#2b1b12','#6b3f1d','#c98a3b','#f2d16b','#d1495b','#3a86ff','#8338ec','#f1f1f1','#2ec4b6'];
-const GADC=['#e63946','#1d3557','#ffd23f','#2a9d8f','#f77f00','#7b2cbf','#222222','#f8f9fa','#ff5d8f'];
-const PADC=['#d62828','#111111','#2a9d8f','#3a86ff','#ff9f1c','#7b2cbf'];
-const HAIRS=['Łysy','Kitka','Kolce','Grzywka','Loki','Irokez','Kok','Afro','Długie włosy','Wysoki irokez','Warkocze'];
-const EYES=['Kropki','Duże oczy','Wesołe','Mrugnięcie','Gwiazdki','Serduszka','Zmrużone','Laserowe','Spiralki','Celownik'];
-const MOUTHS=['Uśmiech','Szeroki uśmiech','Chytry','Zdziwiony','Język','Zęby','Kropka','Gwizd','Złoty ząb','Rzutka w zębach'];
+const SKIN=['#ffd23f','#ff9f6e','#ff8fab','#8bd3ff','#9be564','#c3a6ff','#f2c9a0','#b5774a','#6b4a35','#ef476f','#2ec4b6','#e9ecef','#d4af37','#c0c7d1','#2d2d34','#00f5d4','#ff7b00','#ff4d8d','#7bff6a','#1e90ff','#8a2be2','#b87333','#c77dff','#50c878','#2d6a4f'];
+const SHIRT=['#ef476f','#ff9f1c','#ffd23f','#2ec4b6','#118ab2','#7b2cbf','#06d6a0','#f8f9fa','#343a40','#ff6b35','#9d0208','#00b4d8','#80ed99','#ff006e','#f6c90e'];
+const HAIRC=['#2b1b12','#6b3f1d','#c98a3b','#f2d16b','#d1495b','#3a86ff','#8338ec','#f1f1f1','#2ec4b6','#ff6ad5','#00f5d4','#ff7b00','#b5179e','#9ef01a'];
+const GADC=['#e63946','#1d3557','#ffd23f','#2a9d8f','#f77f00','#7b2cbf','#222222','#f8f9fa','#ff5d8f','#00f5d4','#ff006e','#f6c90e','#8338ec','#80ed99'];
+const PADC=['#d62828','#111111','#2a9d8f','#3a86ff','#ff9f1c','#7b2cbf','#00f5d4','#f6c90e','#ff006e','#9d4edd','#80ed99'];
+const HAIRS=['Łysy','Kitka','Kolce','Grzywka','Loki','Irokez','Kok','Afro','Długie włosy','Wysoki irokez','Warkocze','Fala','Dwa koki','Korona z kolców','Boby','Pompon'];
+const EYES=['Kropki','Duże oczy','Wesołe','Mrugnięcie','Gwiazdki','Serduszka','Zmrużone','Laserowe','Spiralki','Celownik','Śpiące','Dolary','Błyskotki','Wściekłe'];
+const MOUTHS=['Uśmiech','Szeroki uśmiech','Chytry','Zdziwiony','Język','Zęby','Kropka','Gwizd','Złoty ząb','Rzutka w zębach','Wampirze kły','Kocia buzia','Wielki śmiech','Cienka kreska'];
 const HATS=['Bez czapki','Czapka z daszkiem','Czapka zimowa','Opaska','Korona','Cylinder','Słuchawki','Czapka imprezowa','Kapelusz czarodzieja','Opaska ninja','Kowbojski kapelusz','Czapka kucharza','Aureola','Hełm wikinga','Beret','Antenki','Sombrero','Uszy królika','Kapelusz pirata','Rogi diabełka','Złota korona','Płomienna czupryna','Kask kosmonauty','Lodowa korona','Czapka z propellerem','Hełm gladiatora','Laur zwycięzcy','Diamentowa korona','Płomienna aureola','Daszek rzutkarza','Tarcza na głowie','Korona mistrza tarczy','Złota rzutka','Diamentowa tarcza','Czapka z rzutkami','Wstęga turniejowa','Hełm bullseye','Kapelusz łucznika','Korona z rzutek','Złoty puchar','Płonąca tarcza','Kask mistrza świata'];
-const FACES=['Bez gadżetu','Okulary okrągłe','Okulary przeciwsłoneczne','Monokl','Wąsy','Opaska na oko','Czerwony nos','Gogle','Okulary serca','Maska','Broda','Plaster','Okulary gwiazdki','Okulary 3D','Okulary retro','Aviatorki','Cyber-wizjer','Maska zapaśnika','Złote okulary gwiazdy','Neonowe okulary','Maska bohatera','Złote wąsy','Okulary celownik','Monokl bullseye','Złote okulary mistrza','Wąsy rzutkarza','Wizjer strzelca','Tarcza na oku','Diamentowe okulary'];
-const KINDS=['Klasyk','Kot','Lis','Sowa','Robot','Dino','Kosmita','Panda','Duszek','Jednorożec','Smok','Żaba','Pingwin','Wampir','Yeti','Złoty Mistrz'];
+const FACES=['Bez gadżetu','Okulary okrągłe','Okulary przeciwsłoneczne','Monokl','Wąsy','Opaska na oko','Czerwony nos','Gogle','Okulary serca','Maska','Broda','Plaster','Okulary gwiazdki','Okulary 3D','Okulary retro','Aviatorki','Cyber-wizjer','Maska zapaśnika','Złote okulary gwiazdy','Neonowe okulary','Maska bohatera','Złote wąsy','Piegi','Okulary celownik','Monokl bullseye','Złote okulary mistrza','Wąsy rzutkarza','Wizjer strzelca','Tarcza na oku','Diamentowe okulary'];
+const KINDS=['Klasyk','Kot','Lis','Sowa','Robot','Dino','Kosmita','Panda','Duszek','Jednorożec','Smok','Żaba','Pingwin','Wampir','Yeti','Złoty Mistrz','Byk','Lew','Potwór','Rycerz','Bałwan'];
 const FX=['Bez efektu','Iskry','Blask','Konfetti','Serduszka','Bąbelki','Płomienie','Tęczowy blask','Gwiazdozbiór','Błyskawice','Aura mocy','Gwiezdny pył','Złota aura','Lecące rzutki','Aura bullseye','Deszcz złotych rzutek','Wirujące tarcze','Fajerwerki','Zielona aura','Deszcz monet'];
 const DEF={skin:'#ced4da',shirt:'#868e96',hair:0,hairC:'#555555',eyes:0,mouth:0,hat:0,hatC:'#888888',face:0,faceC:'#222222',paddle:'#999999',kind:0,fx:0};
 /* ---------- sklep: skrzynki z losową zawartością ---------- */
@@ -400,18 +400,21 @@ const UNLOCKS=[['kind',1,1000],['hat',8,1000],['eyes',4,1000],['fx',1,1000],
  ['kind',15,30000],['fx',12,30000]];
 const MAXPTS=30000,LVLBONUS=50;
 /* odblokowania za punkty rzucone w darcie: [kategoria, wartość, wymagane punkty w darcie] */
-const DUNL=[['hat',29,5000],['skin','#ff4d8d',2500],['mouth',9,3500],['skin','#7bff6a',5000],['hat',34,7500],['face',23,10000],['eyes',9,10000],['skin','#1e90ff',10000],['face',26,12500],['hat',35,15000],['fx',16,17500],['hat',30,20000],['skin','#8a2be2',20000],['face',27,25000],['fx',13,30000],['hat',36,30000],['skin','#b87333',35000],['fx',17,40000],['hat',37,45000],['face',24,50000],['skin','#e5e4e2',50000],['face',28,60000],['hat',38,65000],['hat',31,75000],['fx',18,80000],['skin','#50c878',85000],['hat',39,90000],['fx',14,100000],['face',29,110000],['hat',40,115000],['hat',32,125000],['skin','#e0115f',130000],['fx',19,140000],['face',25,150000],['hat',41,160000],['fx',15,175000],['hat',33,200000]];
+const DUNL=[['hat',29,5000],['skin','#ff4d8d',2500],['mouth',9,3500],['skin','#7bff6a',5000],['hat',34,7500],['face',23,10000],['eyes',9,10000],['skin','#1e90ff',10000],['face',26,12500],['hat',35,15000],['fx',16,17500],['hat',30,20000],['skin','#8a2be2',20000],['face',27,25000],['fx',13,30000],['hat',36,30000],['skin','#b87333',35000],['fx',17,40000],['hat',37,45000],['face',24,50000],['skin','#c77dff',50000],['face',28,60000],['hat',38,65000],['hat',31,75000],['fx',18,80000],['skin','#50c878',85000],['hat',39,90000],['fx',14,100000],['face',29,110000],['hat',40,115000],['hat',32,125000],['skin','#2d6a4f',130000],['fx',19,140000],['face',25,150000],['hat',41,160000],['fx',15,175000],['hat',33,200000]];
+DUNL.push(['kind',16,3000],['hair',11,3500],['eyes',10,3500],['mouth',10,4000],['shirt','#9d0208',4500],['hairC','#ff6ad5',5000],['hatC','#00f5d4',5500],['faceC','#00f5d4',6000],['paddle','#00f5d4',6500],['kind',17,7500],['hair',12,8000],['eyes',11,9000],['mouth',11,10000],['shirt','#00b4d8',11000],['hairC','#00f5d4',12000],['hatC','#ff006e',13000],['faceC','#ff006e',14500],['paddle','#f6c90e',16000],['kind',18,18000],['hair',13,19500],['eyes',12,22500],['mouth',12,25000],['shirt','#80ed99',27500],['hairC','#ff7b00',30000],['hatC','#f6c90e',32500],['faceC','#f6c90e',35000],['paddle','#ff006e',40000],['kind',19,42500],['hair',14,47500],['eyes',13,52500],['mouth',13,57500],['shirt','#ff006e',65000],['hairC','#b5179e',70000],['hatC','#8338ec',77500],['faceC','#8338ec',85000],['paddle','#9d4edd',95000],['kind',20,105000],['hair',15,115000],['shirt','#f6c90e',130000],['hairC','#9ef01a',140000],['hatC','#80ed99',155000],['faceC','#80ed99',170000],['paddle','#80ed99',190000]);
+DUNL.push(['face',22,4500]);
 DUNL.sort((x,y)=>x[2]-y[2]);
 const dneed=(k,v)=>{const u=DUNL.find(x=>x[0]===k&&x[1]===v);return u?u[2]:0};
 const DCOIN={leg:3,set:10,match:40,v180:10,perfect:150};
 const fK=n=>n>=1000?(n/1000).toString().replace('.',',')+' tys.':String(n);
-const SKINN={'#d4af37':'złoty','#c0c7d1':'srebrny','#2d2d34':'cień','#00f5d4':'neonowy turkus','#ff7b00':'lawa','#ff4d8d':'neonowy róż','#7bff6a':'limonka','#1e90ff':'błękit tarczy','#8a2be2':'fiolet','#b87333':'miedź','#e5e4e2':'platyna','#50c878':'szmaragd','#e0115f':'rubin'};
+const COLK=['skin','shirt','hairC','hatC','faceC','paddle'];
+const SKINN={'#9d0208':'bordowy','#00b4d8':'lazurowy','#80ed99':'miętowy','#ff006e':'malinowy','#f6c90e':'słoneczny','#ff6ad5':'landrynkowy','#b5179e':'purpurowy','#9ef01a':'limonkowy','#8338ec':'fiolet elektryczny','#9d4edd':'ametyst','#d4af37':'złoty','#c0c7d1':'srebrny','#2d2d34':'cień','#00f5d4':'neonowy turkus','#ff7b00':'lawa','#ff4d8d':'neonowy róż','#7bff6a':'limonka','#1e90ff':'błękit tarczy','#8a2be2':'fiolet','#b87333':'miedź','#c77dff':'liliowy','#50c878':'szmaragd','#2d6a4f':'leśna zieleń'};
 const need=(k,v)=>{if(SHOPSET.has(k+':'+v)||dneed(k,v))return 1e9;const u=UNLOCKS.find(x=>x[0]===k&&x[1]===v);return u?u[2]:0};
 const LISTS={kind:KINDS,hat:HATS,face:FACES,hair:HAIRS,eyes:EYES,mouth:MOUTHS,fx:FX};
-const KLAB={kind:'Postać',hat:'Gadżet',face:'Dodatek',hair:'Fryzura',eyes:'Oczy',mouth:'Buzia',fx:'Efekt',skin:'Kolor'};
+const KLAB={kind:'Postać',hat:'Gadżet',face:'Dodatek',hair:'Fryzura',eyes:'Oczy',mouth:'Buzia',fx:'Efekt',skin:'Kolor',shirt:'Koszulka',hairC:'Kolor włosów',hatC:'Kolor czapki',faceC:'Kolor dodatków',paddle:'Rakietka'};
 buildItems();
 const ITEMBY=Object.fromEntries(ITEMS.map(i=>[i.key,i]));
-const unlockLabel=u=>KLAB[u[0]]+': '+(u[0]==='skin'?SKINN[u[1]]:LISTS[u[0]][u[1]]);
+const unlockLabel=u=>KLAB[u[0]]+': '+(COLK.includes(u[0])?SKINN[u[1]]:LISTS[u[0]][u[1]]);
 const isShop=(k,v)=>SHOPSET.has(k+':'+v);
 const isOpen=(k,v,pts,cur,inv)=>isShop(k,v)?(cur===v||!!(inv&&inv.has(k+':'+v))):(need(k,v)<=pts||cur===v);
 const visible=(k,v,cur,inv)=>!isShop(k,v)||cur===v||!!(inv&&inv.has(k+':'+v));
@@ -430,6 +433,11 @@ function hairSvg(i,c){const st=`fill="${c}" stroke="${EDGE}" stroke-width="1.5"`
  case 8:return`<path d="M20 46C30 28 70 28 80 46Q50 34 20 46Z" ${st}/>`;
  case 9:return`<path d="M42 28L40 -10L50 -18L60 -10L58 28Q50 21 42 28Z" ${st}/>`;
  case 10:return`<path d="M16 52C12 14 88 14 84 52Q50 32 16 52Z" ${st}/>`;
+ case 11:return`<path d="M22 48C14 22 40 10 62 16C86 22 88 38 78 48C70 34 40 34 22 48Z" ${st}/>`;
+ case 12:return`<circle cx="22" cy="28" r="11" ${st}/><circle cx="78" cy="28" r="11" ${st}/><path d="M20 46C26 28 74 28 80 46Q50 34 20 46Z" ${st}/>`;
+ case 13:return`<path d="M18 46L20 22L32 32L40 12L50 30L60 12L68 32L80 22L82 46Q50 32 18 46Z" ${st}/>`;
+ case 14:return`<path d="M16 72C8 28 92 28 84 72L74 72C74 52 66 42 50 42C34 42 26 52 26 72Z" ${st}/>`;
+ case 15:return`<circle cx="50" cy="12" r="13" ${st}/><path d="M20 46C26 26 74 26 80 46Q50 34 20 46Z" ${st}/>`;
  default:return''}}
 function hairBack(i,c){const st=`fill="${c}" stroke="${EDGE}" stroke-width="1.5"`;
  if(i===7)return`<circle cx="50" cy="44" r="42" ${st}/>`;
@@ -446,6 +454,10 @@ function eyesSvg(i){switch(i){
  case 7:return`<path d="M28 58h20M52 58h20" stroke="#ff2b2b" stroke-opacity=".45" stroke-width="9" stroke-linecap="round"/><path d="M30 58h16M54 58h16" stroke="#ff3b3b" stroke-width="4" stroke-linecap="round"/><path d="M33 58h10M57 58h10" stroke="#fff" stroke-width="1.800" stroke-linecap="round"/>`;
  case 8:{const sp=(x)=>`<path d="M${x} 58m0-1.500a1.500 1.500 0 1 1 1.500 1.500 3 3 0 1 1-3-3 4.500 4.500 0 1 1 4.500 4.500 6 6 0 1 1-6-6" fill="none" stroke="${INK}" stroke-width="1.600" stroke-linecap="round"/>`;return`<circle cx="38" cy="58" r="8" fill="#fff" stroke="${INK}" stroke-width="1.400"/><circle cx="62" cy="58" r="8" fill="#fff" stroke="${INK}" stroke-width="1.400"/>${sp(38)}${sp(62)}`}
  case 9:{const e=x=>`<circle cx="${x}" cy="58" r="8" fill="#fff" stroke="${INK}" stroke-width="1.400"/><circle cx="${x}" cy="58" r="5" fill="none" stroke="#d62828" stroke-width="1.600"/><circle cx="${x}" cy="58" r="1.800" fill="#d62828"/><path d="M${x-9} 58h4M${x+5} 58h4M${x} 49v4M${x} 63v4" stroke="${INK}" stroke-width="1.200"/>`;return e(38)+e(62)}
+ case 10:return`<path d="M31 59Q38 52 45 59M55 59Q62 52 69 59" fill="none" stroke="${INK}" stroke-width="2.800" stroke-linecap="round"/><text x="78" y="44" font-size="9" font-weight="700" fill="${INK}" opacity=".6" font-family="sans-serif">z</text>`;
+ case 11:{const d=x=>`<circle cx="${x}" cy="58" r="8" fill="#fff" stroke="${INK}" stroke-width="1.400"/><text x="${x}" y="62.500" text-anchor="middle" font-size="11" font-weight="800" fill="#1b9e4b" font-family="sans-serif">$</text>`;return d(38)+d(62)}
+ case 12:{const e=x=>`<circle cx="${x}" cy="58" r="8" fill="${INK}"/><circle cx="${x-2.400}" cy="55.500" r="2.800" fill="#fff"/><circle cx="${x+2.600}" cy="60" r="1.400" fill="#fff"/><path d="M${x+7} 49l1 2.400 2.400 1-2.400 1-1 2.400-1-2.400-2.400-1 2.400-1z" fill="#ffd23f"/>`;return e(38)+e(62)}
+ case 13:return`<path d="M28 49L46 55M72 49L54 55" stroke="${INK}" stroke-width="3.200" stroke-linecap="round"/><circle cx="38" cy="60" r="4" fill="${INK}"/><circle cx="62" cy="60" r="4" fill="${INK}"/>`;
  default:return`<circle cx="38" cy="58" r="3.7" fill="${INK}"/><circle cx="62" cy="58" r="3.7" fill="${INK}"/>`}}
 function mouthSvg(i){switch(i){
  case 1:return`<path d="M38 71Q50 89 62 71Z" fill="#5a1020" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><ellipse cx="50" cy="77" rx="5" ry="2.6" fill="#ff6b81"/>`;
@@ -457,6 +469,10 @@ function mouthSvg(i){switch(i){
  case 7:return`<ellipse cx="50" cy="77" rx="3.600" ry="4" fill="#5a1020" stroke="${INK}" stroke-width="1.800"/><path d="M62 70q3-5 6-3M66 64q3-5 6-3" fill="none" stroke="${INK}" stroke-width="1.600" stroke-linecap="round"/>`;
  case 8:return`<path d="M38 73Q50 85 62 73" fill="none" stroke="${INK}" stroke-width="3.200" stroke-linecap="round"/><rect x="54" y="76.500" width="5" height="5.500" rx="1.200" fill="#ffd700" stroke="${INK}" stroke-width="1"/>`;
  case 9:return`<path d="M38 74Q50 79 60 73" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/><path d="M54 73L82 62" stroke="#c0c7d1" stroke-width="2.600" stroke-linecap="round"/><path d="M82 62L92 57L88 67Z" fill="#d62828" stroke="${EDGE}" stroke-width="1"/>`;
+ case 10:return`<path d="M38 73Q50 83 62 73" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/><path d="M41 75.500L43.500 82L46 77.500M59 75.500L56.500 82L54 77.500" fill="#fff" stroke="${INK}" stroke-width="1.200" stroke-linejoin="round"/>`;
+ case 11:return`<path d="M36 72Q43 79 50 72Q57 79 64 72" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`;
+ case 12:return`<path d="M34 70Q50 92 66 70Z" fill="${INK}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M40 72Q50 77 60 72L58 70H42Z" fill="#fff"/><path d="M42 80Q50 76 58 80Q50 88 42 80Z" fill="#ff4d6d"/>`;
+ case 13:return`<path d="M41 75H59" stroke="${INK}" stroke-width="3.200" stroke-linecap="round"/>`;
  default:return`<path d="M40 74Q50 84 60 74" fill="none" stroke="${INK}" stroke-width="3.200" stroke-linecap="round"/>`}}
 function faceSvg(i,c){switch(i){
  case 1:return`<g fill="rgba(255,255,255,.35)" stroke="${c}" stroke-width="3"><circle cx="38" cy="58" r="10"/><circle cx="62" cy="58" r="10"/></g><path d="M48 58h4M28 56L18 52M72 56L82 52" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
@@ -479,6 +495,7 @@ function faceSvg(i,c){switch(i){
  case 20:return`<path d="M20 52c9-7 22-7 30 1 8-8 21-8 30-1l-3 13c-8 5-18 2-25-5-7 7-17 10-25 5z" fill="${c}" stroke="${EDGE}" stroke-width="1.800"/><ellipse cx="37" cy="58" rx="7" ry="5" fill="#fff"/><ellipse cx="63" cy="58" rx="7" ry="5" fill="#fff"/><circle cx="38" cy="58" r="2.800" fill="${INK}"/><circle cx="62" cy="58" r="2.800" fill="${INK}"/>`;
  case 21:return`<path d="M50 66C44 61 34 63 31 71C38 70 44 73 50 69C56 73 62 70 69 71C66 63 56 61 50 66Z" fill="#ffd700" stroke="${EDGE}" stroke-width="1.400"/><path d="M33 69l-4 3M67 69l4 3" stroke="#ffd700" stroke-width="2.600" stroke-linecap="round"/>`;
  case 12:{const st='<path d="M0 -10L3 -3.4 10 -3 5 2.4 6.6 9.6 0 6 -6.6 9.6 -5 2.4 -10 -3 -3 -3.4Z" fill="'+c+'" stroke="'+EDGE+'" stroke-width="1.4" stroke-linejoin="round"/>';return`<g transform="translate(37 58) scale(1.35)">${st}</g><g transform="translate(63 58) scale(1.35)">${st}</g><path d="M47 56h6" stroke="${c}" stroke-width="2.6"/>`}
+ case 22:return`<g fill="#b5651d" opacity=".75">${[[30,64],[35,69],[40,65],[60,65],[65,69],[70,64],[36,60],[64,60],[50,63]].map(a=>`<circle cx="${a[0]}" cy="${a[1]}" r="1.600"/>`).join('')}</g>`;
  case 23:return`<g fill="rgba(255,255,255,.35)" stroke="${c}" stroke-width="3"><circle cx="38" cy="58" r="10"/><circle cx="62" cy="58" r="10"/></g><path d="M48 58h4M28 56L18 52M72 56L82 52" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M38 50v16M30 58h16M62 50v16M54 58h16" stroke="#d62828" stroke-width="1.500"/><circle cx="38" cy="58" r="3.500" fill="none" stroke="#d62828" stroke-width="1.200"/><circle cx="62" cy="58" r="3.500" fill="none" stroke="#d62828" stroke-width="1.200"/>`;
  case 24:return`<circle cx="62" cy="58" r="11" fill="#fff" stroke="${c}" stroke-width="3"/><circle cx="62" cy="58" r="8" fill="none" stroke="#d62828" stroke-width="3"/><circle cx="62" cy="58" r="4" fill="none" stroke="#1b9e4b" stroke-width="2.400"/><circle cx="62" cy="58" r="1.600" fill="#d62828"/><path d="M62 69Q67 84 58 98" fill="none" stroke="${c}" stroke-width="1.800"/>`;
  case 25:return`<g fill="rgba(255,236,150,.4)" stroke="#ffd700" stroke-width="3.600"><circle cx="38" cy="58" r="10.500"/><circle cx="62" cy="58" r="10.500"/></g><path d="M48.500 58h3M27.500 56L17 52M72.500 56L83 52" stroke="#ffd700" stroke-width="3.200" fill="none" stroke-linecap="round"/><circle cx="38" cy="58" r="3" fill="#d62828"/><circle cx="62" cy="58" r="3" fill="#d62828"/><path d="M32 53l3-2M56 53l3-2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`;
@@ -600,6 +617,19 @@ function kindSvg(c){
      r.head=`<circle cx="50" cy="54" r="34" fill="#ffd700" ${st}/>`;
      r.mid=`<ellipse cx="50" cy="60" rx="26" ry="23" fill="#ffe89a" opacity=".55"/>`;
      r.front=`<path transform="translate(50 36) scale(1.300)" d="M0 -8L2.400 -2.400 8.400 -1.800 4 2.200 5.200 8 0 5 -5.200 8 -4 2.200 -8.400 -1.800 -2.400 -2.400Z" fill="#e0115f" stroke="${EDGE}" stroke-width="1" stroke-linejoin="round"/>`;break;
+   case 16:r.back=`<path d="M24 38C6 40 4 18 12 8C16 22 26 28 34 32Z" fill="#f4e9c8" ${st}/><path d="M76 38C94 40 96 18 88 8C84 22 74 28 66 32Z" fill="#f4e9c8" ${st}/>`;
+     r.front=`<ellipse cx="50" cy="73" rx="15" ry="10" fill="#ffb4a2" ${st}/><ellipse cx="44" cy="72" rx="2.200" ry="3" fill="${INK}"/><ellipse cx="56" cy="72" rx="2.200" ry="3" fill="${INK}"/><path d="M43 81Q50 91 57 81" fill="none" stroke="#ffd700" stroke-width="2.600"/>`;r.noMouth=true;break;
+   case 17:r.back=Array.from({length:12},(_,j)=>`<circle cx="${50+35*Math.cos(j*Math.PI/6)}" cy="${54+35*Math.sin(j*Math.PI/6)}" r="13" fill="#b9742a" ${st}/>`).join('');
+     r.mid=`<ellipse cx="50" cy="68" rx="15" ry="11" fill="#fff3d6"/>`;
+     r.front=`<path d="M45 63h10l-5 6z" fill="#c1444a"/><path d="M30 70L18 67M30 74L18 77M70 70L82 67M70 74L82 77" stroke="${INK}" stroke-width="1.200" stroke-linecap="round"/>`;break;
+   case 18:r.back=`<rect x="8" y="50" width="14" height="9" rx="2" fill="#9aa7b4" ${st}/><rect x="78" y="50" width="14" height="9" rx="2" fill="#9aa7b4" ${st}/>`;
+     r.mid=`<path d="M17 46L19 20H81L83 46C70 36 30 36 17 46Z" fill="#222" ${st}/>`;
+     r.front=`<path d="M62 44L68 60M60 51h9M61 56h9" stroke="${INK}" stroke-width="1.600" stroke-linecap="round" fill="none"/>`;break;
+   case 19:r.head=`<circle cx="50" cy="54" r="34" fill="#b0bec5" ${st}/>`;
+     r.mid=`<ellipse cx="50" cy="60" rx="24" ry="25" fill="${sk}"/>`;
+     r.front=`<path d="M26 56V76M74 56V76" stroke="#78909c" stroke-width="4" stroke-linecap="round"/><path d="M50 20V40" stroke="#78909c" stroke-width="4"/><path d="M50 22C40 4 60-6 76 4C62 6 56 14 54 24Z" fill="#d62828" ${st}/>`;break;
+   case 20:r.head=`<circle cx="50" cy="54" r="34" fill="#fff" ${st}/>`;
+     r.front=`<path d="M24 82C40 94 60 94 76 82L78 93C60 105 40 105 22 93Z" fill="#d62828" ${st}/><path d="M50 62L73 67L50 72Z" fill="#ff7a1a" ${st}/>`;break;
   }
   return r}
 function avatarSvg(c,mode){
@@ -1054,6 +1084,61 @@ const GLYPH={
 function medalSvg(md,earned,size){
   const col=earned?md.c:'#9aa7b4',gl=GLYPH[md.g]||`<text x="24" y="34" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="600" font-size="${md.g.length>2?13:16}" fill="#fff">${md.g}</text>`;
   return`<svg viewBox="0 0 48 48" width="${size||56}" height="${size||56}" aria-hidden="true" style="opacity:${earned?1:.55}"><path d="M15 1l9 15 9-15z" fill="${earned?'#d62828':'#b7c0c9'}"/><circle cx="24" cy="29" r="17" fill="${col}" stroke="rgba(0,0,0,.28)" stroke-width="2"/><circle cx="24" cy="29" r="13.500" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.500"/><g transform="translate(0 1)">${gl}</g></svg>`}
+/* medale w darcie: t(a,e) gdzie a to statystyki gracza (dAgg), e to dodatkowe (bot, Around the Clock) */
+const DM0={g:0,w:0,legW:0,legL:0,sW:0,sL:0,darts:0,pts:0,v100:0,v140:0,v180:0,hiCo:0,hiV:0,perfect:0,tc:{}};
+const dAvg=a=>a.darts?3*a.pts/a.darts:0;
+const DMEDALS=[
+ {id:'dg1',n:'Pierwszy rzut',d:'Rozegraj pierwszy mecz w darcie',c:'#cd7f32',g:'1',t:a=>a.g>=1},
+ {id:'dw1',n:'Pierwsza wygrana w darcie',d:'Wygraj pierwszy mecz w darcie',c:'#cd7f32',g:'star',t:a=>a.w>=1},
+ {id:'dg10',n:'Stały bywalec tarczy',d:'Rozegraj 10 meczów w darcie',c:'#c0c7d1',g:'10',t:a=>a.g>=10},
+ {id:'dw10',n:'Dziesięć zwycięstw w darcie',d:'Wygraj 10 meczów w darcie',c:'#c0c7d1',g:'star',t:a=>a.w>=10},
+ {id:'dg50',n:'Weteran tarczy',d:'Rozegraj 50 meczów w darcie',c:'#e0b21e',g:'50',t:a=>a.g>=50},
+ {id:'dw25',n:'Ćwierć setki wygranych w darcie',d:'Wygraj 25 meczów w darcie',c:'#e0b21e',g:'25',t:a=>a.w>=25},
+ {id:'dg100',n:'Stulecie w darcie',d:'Rozegraj 100 meczów w darcie',c:'#b8860b',g:'100',t:a=>a.g>=100},
+ {id:'dw50',n:'Pięćdziesiąt zwycięstw w darcie',d:'Wygraj 50 meczów w darcie',c:'#d62828',g:'50',t:a=>a.w>=50},
+ {id:'dl10',n:'Dziesięć legów',d:'Wygraj 10 legów',c:'#2a9d8f',g:'10',t:a=>a.legW>=10},
+ {id:'dl50',n:'Pięćdziesiąt legów',d:'Wygraj 50 legów',c:'#118ab2',g:'50',t:a=>a.legW>=50},
+ {id:'dl200',n:'Dwieście legów',d:'Wygraj 200 legów',c:'#7b2cbf',g:'200',t:a=>a.legW>=200},
+ {id:'ds10',n:'Dziesięć setów',d:'Wygraj 10 setów w darcie',c:'#2a9d8f',g:'10',t:a=>a.sW>=10},
+ {id:'ds50',n:'Pięćdziesiąt setów',d:'Wygraj 50 setów w darcie',c:'#118ab2',g:'50',t:a=>a.sW>=50},
+ {id:'d100a',n:'Setki',d:'Rzuć 10 kolejek za 100 i więcej',c:'#c0c7d1',g:'100',t:a=>a.v100>=10},
+ {id:'d100b',n:'Fabryka setek',d:'Rzuć 50 kolejek za 100 i więcej',c:'#e0b21e',g:'100',t:a=>a.v100>=50},
+ {id:'d140',n:'Mocne kolejki',d:'Rzuć 5 kolejek za 140 i więcej',c:'#ff7a1a',g:'140',t:a=>a.v140>=5},
+ {id:'d180a',n:'Sto osiemdziesiąt!',d:'Rzuć maksymalną kolejkę 180',c:'#d62828',g:'180',t:a=>a.v180>=1},
+ {id:'d180b',n:'Pięć razy 180',d:'Rzuć 5 razy 180',c:'#c2185b',g:'180',t:a=>a.v180>=5},
+ {id:'d180c',n:'Maszyna do 180',d:'Rzuć 25 razy 180',c:'#7b2cbf',g:'180',t:a=>a.v180>=25},
+ {id:'dco100',n:'Wykończenie 100',d:'Zamknij leg wykończeniem za co najmniej 100',c:'#2a9d8f',g:'100',t:a=>a.hiCo>=100},
+ {id:'dco150',n:'Wykończenie 150',d:'Zamknij leg wykończeniem za co najmniej 150',c:'#118ab2',g:'150',t:a=>a.hiCo>=150},
+ {id:'dco170',n:'Wielka ryba',d:'Zamknij leg wykończeniem 170 (T20 T20 bull)',c:'#d4a017',g:'170',t:a=>a.hiCo>=170},
+ {id:'d9a',n:'Dziewiątka',d:'Zamknij leg w minimalnej liczbie rzutów',c:'#d4a017',g:'9',t:a=>a.perfect>=1},
+ {id:'d9b',n:'Trzy dziewiątki',d:'Zamknij 3 legi w minimalnej liczbie rzutów',c:'#b8860b',g:'9',t:a=>a.perfect>=3},
+ {id:'dt20a',n:'Triple 20',d:'Trafij 10 razy w triple 20',c:'#c0c7d1',g:'T20',t:a=>(a.tc.T20||0)>=10},
+ {id:'dt20b',n:'Setka triple 20',d:'Trafij 100 razy w triple 20',c:'#e0b21e',g:'T20',t:a=>(a.tc.T20||0)>=100},
+ {id:'dt20c',n:'Maszyna do triple',d:'Trafij 500 razy w triple 20',c:'#d62828',g:'T20',t:a=>(a.tc.T20||0)>=500},
+ {id:'dbull',n:'Bullseye',d:'Trafij 10 razy w środek tarczy (50)',c:'#d62828',g:'bull',t:a=>(a.tc['50']||0)>=10},
+ {id:'dbull2',n:'Oko byka',d:'Trafij 100 razy w środek tarczy (50)',c:'#7b0d1e',g:'bull',t:a=>(a.tc['50']||0)>=100},
+ {id:'dp5',n:'Pięć tysięcy w darcie',d:'Rzuć 5000 punktów',c:'#c0c7d1',g:'5k',t:a=>a.pts>=5000},
+ {id:'dp25',n:'Dwadzieścia pięć tysięcy',d:'Rzuć 25000 punktów',c:'#e0b21e',g:'25k',t:a=>a.pts>=25000},
+ {id:'dp100',n:'Sto tysięcy',d:'Rzuć 100000 punktów',c:'#b8860b',g:'100k',t:a=>a.pts>=100000},
+ {id:'dp200',n:'Dwieście tysięcy',d:'Rzuć 200000 punktów i odblokuj wszystko',c:'#d4a017',g:'200k',t:a=>a.pts>=200000},
+ {id:'dd1k',n:'Tysiąc rzutek',d:'Rzuć 1000 rzutek',c:'#2a9d8f',g:'1k',t:a=>a.darts>=1000},
+ {id:'dd5k',n:'Pięć tysięcy rzutek',d:'Rzuć 5000 rzutek',c:'#118ab2',g:'5k',t:a=>a.darts>=5000},
+ {id:'dav40',n:'Średnia 40',d:'Miej średnią co najmniej 40 (po 150 rzutkach)',c:'#c0c7d1',g:'40',t:a=>a.darts>=150&&dAvg(a)>=40},
+ {id:'dav60',n:'Średnia 60',d:'Miej średnią co najmniej 60 (po 150 rzutkach)',c:'#e0b21e',g:'60',t:a=>a.darts>=150&&dAvg(a)>=60},
+ {id:'dav80',n:'Średnia 80',d:'Miej średnią co najmniej 80 (po 150 rzutkach)',c:'#d62828',g:'80',t:a=>a.darts>=150&&dAvg(a)>=80},
+ {id:'datc1',n:'Zegarmistrz',d:'Wygraj mecz Around the Clock',c:'#2a9d8f',g:'target',t:(a,e)=>e.atcW>=1},
+ {id:'datc10',n:'Mistrz zegara',d:'Wygraj 10 meczów Around the Clock',c:'#118ab2',g:'target',t:(a,e)=>e.atcW>=10},
+ {id:'datcf',n:'Szybki zegar',d:'Wygraj Around the Clock w 40 rzutach albo mniej',c:'#d4a017',g:'bolt',t:(a,e)=>e.atcBest>0&&e.atcBest<=40},
+ {id:'dbot1',n:'Pogromca bota',d:'Wygraj mecz z botem',c:'#2a9d8f',g:'star',t:(a,e)=>e.botW>=1},
+ {id:'dbot10',n:'Łowca botów',d:'Wygraj 10 meczów z botem',c:'#118ab2',g:'star',t:(a,e)=>e.botW>=10},
+ {id:'dbotv',n:'Pogromca mistrza',d:'Wygraj z botem na poziomie bardzo trudnym',c:'#d4a017',g:'crown',t:(a,e)=>e.botVW>=1}];
+let _dEx=null;
+function dExtraAll(){const k=Object.keys(S.darts).sort().join(',');if(_dEx&&_dEx.k===k)return _dEx.v;const v={};
+  Object.values(S.darts).forEach(m=>{
+    const o=id=>v[id]||(v[id]={atcW:0,atcBest:0,botW:0,botVW:0});
+    if(isA(m)&&m.w&&m.w!=='bot'){const e=o(m.w);e.atcW++;const i=m.ps.indexOf(m.w),d=aDerive({ps:m.ps,first:m.first,tk:m.tk?m.tk.split(' '):[]});if(i>=0&&d.winner===i)e.atcBest=e.atcBest?Math.min(e.atcBest,d.darts[i]):d.darts[i]}
+    if(m.bot&&m.w===m.ps[0]){const e=o(m.ps[0]);e.botW++;if(m.bot.level==='vhard')e.botVW++}});
+  _dEx={k,v};return v}
 function computeProgress(){
   const list=Object.values(S.matches).sort((a,b)=>a.t.localeCompare(b.t));
   const rows=computeStats(list).rows,X={};
@@ -1069,7 +1154,7 @@ function computeProgress(){
     if(won&&(m.sets||[]).length>1){const f=score(m.sets[0]);if(side==='A'?f.a<f.b:f.b<f.a)x.comeback++}})));
   const n=rows.length,KB=kingBoard(),TA=trainAll();
   KB.events.forEach(e=>{const x=X[e.id];if(x)x.kb=(x.kb||0)+(e.type==='crown'?KING.crown:KING.def)});
-  Object.values(X).forEach(x=>{x.bonus=Math.floor(x.pf/1000)*LVLBONUS;const ks=KB.stats[x.id]||{crowns:0,bestDef:0};x.crowns=ks.crowns;x.bestDef=ks.bestDef;const tr_=TA[x.id]||{n:0,hits:0,best:0,days:new Set(),rounds:0,coins:0};x.tsess=tr_.n;x.thits=tr_.hits;x.tbest=tr_.best;x.tdays=tr_.days.size;x.trounds=tr_.rounds;x.sn=tr_.sn||0;x.spb=tr_.spb||0;x.plans=tr_.plans||0;x.rxn=tr_.rxn||0;const dg=dAggAll()[x.id]||{legW:0,sW:0,w:0,v180:0,perfect:0,pts:0};x.dpts=dg.pts;x.dcoins=dg.legW*DCOIN.leg+dg.sW*DCOIN.set+dg.w*DCOIN.match+dg.v180*DCOIN.v180+dg.perfect*DCOIN.perfect;x.earned=x.sw*COIN.set+x.w*COIN.match+x.titles*COIN.title+x.bonus+(x.kb||0)+tr_.coins+x.dcoins;x.coins=x.earned-((S.players[x.id]||{}).spent||0);const pr_=S.players[x.id]||{},invk=pr_.inv||[];x.inv=invk.length;x.hasL=invk.some(k=>ITEMBY[k]&&ITEMBY[k].r==='l');x.maxDay=Math.max(0,...Object.values(x.perDay));x.medals=MEDALS.filter(md=>md.t(x,n)).map(md=>md.id);x.level=1+Math.floor(x.pf/1000)});
+  Object.values(X).forEach(x=>{x.bonus=Math.floor(x.pf/1000)*LVLBONUS;const ks=KB.stats[x.id]||{crowns:0,bestDef:0};x.crowns=ks.crowns;x.bestDef=ks.bestDef;const tr_=TA[x.id]||{n:0,hits:0,best:0,days:new Set(),rounds:0,coins:0};x.tsess=tr_.n;x.thits=tr_.hits;x.tbest=tr_.best;x.tdays=tr_.days.size;x.trounds=tr_.rounds;x.sn=tr_.sn||0;x.spb=tr_.spb||0;x.plans=tr_.plans||0;x.rxn=tr_.rxn||0;const dg=dAggAll()[x.id]||{legW:0,sW:0,w:0,v180:0,perfect:0,pts:0};x.dpts=dg.pts;{const dfull=Object.assign({},DM0,dAggAll()[x.id]||{}),ex=dExtraAll()[x.id]||{atcW:0,atcBest:0,botW:0,botVW:0};x.dmedals=DMEDALS.filter(md=>md.t(dfull,ex)).map(md=>md.id)}x.dcoins=dg.legW*DCOIN.leg+dg.sW*DCOIN.set+dg.w*DCOIN.match+dg.v180*DCOIN.v180+dg.perfect*DCOIN.perfect;x.earned=x.sw*COIN.set+x.w*COIN.match+x.titles*COIN.title+x.bonus+(x.kb||0)+tr_.coins+x.dcoins;x.coins=x.earned-((S.players[x.id]||{}).spent||0);const pr_=S.players[x.id]||{},invk=pr_.inv||[];x.inv=invk.length;x.hasL=invk.some(k=>ITEMBY[k]&&ITEMBY[k].r==='l');x.maxDay=Math.max(0,...Object.values(x.perDay));x.medals=MEDALS.filter(md=>md.t(x,n)).map(md=>md.id);x.level=1+Math.floor(x.pf/1000)});
   return X}
 const plural=(n,a,b,c)=>n===1?a:(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?b:c;
 function progressNote(before,after,ids){
@@ -1356,6 +1441,7 @@ function viewDprofile(){
    <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>
    <p class="muted">${nx?`Następny gadżet darta: ${esc(unlockLabel([nx[0],nx[1],nx[2]]))} przy ${nx[2]} punktach rzuconych (brakuje ${nx[2]-dp}).`:'Wszystkie gadżety darta są odblokowane.'} Monety są wspólne z Ping Pongiem.</p></section>
    ${a?dPlayerCard(a,1):''}
+   <section class="card stack"><div class="row" style="justify-content:space-between"><h3>Medale darta</h3><span class="muted">${(pr.dmedals||[]).length} z ${DMEDALS.length}</span></div><div class="medals">${DMEDALS.map(md=>{const on=(pr.dmedals||[]).includes(md.id);return`<div class="medal ${on?'':'off'}" title="${esc(md.d)}">${medalSvg(md,on,56)}<b>${esc(md.n)}</b><span>${esc(md.d)}</span></div>`}).join('')}</div></section>
    ${recent.length?`<section class="card"><h3 style="margin-bottom:8px">Ostatnie mecze</h3>${recent.map(dRow).join('')}</section>`:''}</div>`}
 function viewProfile(){
   const id=ui.prof,p=S.players[id];if(!p){ui.prof=null;return viewPlayers()}
@@ -1682,7 +1768,7 @@ function viewEditor(){
    <label class="lbl" for="p-name" style="margin:0">Imię lub ksywka</label><input id="p-name" maxlength="20" value="${esc(e.name)}" placeholder="np. Tata">
    <button class="btn" data-act="prand">Losuj wygląd</button></div>
    <div>${GROUPS.map(([k,t,type,list])=>`<div class="grp"><span class="lbl">${t}</span>${type==='c'
-     ?`<div class="sw">${list.filter(c=>visible(k,c,a[k],inv)).map(c=>{const ok=isOpen(k,c,pts,orig[k],inv),nd=need(k,c);return`<button data-act="opt" data-k="${k}" data-v="${c}" class="${a[k]===c?'on':''} ${ok?'':'lock'}" style="background:${c}" aria-label="${t} ${c}${ok?'':', odblokujesz przy '+nd+' punktach'}" title="${ok?'':'Odblokujesz przy '+nd+' pkt'}" ${ok?'':'disabled'}></button>`}).join('')}</div>`
+     ?`<div class="sw">${list.filter(c=>visible(k,c,a[k],inv)).map(c=>{const dn=dneed(k,c),ok=dn?(orig[k]===c||dp>=dn):isOpen(k,c,pts,orig[k],inv),nd=dn?fK(dn)+' pkt rzuconych w darcie':need(k,c)+' punktach';return`<button data-act="opt" data-k="${k}" data-v="${c}" class="${a[k]===c?'on':''} ${ok?'':'lock'}" style="background:${c}" aria-label="${t} ${c}${ok?'':', odblokujesz przy '+nd}" title="${ok?'':'Odblokujesz przy '+nd}" ${ok?'':'disabled'}></button>`}).join('')}</div>`
      :`<div class="tiles">${list.map((l,i)=>{if(!visible(k,i,a[k],inv))return'';const dn=dneed(k,i),ok=dn?(orig[k]===i||dp>=dn):isOpen(k,i,pts,orig[k],inv),nd=dn?'🎯'+fK(dn):need(k,i),tt=dn?dn+' pkt rzuconych w darcie':nd+' pkt';return`<button class="tile ${a[k]===i?'on':''} ${ok?'':'lock'}" data-act="opt" data-k="${k}" data-v="${i}" data-n="1" title="${ok?l:l+': odblokujesz przy '+tt}" aria-label="${ok?l:l+', odblokujesz przy '+tt}" ${ok?'':'disabled'}>${avb(Object.assign({},a,{[k]:i},PREV[k]||{}),58)}${ok?'':`<span class="lk">${nd}</span>`}</button>`}).join('')}</div>`}</div>`).join('')}
    <div class="row" style="margin-top:20px"><button class="btn pri" data-act="psave">Zapisz gracza</button><button class="btn" data-act="pcancel">Anuluj</button>
    ${e.id?`<button class="btn danger ${ui.confirm==='pdel'?'ask':''}" data-act="pdel">${ui.confirm==='pdel'?'Na pewno usunąć?':'Usuń gracza'}</button>`:''}</div></div></div></section>`}
@@ -2073,7 +2159,7 @@ async function dSave(rematch){
   const before=computeProgress();ui.dlive=null;saveD();
   if(rematch){ui.dsetup.ps=ps;ui.dsetup.start=L.start;ui.dsetup.sets=L.sets;ui.dsetup.legs=L.legs;ui.dsetup.dbl=L.dbl;ui.dsetup.mode=L.mode==='atc'?'atc':'x01';ui.tab='dplay';await put('darts',id,rec);dStart(nf);toast('Zapisano. Rewanż!'+(L.mode==='atc'?'':dGain(before,L)))}
   else{ui.tab='dhist';await put('darts',id,rec);toast('Mecz zapisany.'+(L.mode==='atc'?'':dGain(before,L)))}}
-function dGain(b,L){const a=computeProgress(),out=[];L.ps.forEach(id=>{if(!S.players[id]||!a[id])return;const c=a[id].coins-((b[id]||{}).coins||0);if(c>0)out.push(nm(id)+' +'+c+' '+plural(c,'moneta','monety','monet'));const o=DUNL.filter(u=>u[2]>((b[id]||{}).dpts||0)&&u[2]<=a[id].dpts);o.forEach(u=>out.push(nm(id)+' odblokowuje: '+unlockLabel(u)))});return out.length?' '+out.join('. ')+'.':''}
+function dGain(b,L){const a=computeProgress(),out=[];L.ps.forEach(id=>{if(!S.players[id]||!a[id])return;const c=a[id].coins-((b[id]||{}).coins||0);if(c>0)out.push(nm(id)+' +'+c+' '+plural(c,'moneta','monety','monet'));const o=DUNL.filter(u=>u[2]>((b[id]||{}).dpts||0)&&u[2]<=a[id].dpts);o.forEach(u=>out.push(nm(id)+' odblokowuje: '+unlockLabel(u)));(a[id].dmedals||[]).filter(m=>!((b[id]||{}).dmedals||[]).includes(m)).forEach(m=>out.push(nm(id)+' zdobywa medal: '+DMEDALS.find(q=>q.id===m).n))});return out.length?' '+out.join('. ')+'.':''}
 /* ---- historia ---- */
 const isA=m=>m.mode==='atc';
 const alist=()=>Object.values(S.darts).filter(isA).sort((a,b)=>b.t.localeCompare(a.t));
