@@ -677,7 +677,8 @@ const MODEN={pig:'🐷 Świnka',gold:'🏆 Złota piłka',srv:'🎾 Przewaga ser
 const KING={crown:30,def:15};
 const MODEHINT={std:'Zwykłe zasady: każdy punkt liczy się za 1.',pig:'Powiedz „świnka” i imię gracza, a dostanie 2 punkty zamiast 1.',gold:'Co jakiś czas aplikacja ogłasza złotą piłkę. Najbliższy punkt jest wtedy wart 3.',srv:'Serwujący zdobywa 2 punkty za wygraną wymianę, przyjmujący 1.',x2:'Każda drużyna ma „x2” raz w każdym secie. Po podbiciu najbliższy punkt jest wart 2 dla zwycięzcy wymiany, więc ryzyko jest po obu stronach. Głosem: „podwójna stawka” i imię.',sprint:'Gra na czas: gdy czas minie, wygrywa ten, kto ma więcej punktów. Przy remisie rozstrzyga złoty punkt.',king:'Jeden mecz z aktualnym królem stołu. Kto wygra, zostaje królem (lub nim pozostaje). Pierwszy mecz wyłania pierwszego króla.'};
 function score(s){let a=0,b=0;for(const ch of s){ch==='A'?a++:b++}return{a,b}}
-function setWinner(s,T){const{a,b}=score(s);return(a>=T||b>=T)&&Math.abs(a-b)>=2?(a>b?'A':'B'):null}
+const RULES=Object.assign({cap:30},lsGet('tt-rules',{}));
+function setWinner(s,T,cap){const{a,b}=score(s);return(a>=T||b>=T)&&(Math.abs(a-b)>=2||(cap>T&&(a>=cap||b>=cap)))?(a>b?'A':'B'):null}
 function derive(L){
   const need=Math.floor(L.bo/2)+1;let wa=0,wb=0;L.sets.forEach(s=>{const q=score(s);q.a>q.b?wa++:wb++});
   const sc=score(L.cur),done=wa>=need||wb>=need,winner=wa>=need?'A':wb>=need?'B':null;
@@ -695,7 +696,7 @@ function addPoint(side,n){
   const k=n||(L.mode==='pig'?1:worth(L,side)),op={n:0,sv:L.sv,sn:L.sn,g:!!L.gold,arm:L.arm||null,tk:L.tk?Object.assign({},L.tk):null};let ended=null;
   for(let i=0;i<k&&!ended&&!derive(L).done;i++){
     L.cur+=side;op.n++;
-    if(!L.sprint&&setWinner(L.cur,L.to)){ended=L.cur;L.sets.push(L.cur);L.cur='';L.flip=!L.flip}}
+    if(!L.sprint&&setWinner(L.cur,L.to,L.cap)){ended=L.cur;L.sets.push(L.cur);L.cur='';L.flip=!L.flip}}
   if(L.sprint&&L.sudden&&!ended){ended=L.cur;L.sets.push(L.cur);L.cur='';L.flip=!L.flip}
   if(L.sv!=null){
     if(ended){const idx=L.sets.length;L.sv=idx%2===0?L.first:other(L.first);L.sn=0}
@@ -738,7 +739,7 @@ function startMatch(){
   const s=ui.setup,two=s.team===2,ids=two?[s.a,s.a2,s.b,s.b2]:[s.a,s.b];
   if(ids.some(i=>!S.players[i])||new Set(ids).size!==ids.length){toast(two?'Wybierz czterech różnych graczy.':'Wybierz dwóch różnych graczy.');return}
   const first=s.first==='rnd'?(Math.random()<.5?'A':'B'):s.first;
-  ui.live={a:s.a,b:s.b,to:s.to,bo:s.bo,first,sets:[],cur:'',flip:false,st:new Date().toISOString()};
+  ui.live={a:s.a,b:s.b,to:s.to,cap:RULES.cap,bo:s.bo,first,sets:[],cur:'',flip:false,st:new Date().toISOString()};
   Object.assign(ui.live,{sv:first,sn:0,ops:[],gold:false});
   if(s.mode==='x2'){ui.live.tk={A:true,B:true};ui.live.arm=null}
   if(s.mode==='sprint'){const mins=s.sprintMin===5?5:3;Object.assign(ui.live,{bo:1,to:11,sprint:true,dur:mins*60,end:Date.now()+mins*60000})}
@@ -789,7 +790,7 @@ function announce(ended){
   else if(d.done)t=`Mecz wygrywa ${n(d.winner)}, ${pl(Math.max(d.wa,d.wb))}, ${pl(Math.min(d.wa,d.wb))}.`;
   else if(ended){const x=score(ended),ws=x.a>x.b?'A':'B';t=`Set wygrywa ${n(ws)}, ${pl(Math.max(x.a,x.b))}, ${pl(Math.min(x.a,x.b))}.`}
   else{const s=d.server,o=other(s),p=x=>x==='A'?d.a:d.b;t=`${pl(p(s))}, ${pl(p(o))}`}
-  speak(t+(L.gold&&!d.done?' Złota piłka! Trzy punkty.':''))}
+  speak(t+(L.gold&&!d.done?' Złota piłka! Trzy punkty.':'')+(!d.done&&!ended&&L.cap&&d.a===L.cap-1&&d.b===L.cap-1?' Następny punkt kończy seta.':''))}
 const norm=s=>String(s).toLowerCase().replace(/ł/g,'l').normalize('NFD').replace(/[̀-ͯ]/g,'');
 function lev(a,b){const m=[];for(let i=0;i<=a.length;i++){m[i]=[i]}for(let j=1;j<=b.length;j++)m[0][j]=j;
   for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
@@ -814,7 +815,7 @@ function parseScore(text){
 function simPoint(L,side,n){
   const c=JSON.parse(JSON.stringify(L)),old=derive(c).server,k=n||(c.mode==='pig'?1:worth(c,side));let ended=null;
   for(let i=0;i<k&&!ended&&!derive(c).done;i++){
-    c.cur+=side;if(!c.sprint&&setWinner(c.cur,c.to)){ended=c.cur;c.sets.push(c.cur);c.cur='';c.flip=!c.flip}}
+    c.cur+=side;if(!c.sprint&&setWinner(c.cur,c.to,c.cap)){ended=c.cur;c.sets.push(c.cur);c.cur='';c.flip=!c.flip}}
   if(c.sprint&&c.sudden&&!ended){ended=c.cur;c.sets.push(c.cur);c.cur='';c.flip=!c.flip}
   if(c.sv!=null){
     if(ended){const idx=c.sets.length;c.sv=idx%2===0?c.first:other(c.first);c.sn=0}
@@ -897,7 +898,7 @@ function startTMatch(tid,r,i){
   if(ui.live){toast('Najpierw dokończ trwający mecz.');ui.tab='play';render();return}
   const t=S.tournaments[tid],c=t.rounds[r].matches[i];if(!c||!c.a||!c.b||c.w)return;
   const f0=Math.random()<.5?'A':'B';
-  ui.live={a:c.a,b:c.b,to:t.to,bo:roundBo(t,r),first:f0,sv:f0,sn:0,ops:[],sets:[],cur:'',flip:false,st:new Date().toISOString(),tid,tr:r,ti:i};
+  ui.live={a:c.a,b:c.b,to:t.to,cap:RULES.cap,bo:roundBo(t,r),first:f0,sv:f0,sn:0,ops:[],sets:[],cur:'',flip:false,st:new Date().toISOString(),tid,tr:r,ti:i};
   ui.tab='play';saveUi();render();keepAwake();window.scrollTo(0,0)}
 const activeT=()=>Object.values(S.tournaments).filter(t=>t.status==='active').sort((x,y)=>y.created.localeCompare(x.created))[0];
 
@@ -1140,7 +1141,7 @@ function viewPlay(){
   <div><span class="lbl" style="color:var(--pb)">${kg?'Wyzywający (pomarańczowy)':'Gracz 2 (pomarańczowy)'}</span>${pickerRow('b',s.b,kg?[kg]:blk('b'),'b')}</div>`}
   <div><span class="lbl">Tryb meczu</span>${seg('mode',[['std','Klasyczny'],['pig','Świnka'],['gold','Złota piłka'],['srv','Przewaga serwisu'],['x2','Podwójna stawka'],['sprint','Sprint'],['king','Król stołu']])}<p class="muted" style="margin-top:6px">${MODEHINT[mode]}</p></div>
   <div class="row" style="align-items:flex-start;gap:22px">
-   ${mode==='sprint'?`<div><span class="lbl">Czas gry</span>${seg('sprintMin',[[3,'3 minuty'],[5,'5 minut']])}</div>`:`<div><span class="lbl">Do ilu punktów</span>${seg('to',[[11,'11'],[21,'21']])}</div>`}
+   ${mode==='sprint'?`<div><span class="lbl">Czas gry</span>${seg('sprintMin',[[3,'3 minuty'],[5,'5 minut']])}</div>`:`<div><span class="lbl">Do ilu punktów</span>${seg('to',[[11,'11'],[21,'21']])}</div><div><span class="lbl">Dogrywka</span>${`<div class="seg">${[[30,'Do 30 pkt'],[0,'Bez limitu']].map(([v,l])=>`<button data-act="capset" data-v="${v}" class="${RULES.cap===v?'on':''}">${l}</button>`).join('')}</div>`}<p class="muted" style="font-size:.8rem;margin-top:4px">Przy „do 30” punkt przy 29:29 kończy seta.</p></div>`}
    ${mode==='sprint'||mode==='king'?'':`<div><span class="lbl">Ile setów</span>${seg('bo',[[1,'1 set'],[3,'BO3'],[5,'BO5'],[7,'BO7'],[9,'BO9']])}</div>`}
    <div><span class="lbl">Pierwszy serwis</span>${seg('first',[['rnd','Losowo'],['A',two?'Drużyna niebieska':s.a?esc(nm(s.a)):'Gracz 1'],['B',two?'Drużyna pomarańczowa':s.b?esc(nm(s.b)):'Gracz 2']])}</div></div>
   <div><button class="btn pri" data-act="start" ${ready&&enough?'':'disabled'}>Rozpocznij mecz</button></div></section>
@@ -1216,7 +1217,8 @@ function viewTour(){
    <div class="row" style="align-items:flex-start;gap:22px">
     <div><span class="lbl">Mecze</span>${seg('bo',[[1,'1 set'],[3,'BO3'],[5,'BO5']])}</div>
     <div><span class="lbl">Finał</span>${seg('finalBo',[[1,'1 set'],[3,'BO3'],[5,'BO5'],[7,'BO7']])}</div>
-    <div><span class="lbl">Do ilu punktów</span>${seg('to',[[11,'11'],[21,'21']])}</div></div>
+    <div><span class="lbl">Do ilu punktów</span>${seg('to',[[11,'11'],[21,'21']])}</div>
+    <div><span class="lbl">Dogrywka</span>${`<div class="seg">${[[30,'Do 30 pkt'],[0,'Bez limitu']].map(([v,l])=>`<button data-act="capset" data-v="${v}" class="${RULES.cap===v?'on':''}">${l}</button>`).join('')}</div>`}</div></div>
    <div><label class="lbl" for="t-name">Nazwa (opcjonalnie)</label><input id="t-name" maxlength="40" value="${esc(ts.name)}" placeholder="Turniej ${fmtShort(new Date())}" style="width:100%;max-width:360px;border:2px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 14px"></div>
    <div><button class="btn pri" data-act="tstart" ${n>=3?'':'disabled'}>Losuj drabinkę i zaczynamy</button></div></section>
    ${past.length?`<section class="card"><h3 style="margin-bottom:10px">Zakończone turnieje</h3>${past.map(t=>`<div class="mrow" style="grid-template-columns:auto 1fr auto"><span>${avb(av_(t.champ),44)}</span><div><b>${esc(t.name)}</b><div class="muted" style="font-size:.85rem">${fmtShort(t.done||t.created)} · mistrz: ${esc(nm(t.champ))}</div></div><button class="btn sm" data-act="topen" data-t="${t.id}">Drabinka</button></div>`).join('')}</section>`:''}</div>`}
@@ -1368,9 +1370,9 @@ const RCMD=['Forhend','Bekhend','Na przemian','Szybciej','Spokojniej'];
 const ZN=['Długi w lewo','Długi w środek','Długi w prawo','Krótki w lewo','Krótki w środek','Krótki w prawo'];
 const SV={on:false};
 const TR={mode:'idle',stream:null,ctx:null,an:null,buf:null,timer:null,th:.12,armed:true,last:0,t0:0,cur:0,total:0,bestDone:0,series:0,lastLevelUi:0,calib:null,msg:''};
-ui.train=Object.assign({pid:null,pid2:null,pair:0,kind:'bounce',sn:20,rs:8,plan:0,say:1,tbl:1,ex:0,sens:45,gap:2.5,floor:1,res:null},lsGet('tt-train',{}),{res:null});
+ui.train=Object.assign({pid:null,pid2:null,pair:0,kind:'bounce',sn:20,rs:8,plan:0,say:1,tbl:1,tm:2,ex:0,sens:45,gap:2.5,floor:1,res:null},lsGet('tt-train',{}),{res:null});
 if(ui.train.pair)ui.train.kind='pair';
-const saveTrain=()=>lsSet('tt-train',{pid:ui.train.pid,ex:ui.train.ex,pid2:ui.train.pid2,pair:ui.train.pair,kind:ui.train.kind,sn:ui.train.sn,rs:ui.train.rs,plan:ui.train.plan,say:ui.train.say,tbl:ui.train.tbl,sens:ui.train.sens,gap:ui.train.gap,floor:ui.train.floor});
+const saveTrain=()=>lsSet('tt-train',{pid:ui.train.pid,ex:ui.train.ex,pid2:ui.train.pid2,pair:ui.train.pair,kind:ui.train.kind,sn:ui.train.sn,rs:ui.train.rs,plan:ui.train.plan,say:ui.train.say,tbl:ui.train.tbl,tm:ui.train.tm,sens:ui.train.sens,gap:ui.train.gap,floor:ui.train.floor});
 const sensToTh=v=>.5*Math.pow(.04,(v-1)/99);
 async function openMic(){
   if(TR.stream)return true;
@@ -1398,9 +1400,17 @@ function poll(){
   else if(TR.mode==='run'){
     if(now-TR.lastC<35)TR.pkLast=Math.max(TR.pkLast,pk);
     if(TR.rest||now<(TR.muteUntil||0)){TR.env=Math.max(pk,(TR.env||0)*.8);TR.level=pk}else{
-    if(pk>TR.th&&pk>(TR.env||0)*1.6&&now-TR.last>60){
-      if(ui.train.pair&&+ui.train.tbl&&TR.pkLast&&now-TR.lastC<420&&pk<TR.pkLast*.85){/* odbicie od stołu: cichsze, tuż po uderzeniu rakietką */}
-      else{TR.lastC=now;TR.pkLast=pk;hit(now,pk)}}
+    if(pk>TR.th&&pk>(TR.env||0)*1.6&&now-TR.last>60&&now-(TR.lastEv||0)>60){
+      const tm=+ui.train.tm;
+      if(ui.train.pair&&tm===2){
+        /* jedno uderzenie rakietką + jedno odbicie od stołu = dwa dźwięki, liczymy co drugi */
+        if(now-(TR.lastEv||0)>ui.train.gap*1000)TR.pe=0;
+        TR.lastEv=now;TR.pe=(TR.pe||0)+1;
+        if(TR.pe%2===0){TR.lastC=now;TR.pkLast=pk;hit(now,pk)}}
+      else{
+        TR.lastEv=now;
+        if(ui.train.pair&&tm===1&&TR.pkLast&&now-TR.lastC<420&&pk<TR.pkLast*.85){/* odbicie od stołu: cichsze, tuż po uderzeniu rakietką */}
+        else{TR.lastC=now;TR.pkLast=pk;hit(now,pk)}}}
     TR.env=Math.max(pk,(TR.env||0)*.8)}}
   if(now-TR.lastLevelUi>45){TR.lastLevelUi=now;const l=$('#tr-lvl');if(l)l.style.width=Math.min(100,pk/.6*100)+'%'}}
 function trSay(text){
@@ -1450,7 +1460,7 @@ async function trStart(){
   const t=ui.train;if(!S.players[t.pid]){toast('Wybierz gracza.');return}
   if(t.pair&&(!S.players[t.pid2]||t.pid2===t.pid)){toast('Wybierz drugiego gracza.');return}
   if(!await openMic()){render();return}
-  Object.assign(TR,{mode:'run',th:sensToTh(t.sens),env:0,armed:true,last:0,cur:0,total:0,bestDone:0,done:[],fl:null,hl:[],floorCut:0,lastC:0,pkLast:0,muteUntil:0,rest:false,pl:null,rx:null,series:0,t0:performance.now(),msg:''});
+  Object.assign(TR,{mode:'run',th:sensToTh(t.sens),env:0,armed:true,last:0,cur:0,total:0,bestDone:0,done:[],fl:null,hl:[],floorCut:0,lastC:0,pkLast:0,pe:0,lastEv:0,muteUntil:0,rest:false,pl:null,rx:null,series:0,t0:performance.now(),msg:''});
   if(t.kind==='plan'){TR.pl={p:PLANS[t.plan||0],i:0,t0:0,h0:0,d0:0,res:[],fin:false}}
   if(t.kind==='react'){TR.rx={next:performance.now()+3000,cmd:'',cnt:0}}
   t.res=null;keepAwake();render();
@@ -1569,7 +1579,7 @@ function viewTrain(){
      ${t.kind!=='bounce'&&t.kind!=='pair'?`<div><span class="lbl">Głos prowadzący</span>${seg('trsay','say',[[1,'Włączony'],[0,'Wyłączony']])}</div>`:''}
      ${t.kind!=='serve'?`<div><span class="lbl">Czułość mikrofonu</span><input id="tr-sens" type="range" min="1" max="100" value="${t.sens}" style="width:100%;max-width:360px">${meter}<p class="muted" style="font-size:.85rem">Wyżej = czulej. Jeśli aplikacja liczy za dużo (hałas), zmniejsz. Jeśli pomija uderzenia, zwiększ albo użyj kalibracji.</p>${TR.msg?`<p class="msg-tr">${esc(TR.msg)}</p>`:''}</div>
      <div><span class="lbl">Przerwa kończąca serię</span>${seg('trgap','gap',[[1.5,'1,5 s'],[2.5,'2,5 s'],[4,'4 s']])}</div>`:''}
-     ${t.pair?`<div><span class="lbl">Odbicie od stołu</span>${seg('trtbl','tbl',[[1,'Nie licz'],[0,'Licz każdy dźwięk']])}<p class="muted" style="font-size:.85rem">Przy grze w parze piłeczka stuka też o stół. „Nie licz” pomija cichszy dźwięk tuż po uderzeniu rakietką.</p></div>`:''}
+     ${t.pair?`<div><span class="lbl">Odbicie od stołu</span>${seg('trtbl','tm',[[2,'Co drugi dźwięk'],[1,'Pomijaj cichsze'],[0,'Licz każdy dźwięk']])}<p class="muted" style="font-size:.85rem">Jedno uderzenie to dwa dźwięki: rakietka i stół. „Co drugi dźwięk” liczy dwa dźwięki jako jedno odbicie (najpewniejsze). „Pomijaj cichsze” odrzuca cichszy dźwięk tuż po uderzeniu.</p></div>`:''}
      ${t.kind!=='serve'?`<div><span class="lbl">Filtr odbić o podłogę</span>${seg('trfloor','floor',[[1,'Włączony'],[0,'Wyłączony']])}</div>`:''}
      <div class="row"><button class="btn pri" data-act="${t.kind==='serve'?'svstart':'trstart'}">Start</button>${t.kind!=='serve'?`<button class="btn" data-act="trcalib">Kalibruj czułość</button>`:''}</div></section>`}
   const rows=pl.map(q=>({q,ts:TA[q.id]||{best:0,round:{60:0,180:0,300:0},n:0,hits:0}})).sort((a,b)=>b.ts.best-a.ts.best);
@@ -1638,7 +1648,8 @@ const H={
  trsay:d=>{ui.train.say=+d.v;saveTrain();render()},
  svstart:()=>svStart(),svok:()=>svAns(true),svmiss:()=>svAns(false),svundo:()=>svUndo(),
  svstop:()=>{if(SV.att>0)svFinish();else{SV.on=false;try{TTS&&TTS.cancel()}catch(e){}render()}},
- trtbl:d=>{ui.train.tbl=+d.v;saveTrain();render()},
+ trtbl:d=>{ui.train.tm=+d.v;saveTrain();render()},
+ capset:d=>{RULES.cap=+d.v;lsSet('tt-rules',RULES);render()},
  trex:d=>{ui.train.ex=+d.v;saveTrain();render()},
  trfloor:d=>{ui.train.floor=+d.v;saveTrain();render()},
  trgap:d=>{ui.train.gap=+d.v;saveTrain();render()},
