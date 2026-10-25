@@ -72,3 +72,11 @@ Trwający mecz jest zapisany tylko na urządzeniu, na którym go liczysz. Wspól
 - **Dogrywka do 30** – w ustawieniach meczu i turnieju przełącznik „Dogrywka: Do 30 pkt / Bez limitu”. Przy „do 30” punkt przy 29:29 kończy seta (30:29). Aplikacja zapowiada to głosem.
 - **Trening w parze: „Co drugi dźwięk”** – uderzenie rakietką i odbicie od stołu to dwa dźwięki, liczone jako jedno odbicie (domyślnie).
 - **Tabela miesięczna i roczna** (Ranking): bilans meczów (wygrane:przegrane), punkty (zdobyte:stracone) i liczba meczów, z przełączaniem miesiąca lub roku strzałkami.
+
+## Dart (rzutki)
+Po wejściu do aplikacji pojawia się pytanie „W co dzisiaj gramy?” z wyborem **Dart** albo **Ping Pong**. Gracze i awatary są wspólne dla obu gier.
+- Ustawienia meczu: 2 do 4 graczy, gra od **301 / 501 / 701**, do ilu wygranych **setów**, ile **legów** w secie, zakończenie **double out** albo dowolne, kto zaczyna.
+- Wpisywanie rzutów przyciskami 1–20, 25, 50 i Pudło oraz **Double** i **Triple** (np. Triple, potem 20 = 60). Kolejka to 3 rzuty, potem rzuca następny gracz. Przebicie (poniżej zera, zostaje 1 albo zero nie dublem) unieważnia kolejkę.
+- Podpowiedź wykończenia przy double out, średnia z trzech rzutów, kolejki 100+ i 180, cofanie rzutów, opcjonalny głos.
+- Zakładki: Mecz, Historia (ze statystykami meczu), Statystyki (bilans, legi, średnia, 180, najwyższe wykończenie, najlepszy leg), Gracze.
+- Mecze darta synchronizują się tak samo jak Ping Pong (nowa kolekcja `darts`).
