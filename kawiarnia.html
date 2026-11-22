@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domowa Kawiarnia – zamówienia</title>
+<style>
+:root{--bg:#f6efe6;--card:#fffaf3;--ink:#2e2118;--muted:#8a7767;--accent:#8b4a2b;--accent2:#c98b5a;--ok:#3f7d4e;--line:#e6d8c6}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:90px}
+header{padding:20px 16px 8px;text-align:center}
+header h1{margin:0;font-size:26px;letter-spacing:.5px}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:8px;justify-content:center;margin:12px 16px}
+.tabs button{flex:1;max-width:180px;padding:10px;border:1px solid var(--line);background:var(--card);border-radius:999px;font-size:15px;cursor:pointer;color:var(--ink)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+main{max-width:720px;margin:0 auto;padding:0 16px}
+h2{font-size:17px;margin:22px 0 10px;color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.item:active{transform:scale(.97)}
+.item .e{font-size:28px}
+.item .n{font-weight:600;margin-top:4px}
+.item .d{font-size:12px;color:var(--muted);margin-top:2px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+.row{display:flex;gap:8px;align-items:center}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;font-size:14px}
+.chip.on{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:600;cursor:pointer;width:100%}
+.btn.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+.btn.small{width:auto;padding:8px 12px;font-size:14px}
+.btn:disabled{opacity:.5}
+.line{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.line:last-child{border:0}
+.qty{display:flex;align-items:center;gap:8px}
+.qty button{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:16px;cursor:pointer}
+.order{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--accent2);border-radius:12px;padding:12px;margin-top:10px}
+.order.gotowe{border-left-color:var(--ok)}
+.order.wydane{opacity:.55}
+.order .top{display:flex;justify-content:space-between;font-weight:600}
+.order ul{margin:6px 0;padding-left:18px;font-size:14px}
+.badge{font-size:12px;padding:3px 9px;border-radius:999px;background:#eadbc8;color:var(--accent)}
+.badge.gotowe{background:#d5ecd9;color:var(--ok)}
+.muted{color:var(--muted);font-size:13px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 16px;display:none}
+.bar.show{display:block}
+.hide{display:none}
+.chip.off,.item.off{opacity:.4;text-decoration:line-through;cursor:not-allowed}
+.chip.out{background:#b3402a;color:#fff;border-color:#b3402a}
+.ready-strip span{display:inline-block;font-size:30px;font-weight:800;background:var(--ok);color:#fff;border-radius:12px;padding:4px 14px;margin:4px 6px 0 0;cursor:pointer}
+.cats{display:flex;gap:8px}
+.cats{flex-wrap:wrap}
+.cat{flex:1 1 40%;padding:10px;border:1px solid var(--line);background:var(--card);border-radius:12px;font-size:15px;cursor:pointer;color:var(--ink)}
+.cat.on{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.boardcols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.nums{display:flex;flex-wrap:wrap;gap:10px;min-height:80px}
+.nums span{font-size:44px;font-weight:800;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:6px 16px;min-width:84px;text-align:center}
+.nums.ready span{background:var(--ok);color:#fff;border-color:var(--ok);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.bignum{font-size:84px;font-weight:800;color:var(--accent);text-align:center;line-height:1.1}
+.num{background:var(--accent);color:#fff;border-radius:8px;padding:1px 9px;margin-right:8px}
+.empty{text-align:center;color:var(--muted);padding:24px}
+</style>
+</head>
+<body>
+<div id="net" class="hide" style="background:#b3402a;color:#fff;text-align:center;padding:6px;font-size:14px">Brak połączenia z bazą – próbuję ponownie…</div>
+<header>
+  <h1>☕ Domowa Kawiarnia</h1>
+  <p>Wybierz napój, a barista dostanie zamówienie</p>
+</header>
+<div class="tabs">
+  <button id="tabGuest" class="on">Zamawiam</button>
+  <button id="tabBoard">Tablica</button>
+  <button id="tabBarista" class="hide">Barista</button>
+</div>
+
+<main>
+  <!-- GOŚĆ -->
+  <section id="guest">
+    <div class="panel">
+      <label for="who">Twoje imię</label>
+      <input id="who" placeholder="np. Konrad" maxlength="30">
+    </div>
+    <div class="cats" style="margin-top:16px">
+      <button class="cat on" data-c="kawa">☕ Kawy</button>
+      <button class="cat" data-c="herbata">🍵 Herbaty</button>
+      <button class="cat" data-c="matcha">🌿 Matcha</button>
+      <button class="cat" data-c="napoje">🥤 Napoje</button>
+    </div>
+    <div class="grid" id="menu" style="margin-top:12px"></div>
+
+    <h2>Twoje zamówienia</h2>
+    <div id="mine"></div>
+    <div style="margin:40px 0 20px;text-align:center"><button class="btn sec small" id="baristaLogin">Barista</button></div>
+  </section>
+
+  <!-- TABLICA -->
+  <section id="board" class="hide">
+    <div class="boardcols">
+      <div><h2>Przygotowujemy</h2><div class="nums" id="bPrep"></div></div>
+      <div><h2 style="color:var(--ok)">Gotowe – odbierz!</h2><div class="nums ready" id="bReady"></div></div>
+    </div>
+  </section>
+
+  <!-- BARISTA -->
+  <section id="barista" class="hide">
+    <div class="row" style="justify-content:space-between;margin-top:12px"><span class="muted">Zalogowany: <b id="bWho"></b></span><button class="btn sec small" id="bLogout">Wyloguj</button></div>
+    <h2>Do zrobienia <span class="muted">(kliknij zamówienie, gdy gotowe)</span></h2>
+    <div id="queue"></div>
+    <h2>Gotowe – czekają na odbiór <span class="muted">(kliknij numer po wydaniu)</span></h2>
+    <div class="ready-strip" id="readyStrip"></div>
+    <h2>Brak towaru <span class="muted">(kliknij, aby oznaczyć jako niedostępne)</span></h2>
+    <div class="panel" id="stock"></div>
+    <h2>Link dla gości</h2>
+    <div class="panel"><p class="muted" style="margin-top:0">Wyślij ten link domownikom i gościom – otwierają go i od razu mogą zamawiać, bez konta.</p>
+    <button class="btn small" id="showLink">Pokaż i skopiuj link</button> <span class="muted" id="linkMsg"></span>
+    <div id="linkBox" class="hide" style="margin-top:8px"><input id="linkVal" readonly></div></div>
+    <h2>Dodaj kolejnego baristę</h2>
+    <div class="panel"><div class="row"><input id="nbName" placeholder="Imię"><input id="nbLogin" type="password" placeholder="Login"></div>
+    <div class="row" style="margin-top:8px"><button class="btn small" id="nbAdd">Dodaj</button><span class="muted" id="nbMsg"></span></div></div>
+    <div class="row" style="margin-top:14px"><button class="btn sec small" id="clearDone">Wyczyść wydane z bazy</button></div>
+  </section>
+</main>
+
+<div class="bar" id="bar">
+  <button class="btn" id="openCart">Koszyk · <span id="cartCount">0</span> szt.</button>
+</div>
+
+<!-- Okno dodawania / koszyk -->
+<div id="sheet" class="hide" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:5;overflow:auto">
+  <div style="max-width:560px;margin:30px auto;padding:0 12px"><div class="panel" id="sheetBody"></div></div>
+</div>
+
+<script>
+const MENU = [
+  {id:"espresso",  n:"Espresso",     e:"☕", d:"Krótkie, mocne",        opts:{mleko:false,cukier:true}},
+  {id:"americano", n:"Americano",    e:"☕", d:"Espresso + woda",       opts:{mleko:true,cukier:true}},
+  {id:"cappuccino",n:"Cappuccino",   e:"🥛", d:"Espresso + spienione mleko", opts:{mleko:true,cukier:true}},
+  {id:"latte",     n:"Latte",        e:"🥛", d:"Dużo mleka, łagodne",   opts:{mleko:true,cukier:true}},
+  {id:"flat",      n:"Flat white",   e:"☕", d:"Podwójne espresso z mlekiem", opts:{mleko:true,cukier:true}},
+  {id:"mocha",     n:"Mocha",        e:"🍫", d:"Kawa z czekoladą",      opts:{mleko:true,cukier:false}},
+  {id:"kakao",     n:"Gorąca czekolada", e:"🍫", d:"Dla niekawoszy",    opts:{mleko:true,cukier:false}},
+  {id:"lemoniada", n:"Mrożona kawa", e:"🧊", d:"Z lodem",               opts:{mleko:true,cukier:true}},
+  {id:"czarna",    cat:"herbata", n:"Herbata czarna", e:"🍵", d:"Klasyczna, mocna", opts:{mleko:true,cukier:true}},
+  {id:"lesne",     cat:"herbata", n:"Czarna – owoce leśne", e:"🫐", d:"Czarna o smaku owoców leśnych", opts:{mleko:false,cukier:true}},
+  {id:"zielona",   cat:"herbata", n:"Herbata zielona", e:"🍃", d:"Lekka, orzeźwiająca", opts:{mleko:false,cukier:true}},
+  {id:"rumianek", cat:"herbata", n:"Rumianek", e:"🌼", d:"Parzony z suszu, nie z torebki", opts:{mleko:false,cukier:true}},
+  {id:"palona", cat:"herbata", n:"Palona z suszu", e:"🔥", d:"Herbata palona, parzona z suszu", opts:{mleko:false,cukier:true}},
+  {id:"mango-porzeczka", cat:"herbata", n:"Mango – czarna porzeczka", e:"🥭", d:"Owocowa, aromatyczna", opts:{mleko:false,cukier:true}},
+  {id:"zielona-granat", cat:"herbata", n:"Zielona – granat i malina", e:"🍇", d:"Zielona o smaku granatu i maliny", opts:{mleko:false,cukier:true}},
+  {id:"zielona-cytrus", cat:"herbata", n:"Zielona – cytrusowa", e:"🍋", d:"Zielona o smaku cytrusów", opts:{mleko:false,cukier:true}},
+  {id:"matcha", cat:"matcha", n:"Matcha klasyczna", e:"🍵", d:"Czysta matcha", temps:["mrożona","na ciepło"], opts:{mleko:true,cukier:true}},
+  {id:"matcha-banan", cat:"matcha", n:"Matcha bananowa", e:"🍌", d:"Matcha z bananem", temps:["mrożona","na ciepło"], opts:{mleko:true,cukier:true}},
+  {id:"matcha-malina", cat:"matcha", n:"Matcha malinowa", e:"🍓", d:"Matcha z maliną", temps:["mrożona","na ciepło"], opts:{mleko:true,cukier:true}},
+  {id:"matcha-banan-malina", cat:"matcha", n:"Matcha bananowo-malinowa", e:"🍌", d:"Banan + malina", temps:["mrożona","na ciepło"], opts:{mleko:true,cukier:true}},
+  {id:"sok-jablko", cat:"napoje", n:"Sok jabłkowy", e:"🍎", d:"Napój", temps:null, lod:true, opts:{mleko:false,cukier:false}},
+  {id:"cola", cat:"napoje", n:"Cola", e:"🥤", d:"Napój", temps:null, lod:true, opts:{mleko:false,cukier:false}},
+  {id:"sok-pomarancza", cat:"napoje", n:"Sok pomarańczowy", e:"🍊", d:"Napój", temps:null, lod:true, opts:{mleko:false,cukier:false}},
+  {id:"woda", cat:"napoje", n:"Woda", e:"💧", d:"Napój", temps:null, lod:true, opts:{mleko:false,cukier:false}},
+  {id:"sok-porzeczka", cat:"napoje", n:"Sok z czarnej porzeczki", e:"🫐", d:"Napój", temps:null, lod:true, opts:{mleko:false,cukier:false}},
+  {id:"wlasna",    cat:"herbata", n:"Własna kompozycja", e:"✨", d:"Skomponuj sam: baza + dodatki", custom:true, opts:{mleko:false,cukier:true}}
+];
+const BAZY = ["czarna","zielona"];
+const DODATKI = ["cytryna","miód","imbir","syrop z czarnego bzu","syrop z mniszka lekarskiego","pomarańcza","malina","cynamon","goździki"];
+let out = [];
+let baristas = [];
+const isOut = id => out.includes(id);
+let curCat = "kawa";
+const MLEKA = ["krowie","bez mleka"];
+const CUKIER = ["0","1 łyżeczka","2 łyżeczki"];
+
+// ===== Firebase Realtime Database (REST) =====
+let cfg = null, ticks = {};
+function loadCfg(){ try{ return JSON.parse(localStorage.getItem("kcfg")||"null"); }catch(e){ return null; } }
+function saveCfg(c){ try{ localStorage.setItem("kcfg", JSON.stringify(c)); }catch(e){} }
+function joinLink(){ return location.origin+location.pathname+"#j="+btoa(unescape(encodeURIComponent(JSON.stringify(cfg)))); }
+function setNet(ok){ $("#net").classList.toggle("hide", ok); }
+function makeDb(c){
+  const base = c.u.replace(/\/+$/,"") + "/pp/" + c.r;
+  const j = async (method, path, body) => {
+    const r = await fetch(base+"/"+path+".json", {method, headers:{"Content-Type":"application/json"}, body: body===undefined?undefined:JSON.stringify(body)});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    return r.json();
+  };
+  const after = name => { if(ticks[name]) ticks[name](); };
+  return { collection: name => ({
+    doc: id => ({
+      set: async d => { await j("PUT", name+"/"+id, d); after(name); },
+      update: async d => { await j("PATCH", name+"/"+id, d); after(name); },
+      delete: async () => { await j("DELETE", name+"/"+id); after(name); }
+    }),
+    onSnapshot: cb => {
+      const tick = async () => { try{ const v = await j("GET", name) || {}; cb({docs:Object.entries(v).map(([id,data])=>({id, data:()=>data}))}); setNet(true); }catch(e){ setNet(false); } };
+      ticks[name] = tick; tick(); setInterval(tick, name==="orders" ? 3000 : 8000);
+    }
+  })};
+}
+
+let cart = [];
+let orders = [];
+let db = null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function store(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){return null} }
+$("#who").value = store("who") || "";
+$("#who").addEventListener("input", e => { store("who", e.target.value); renderMine(); });
+
+// Menu
+function renderMenu(){
+  $("#menu").innerHTML = MENU.filter(m => (m.cat||"kawa")===curCat).map(m => `<button class="item ${isOut(m.id)?"off":""}" data-id="${m.id}"><div class="e">${m.e}</div><div class="n">${m.n}</div><div class="d">${isOut(m.id)?"Brak towaru":m.d}</div></button>`).join("");
+  document.querySelectorAll(".cat").forEach(b => b.classList.toggle("on", b.dataset.c===curCat));
+}
+document.querySelectorAll(".cat").forEach(b => b.onclick = () => { curCat = b.dataset.c; renderMenu(); });
+$("#menu").addEventListener("click", e => { const b = e.target.closest(".item"); if(!b || b.classList.contains("off")) return; const m = MENU.find(m=>m.id===b.dataset.id); m.custom ? openCustomTea(m) : openItem(m); });
+renderMenu();
+
+function openCustomTea(m){
+  let baza = "czarna", dod = [], cukier = "0", gor = "gorąca";
+  const multi = () => `<div class="chips" data-g="d">${DODATKI.map(x=>`<span class="chip ${dod.includes(x)?"on":""} ${isOut("dod:"+x)?"off":""}" data-v="${x}">${x}${isOut("dod:"+x)?" (brak)":""}</span>`).join("")}</div>`;
+  const draw = () => {
+    openSheet(`
+      <h2 style="margin-top:0">${m.e} Własna kompozycja</h2>
+      <label>Baza</label>${chips("b",BAZY,baza,"baza:")}
+      <label>Dodatki (możesz wybrać kilka)</label>${multi()}
+      <label>Temperatura</label>${chips("t",["gorąca","zimna"],gor)}
+      <label>Cukier</label>${chips("c",CUKIER,cukier)}
+      <label>Uwagi</label><input id="note" placeholder="np. mocno zaparzona">
+      <div class="row" style="margin-top:14px"><button class="btn sec" id="x">Anuluj</button><button class="btn" id="add">Dodaj do koszyka</button></div>`);
+    $("#x").onclick = closeSheet;
+    document.querySelectorAll("#sheetBody .chips").forEach(c => c.onclick = e => {
+      const v = e.target.dataset.v; if(!v || e.target.classList.contains("off")) return;
+      const note = $("#note").value;
+      const g = c.dataset.g;
+      if(g==="b") baza=v; if(g==="t") gor=v; if(g==="c") cukier=v;
+      if(g==="d") dod = dod.includes(v) ? dod.filter(x=>x!==v) : [...dod, v];
+      draw(); $("#note").value = note;
+    });
+    $("#add").onclick = () => {
+      cart.push({id:m.id, n:"Herbata własna: "+baza, temp:gor, dodatki:dod, mleko:null, cukier:cukier!=="0"?cukier:null, note:$("#note").value.trim(), qty:1});
+      closeSheet(); renderCart();
+    };
+  };
+  draw();
+}
+
+function openSheet(html){ $("#sheetBody").innerHTML = html; $("#sheet").classList.remove("hide"); }
+function closeSheet(){ $("#sheet").classList.add("hide"); }
+$("#sheet").addEventListener("click", e => { if(e.target.id==="sheet") closeSheet(); });
+
+function chips(name, list, sel, pref){ return `<div class="chips" data-g="${name}">${list.map(x=>{const off=pref&&isOut(pref+x);return `<span class="chip ${x===sel?"on":""} ${off?"off":""}" data-v="${x}">${x}${off?" (brak)":""}</span>`}).join("")}</div>`; }
+
+function openItem(m){
+  let mleko = m.opts.mleko ? "krowie" : "bez mleka", cukier = "0", gor = "gorąca", lod = "bez lodu";
+  const temps = m.temps===undefined ? ["gorąca","zimna"] : m.temps;
+  if(temps) gor = temps[0];
+  const draw = () => {
+    openSheet(`
+      <h2 style="margin-top:0">${m.e} ${m.n}</h2>
+      ${temps?`<label>Temperatura</label>${chips("t",temps,gor)}`:""}
+      ${m.lod?`<label>Lód</label>${chips("l",["bez lodu","z lodem"],lod)}`:""}
+      ${m.opts.mleko?`<label>Mleko</label>${chips("m",MLEKA,mleko,"mleko:")}`:""}
+      ${m.opts.cukier?`<label>Cukier</label>${chips("c",CUKIER,cukier)}`:""}
+      <label>Uwagi</label><input id="note" placeholder="np. bez piany">
+      <div class="row" style="margin-top:14px"><button class="btn sec" id="x">Anuluj</button><button class="btn" id="add">Dodaj do koszyka</button></div>`);
+    $("#x").onclick = closeSheet;
+    document.querySelectorAll("#sheetBody .chips").forEach(c => c.onclick = e => {
+      const v = e.target.dataset.v; if(!v || e.target.classList.contains("off")) return;
+      const note = $("#note").value;
+      if(c.dataset.g==="t") gor=v; if(c.dataset.g==="l") lod=v; if(c.dataset.g==="m") mleko=v; if(c.dataset.g==="c") cukier=v;
+      draw(); $("#note").value = note;
+    });
+    $("#add").onclick = () => {
+      cart.push({id:m.id, n:m.n, temp:temps?gor:null, lod:m.lod?lod:null, mleko:m.opts.mleko?mleko:null, cukier:m.opts.cukier&&cukier!=="0"?cukier:null, note:$("#note").value.trim(), qty:1});
+      closeSheet(); renderCart();
+    };
+  };
+  draw();
+}
+
+function desc(i){ return [i.temp, i.lod, i.dodatki && i.dodatki.length ? "dodatki: "+i.dodatki.join(", ") : null, i.mleko && i.mleko!=="bez mleka" ? "mleko: "+i.mleko : null, i.cukier ? "cukier: "+i.cukier : null, i.note ? "„"+i.note+"”" : null].filter(Boolean).join(", "); }
+
+function renderCart(){
+  const n = cart.reduce((a,i)=>a+i.qty,0);
+  $("#cartCount").textContent = n;
+  $("#bar").classList.toggle("show", n>0 && !$("#guest").classList.contains("hide"));
+}
+$("#openCart").onclick = () => {
+  if(!cart.length) return;
+  openSheet(`<h2 style="margin-top:0">Koszyk</h2>
+    ${cart.map((i,k)=>`<div class="line"><div><b>${esc(i.n)}</b><div class="muted">${esc(desc(i))}</div></div>
+      <div class="qty"><button data-k="${k}" data-d="-1">−</button><span>${i.qty}</span><button data-k="${k}" data-d="1">+</button></div></div>`).join("")}
+    <label>Gdzie zanieść? (opcjonalnie)</label><input id="place" placeholder="np. salon, ogród">
+    <div class="row" style="margin-top:14px"><button class="btn sec" id="x">Wróć</button><button class="btn" id="send">Zamów</button></div>`);
+  $("#x").onclick = closeSheet;
+  $("#sheetBody").onclick = e => {
+    const b = e.target.closest("[data-k]"); if(!b) return;
+    const it = cart[+b.dataset.k]; it.qty += +b.dataset.d;
+    if(it.qty<=0) cart.splice(+b.dataset.k,1);
+    renderCart(); cart.length ? $("#openCart").click() : closeSheet();
+  };
+  $("#send").onclick = sendOrder;
+};
+
+async function sendOrder(){
+  const who = $("#who").value.trim();
+  if(!who){ closeSheet(); $("#who").focus(); $("#who").style.borderColor="red"; return; }
+  if(!db){ alert_("Brak połączenia z bazą. Sprawdź internet i spróbuj ponownie."); return; }
+  const id = "o"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  const brak = cart.find(i => isOut(i.id) || (i.dodatki||[]).some(d => isOut("dod:"+d)) || (i.mleko && isOut("mleko:"+i.mleko)));
+  if(brak){ alert_("Niestety „"+brak.n+"” jest już niedostępne – usuń je z koszyka."); return; }
+  // numerek jak w McDonald's: kolejny numer w danym dniu (1–99, potem od nowa)
+  const day = new Date().toDateString();
+  const used = orders.filter(x => new Date(x.ts).toDateString()===day && x.num).map(x => x.num);
+  const last = orders.filter(x => new Date(x.ts).toDateString()===day && x.num).sort((a,b)=>b.ts-a.ts)[0];
+  let num = last ? (last.num>=99 ? 1 : last.num+1) : 1;
+  while(used.includes(num) && used.length<99 && orders.some(x=>x.num===num && x.status!=="wydane")) num = num>=99 ? 1 : num+1;
+  const o = {who, num, place:$("#place").value.trim(), items:cart, status:"nowe", ts:Date.now()};
+  $("#send").disabled = true;
+  try{
+    await db.collection("orders").doc(id).set(o); cart=[]; renderCart();
+    openSheet(`<div style="text-align:center"><div class="muted">Dziękujemy, ${esc(who)}! Twój numer:</div><div class="bignum">${num}</div>
+      <p class="muted">Zapamiętaj go – gdy pojawi się na tablicy w sekcji „Gotowe”, możesz odebrać zamówienie.</p>
+      <button class="btn" id="ok">OK</button></div>`);
+    $("#ok").onclick = closeSheet;
+  }
+  catch(e){ $("#send").disabled=false; alert_("Nie udało się wysłać zamówienia."); }
+}
+function alert_(t){ const p=document.createElement("div"); p.className="muted"; p.style.color="#b00"; p.textContent=t; $("#sheetBody").appendChild(p); }
+
+// Statusy
+const NEXT = {nowe:["W przygotowaniu","robię"], robię:["Gotowe","gotowe"], gotowe:["Wydane","wydane"]};
+const LABEL = {nowe:"Nowe", robię:"Robię", gotowe:"Gotowe!", wydane:"Wydane"};
+function orderHtml(o, barista){
+  const t = new Date(o.ts).toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"});
+  return `<div class="order ${o.status}" ${barista&&(o.status==="nowe"||o.status==="robię")?`data-id="${o.id}" data-s="gotowe" style="cursor:pointer"`:""}><div class="top"><span>${o.num?`<span class="num">#${o.num}</span>`:""}${esc(o.who)}${o.place?` → ${esc(o.place)}`:""}</span><span class="badge ${o.status}">${LABEL[o.status]}</span></div>
+  <ul>${o.items.map(i=>`<li>${i.qty}× <b>${esc(i.n)}</b> <span class="muted">${esc(desc(i))}</span></li>`).join("")}</ul>
+  <div class="row"><span class="muted" style="flex:1">${t}</span>
+  ${barista && (o.status==="nowe"||o.status==="robię") ? `<span class="badge gotowe">✔ kliknij, gdy zrobione</span>`:""}</div></div>`;
+}
+function renderMine(){
+  const me = $("#who").value.trim().toLowerCase();
+  const mine = me ? orders.filter(o=>o.who.toLowerCase()===me && o.status!=="wydane").sort((a,b)=>b.ts-a.ts) : [];
+  $("#mine").innerHTML = mine.length ? mine.map(o=>orderHtml(o,false)).join("") : `<div class="empty">${me?"Brak aktywnych zamówień":"Wpisz imię, aby widzieć swoje zamówienia"}</div>`;
+}
+function renderQueue(){
+  const q = orders.slice().sort((a,b)=>a.ts-b.ts);
+  const act = q.filter(o=>o.status==="nowe"||o.status==="robię"), ready = q.filter(o=>o.status==="gotowe");
+  $("#queue").innerHTML = act.length ? act.map(o=>orderHtml(o,true)).join("") : `<div class="empty">Brak zamówień do zrobienia ☕</div>`;
+  $("#readyStrip").innerHTML = ready.length ? ready.map(o=>`<span data-id="${o.id}" data-s="wydane">${o.num||"?"}</span>`).join("") : '<div class="muted">—</div>';
+}
+function renderStock(){
+  const grp = (t, arr) => `<label>${t}</label><div class="chips">${arr.map(([id,n])=>`<span class="chip ${isOut(id)?"out":""}" data-stock="${id}">${n}${isOut(id)?" – BRAK":""}</span>`).join("")}</div>`;
+  $("#stock").innerHTML =
+    grp("Kawy", MENU.filter(m=>(m.cat||"kawa")==="kawa").map(m=>[m.id,m.n])) +
+    grp("Herbaty", MENU.filter(m=>m.cat==="herbata").map(m=>[m.id,m.n])) +
+    grp("Matcha", MENU.filter(m=>m.cat==="matcha").map(m=>[m.id,m.n])) +
+    grp("Napoje", MENU.filter(m=>m.cat==="napoje").map(m=>[m.id,m.n])) +
+    grp("Baza własnej herbaty", BAZY.map(x=>["baza:"+x,x])) +
+    grp("Dodatki do herbaty", DODATKI.map(x=>["dod:"+x,x])) +
+    grp("Mleko", MLEKA.filter(x=>x!=="bez mleka").map(x=>["mleko:"+x,x]));
+}
+$("#stock").addEventListener("click", async e => {
+  const c = e.target.closest("[data-stock]"); if(!c||!db) return;
+  const id = c.dataset.stock;
+  out = isOut(id) ? out.filter(x=>x!==id) : [...out, id];
+  renderStock(); renderMenu();
+  try{ await db.collection("stock").doc("out").set({ids:out}); }catch(err){}
+});
+$("#readyStrip").addEventListener("click", async e => {
+  const b = e.target.closest("[data-id]"); if(!b||!db) return;
+  try{ await db.collection("orders").doc(b.dataset.id).update({status:"wydane"}); }catch(err){}
+});
+function openSetup(){
+  openSheet(`<h2 style="margin-top:0">Połączenie z bazą</h2>
+    <p class="muted">Jeśli dostałeś link do kawiarni, otwórz go ponownie – to wystarczy. Poniżej konfiguracja robiona raz, przez właściciela.</p>
+    <details><summary style="cursor:pointer;font-weight:600">Jak przygotować bazę Firebase (jeśli nie masz jeszcze)</summary>
+      <ol class="muted" style="padding-left:18px">
+        <li>console.firebase.google.com → utwórz projekt → Build → Realtime Database → Create Database (tryb locked).</li>
+        <li>Zakładka Rules: wklej poniższy tekst i kliknij Publish.<br><code style="word-break:break-all">{"rules":{".read":false,".write":false,"pp":{"$room":{".read":true,".write":true}}}}</code></li>
+        <li>Zakładka Data: skopiuj adres bazy z góry strony. Możesz użyć tej samej bazy co w Ping-Pong Clash.</li>
+      </ol></details>
+    <label>Adres bazy Firebase</label><input id="fbu" placeholder="https://nazwa-default-rtdb.europe-west1.firebasedatabase.app">
+    <button class="btn" id="fbgo" style="margin-top:14px">Włącz</button>`);
+  $("#fbgo").onclick = () => {
+    const u = $("#fbu").value.trim();
+    if(!/^https:\/\/.+\.(firebasedatabase\.app|firebaseio\.com)/.test(u)){ alert_("To nie wygląda na adres bazy Firebase."); return; }
+    const r = "kawiarnia-"+Array.from({length:16},()=>"abcdefghijkmnpqrstuvwxyz23456789"[Math.floor(Math.random()*32)]).join("");
+    saveCfg({u, r}); location.reload();
+  };
+}
+$("#showLink").onclick = () => { if(!cfg) return; $("#linkBox").classList.remove("hide"); $("#linkVal").value = joinLink(); $("#linkVal").select(); try{ navigator.clipboard.writeText($("#linkVal").value); $("#linkMsg").textContent="Skopiowano."; }catch(e){} };
+async function hashLogin(name, login){
+  const str = name.trim().toLowerCase()+"|"+login;
+  try{ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+  catch(e){ let h=5381; for(const c of str) h=((h<<5)+h+c.charCodeAt(0))|0; return "f"+h; }
+}
+const bId = name => name.trim().toLowerCase().replace(/[^a-z0-9ąćęłńóśźż]/gi,"_");
+function baristaOn(){ const id = store("bid"), h = store("bh"); return !!id && baristas.some(b => b.id===id && b.h===h); }
+function updateBaristaUI(){
+  const on = baristaOn();
+  $("#tabBarista").classList.toggle("hide", !on);
+  const me = baristas.find(b => b.id===store("bid"));
+  $("#bWho").textContent = on && me ? me.name : "";
+  if(!on && !$("#barista").classList.contains("hide")) tab("guest");
+}
+$("#baristaLogin").onclick = () => {
+  const first = baristas.length===0;
+  openSheet(`<h2 style="margin-top:0">Barista</h2>
+    ${first?'<p class="muted">Pierwsze logowanie – wpisz imię i wymyśl login, a konto zostanie utworzone.</p>':""}
+    <label>Imię</label><input id="bn" autocomplete="off">
+    <label>Login</label><input id="bl" type="password" autocomplete="off">
+    <div class="row" style="margin-top:14px"><button class="btn sec" id="x">Anuluj</button><button class="btn" id="go">${first?"Utwórz konto":"Zaloguj"}</button></div>`);
+  $("#x").onclick = closeSheet;
+  $("#go").onclick = async () => {
+    const name = $("#bn").value.trim(), login = $("#bl").value;
+    if(!name || !login){ alert_("Wpisz imię i login."); return; }
+    if(!db){ alert_("Brak połączenia z bazą. Sprawdź internet i spróbuj ponownie."); return; }
+    const id = bId(name), h = await hashLogin(name, login);
+    if(first){
+      try{ await db.collection("baristas").doc(id).set({name, h}); }catch(e){ alert_("Nie udało się utworzyć konta."); return; }
+    } else {
+      const b = baristas.find(b => b.id===id);
+      if(!b || b.h!==h){ alert_("Nieprawidłowe imię lub login."); return; }
+    }
+    store("bid", id); store("bh", h);
+    if(first) baristas = [{id, name, h}];
+    updateBaristaUI(); closeSheet(); tab("barista");
+  };
+};
+$("#bLogout").onclick = () => { store("bid",""); store("bh",""); updateBaristaUI(); tab("guest"); };
+$("#nbAdd").onclick = async () => {
+  const name = $("#nbName").value.trim(), login = $("#nbLogin").value;
+  if(!name || !login || !db){ $("#nbMsg").textContent = "Wpisz imię i login."; return; }
+  const id = bId(name);
+  if(baristas.some(b => b.id===id)){ $("#nbMsg").textContent = "Takie konto już istnieje."; return; }
+  try{ await db.collection("baristas").doc(id).set({name, h: await hashLogin(name, login)}); $("#nbName").value=""; $("#nbLogin").value=""; $("#nbMsg").textContent = "Dodano: "+name; }
+  catch(e){ $("#nbMsg").textContent = "Nie udało się dodać."; }
+};
+function renderBoard(){
+  const day = new Date().toDateString();
+  const t = orders.filter(o => o.num && o.status!=="wydane" && new Date(o.ts).toDateString()===day).sort((a,b)=>a.ts-b.ts);
+  const list = st => t.filter(o => st.includes(o.status)).map(o=>`<span>${o.num}</span>`).join("") || '<div class="muted">—</div>';
+  $("#bPrep").innerHTML = list(["nowe","robię"]);
+  $("#bReady").innerHTML = list(["gotowe"]);
+}
+$("#queue").addEventListener("click", async e => {
+  const b = e.target.closest("[data-id]"); if(!b||!db) return;
+  b.disabled = true;
+  try{ await db.collection("orders").doc(b.dataset.id).update({status:b.dataset.s}); }catch(err){ b.disabled=false; }
+});
+$("#clearDone").onclick = async () => {
+  if(!db) return;
+  for(const o of orders.filter(o=>o.status==="wydane")){ try{ await db.collection("orders").doc(o.id).delete(); }catch(e){} }
+};
+
+// Zakładki
+function tab(v){
+  if(v==="barista" && !baristaOn()) v = "guest";
+  ["guest","board","barista"].forEach(s => $("#"+s).classList.toggle("hide", s!==v));
+  $("#tabGuest").classList.toggle("on", v==="guest"); $("#tabBoard").classList.toggle("on", v==="board"); $("#tabBarista").classList.toggle("on", v==="barista");
+  renderCart();
+}
+$("#tabGuest").onclick = () => tab("guest");
+$("#tabBoard").onclick = () => tab("board");
+$("#tabBarista").onclick = () => tab("barista");
+
+// Baza
+(async()=>{
+  const m = location.hash.match(/^#j=(.+)$/);
+  if(m){ try{ const c = JSON.parse(decodeURIComponent(escape(atob(m[1])))); if(c.u && c.r){ saveCfg(c); history.replaceState(null,"",location.pathname); } }catch(e){} }
+  cfg = loadCfg();
+  if(!cfg){ openSetup(); return; }
+  db = makeDb(cfg);
+  db.collection("orders").onSnapshot(snap => {
+    const arr = [];
+    const docs = snap.docs || [];
+    docs.forEach(d => { const data = typeof d.data==="function" ? d.data() : d.data; arr.push({...data, id:d.id}); });
+    orders = arr; renderMine(); renderQueue(); renderBoard();
+  });
+  db.collection("stock").onSnapshot(snap => {
+    out = [];
+    (snap.docs||[]).forEach(d => { if(d.id==="out"){ const data = typeof d.data==="function" ? d.data() : d.data; out = (data && data.ids) || []; } });
+    renderStock(); renderMenu();
+  });
+  db.collection("baristas").onSnapshot(snap => {
+    baristas = (snap.docs||[]).map(d => { const data = typeof d.data==="function" ? d.data() : d.data; return {...data, id:d.id}; });
+    updateBaristaUI();
+  });
+})();
+renderStock();
+renderMine(); renderQueue(); renderBoard();
+</script>
+</body>
+</html>
